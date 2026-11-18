@@ -7,10 +7,10 @@ before the real data is plugged in.
 Files written to ./data :
   bank_data.csv            date, loan_balance, deposit_balance            ($ millions, quarter-end)
   bank_events.csv          date, amount, description                      (inorganic events, e.g. acquisitions)
-  moodys_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
-  moodys_s1_upside.csv     same columns, upside scenario
-  moodys_s3_downside.csv   same columns, moderate recession
-  moodys_s4_severe.csv     same columns, severe recession
+  scenario_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
+  scenario_s1_upside.csv     same columns, upside scenario
+  scenario_s3_downside.csv   same columns, moderate recession
+  scenario_s4_severe.csv     same columns, severe recession
   macro_metadata.csv       mnemonic, description, geography, theme, transform, expected_sign
 
 The mnemonics imitate the Moody's style (e.g. FGDPR.ION = Ontario real GDP) but are illustrative only.
@@ -407,8 +407,8 @@ for sp in specs:
     e[NH:] = e[NH - 1] * (0.7 ** np.arange(1, NF + 1)) if sp["kind"] == "rate" else 0.0
     noise_store[sp["code"]] = e
 
-SCEN = {"baseline": "moodys_baseline.csv", "s1_upside": "moodys_s1_upside.csv",
-        "s3_downside": "moodys_s3_downside.csv", "s4_severe": "moodys_s4_severe.csv"}
+SCEN = {"baseline": "scenario_baseline.csv", "s1_upside": "scenario_s1_upside.csv",
+        "s3_downside": "scenario_s3_downside.csv", "s4_severe": "scenario_s4_severe.csv"}
 cores = {}
 for s, fn in SCEN.items():
     cores[s] = build_core(s)

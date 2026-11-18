@@ -1,6 +1,6 @@
-# Loan forecasting run: ontario_loans_example
+# Loan forecasting run: example_run
 
-Config: `/home/claude/loan_model/config/example_config.yaml`  
+Config: `/home/claude/forecasting-test/config/example_config.yaml`  
 Target: `loan_balance` (organic quarterly log change). Estimation 2002Q2–2025Q4; backtest origins from 2010Q4, 1–9 quarters ahead.
 
 ## Screen first

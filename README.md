@@ -7,7 +7,7 @@ Selects a small set of macro drivers (at most 3 by default) for a loan balance, 
 
 Both approaches finish with the same final step, so their results are directly comparable.
 
-**Data:** everything in `data/` is simulated by `tools/simulate_data.py`, including the bank balances and the scenario files laid out like Moody's scenarios. The repository holds no real bank data and no licensed Moody's data.
+**Data:** everything in `data/` is simulated by `tools/simulate_data.py`, including the bank balances and scenario files laid out like a vendor macro model (Moody's-style mnemonics). The repository holds no real bank data and no licensed Moody's data.
 
 **Documents:** the methodology and literature review, the literature workbook and a short slide deck are in `docs/`.
 
@@ -29,7 +29,7 @@ Copy `config/example_config.yaml`, rename it, and edit it. Everything that depen
 |---|---|
 | Bank file, sheet, date column, balance column, monthly or quarterly | `data.bank` |
 | Inorganic events file and its columns (optional) | `data.events` |
-| One Moody's file per scenario, any names, plus the date column | `data.macro.scenarios`, `data.macro.date_column` |
+| One macro scenario file per scenario (e.g. from a vendor such as Moody's), any names, plus the date column | `data.macro.scenarios`, `data.macro.date_column` |
 | Metadata file and **your** column names for mnemonic, description, geography, theme, transform, expected sign | `data.metadata.columns` |
 | Extra variables built from macro columns (spreads, real rates) | `data.constructed` |
 | Dates: last actual quarter, estimation start, backtest start, dummy quarters | `sample` |

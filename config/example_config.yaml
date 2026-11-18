@@ -8,7 +8,7 @@
 # Files can be .csv or .xlsx (give `sheet:` for Excel).
 # =============================================================================
 
-run_name: ontario_loans_example     # outputs go to <output_dir>/<run_name>/
+run_name: example_run     # outputs go to <output_dir>/<run_name>/
 output_dir: outputs
 
 data:
@@ -30,10 +30,10 @@ data:
     date_column: date
     sheet: null
     scenarios:
-      Baseline: data/moodys_baseline.csv
-      S1 Upside: data/moodys_s1_upside.csv
-      S3 Downside: data/moodys_s3_downside.csv
-      S4 Severe: data/moodys_s4_severe.csv
+      Baseline: data/scenario_baseline.csv
+      S1 Upside: data/scenario_s1_upside.csv
+      S3 Downside: data/scenario_s3_downside.csv
+      S4 Severe: data/scenario_s4_severe.csv
     base_scenario: Baseline         # the scenario whose history is used for estimation
 
   metadata:                         # one row per macro variable
