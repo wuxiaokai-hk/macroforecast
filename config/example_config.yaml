@@ -1,5 +1,5 @@
 # =============================================================================
-# Loan forecasting model - run configuration
+# macroforecast - run configuration (example: an Ontario loan balance)
 # -----------------------------------------------------------------------------
 # To run on a different portfolio or differently named files: copy this file,
 # change the file names / column names / settings below, and run
@@ -8,8 +8,17 @@
 # Files can be .csv or .xlsx (give `sheet:` for Excel).
 # =============================================================================
 
-run_name: example_run     # outputs go to <output_dir>/<run_name>/
+run_name: ontario_loans_example     # outputs go to <output_dir>/<run_name>/
 output_dir: outputs
+
+target:                             # what is forecast and how it is modelled
+  transform: auto                   # dlog: log growth (balances, deposits, investment, prices: values > 0)
+                                    # diff: quarterly change (interest rates, spreads; errors in the target's units)
+                                    # auto: dlog when every value is positive (set diff yourself for a rate)
+  label: loan balance               # used in titles and the deck
+  units: $ millions                 # units of the data
+  display_scale: 1000               # the deck shows the level divided by this ...
+  display_units: $ billions         # ... in these units (for a rate: display_scale 1, display_units "%")
 
 data:
   bank:                             # internal balances
@@ -18,6 +27,7 @@ data:
     date_column: date               # quarter labels (2020Q1) or dates (2020-03-31)
     target_column: loan_balance     # the balance to forecast
     frequency: Q                    # Q, or M for monthly data (quarter-end value is used)
+    panel_column: null              # several banks in one file: the column naming the bank (run_panel.py)
 
   events:                           # optional: inorganic events removed from the target
     file: data/bank_events.csv      # set to null if you have none
@@ -25,15 +35,16 @@ data:
     date_column: date
     series_column: series           # rows whose series = target_column are used
     amount_column: amount           # size of the jump, same units as the balance
+    bank_column: null               # panel runs: the column naming the bank of each event
 
   macro:                            # one file per scenario: history + scenario path
     date_column: date
     sheet: null
     scenarios:
-      Baseline: data/scenario_baseline.csv
-      S1 Upside: data/scenario_s1_upside.csv
-      S3 Downside: data/scenario_s3_downside.csv
-      S4 Severe: data/scenario_s4_severe.csv
+      Baseline: data/moodys_baseline.csv
+      S1 Upside: data/moodys_s1_upside.csv
+      S3 Downside: data/moodys_s3_downside.csv
+      S4 Severe: data/moodys_s4_severe.csv
     base_scenario: Baseline         # the scenario whose history is used for estimation
 
   metadata:                         # one row per macro variable
@@ -63,12 +74,26 @@ data:
       theme: Interest rates
       transform: diff
       expected_sign: -1
+    - name: XTERM.IC
+      expression: "`FRGOV10Y.IC` - `FRBOC.IC`"
+      description: Term spread, 10Y GoC yield minus overnight rate (pp)
+      geography: Canada
+      theme: Yield curve
+      transform: diff
+      expected_sign: 0                # no firm prior, so it is not a data-driven candidate; used by ECB BEAST
 
 sample:
   hist_end: 2025Q4                  # last quarter of actual loan data
   estimation_start: 2002Q2          # first quarter used in regressions (leave room for lags)
-  backtest_start: 2010Q4            # first forecast origin in the rolling backtest
-  horizon: 9                        # quarters ahead in the backtest
+  backtest_start: 2018Q1            # first forecast origin in the rolling backtest
+  backtest_end: 2024Q4              # last forecast origin (null = the last quarter with an actual after it)
+                                    #   with horizon 12, only origins up to hist_end - 12 have a 12-quarter error
+  backtest_step: 1                  # quarters between origins: 1 = every quarter, 2 = every other quarter
+  reestimate_every: 4               # quarters between re-estimations: 1 = at every origin; 4 = once a year,
+                                    #   coefficients kept for the next quarters and only the forecast redone
+  reestimate_quarter: 1             # with reestimate_every 4: re-estimate in Q1 (2, 3 or 4 for another quarter)
+  horizon: 12                       # quarters ahead in the backtest and out-of-sample test
+  report_horizons: [4, 8, 12]       # models are compared at these horizons
   dummy_quarters: [2020Q1, 2020Q2, 2020Q3, 2020Q4, 2021Q1, 2021Q2]   # one dummy each; also excluded from error metrics
 
 features:                           # shared by both approaches
@@ -81,8 +106,104 @@ features:                           # shared by both approaches
   allowed_geographies: [Ontario, Canada]   # [] keeps all
   excluded_themes: [Other, Output (by industry), Labour (by industry)]
   require_sign_prior: true          # variables with expected_sign 0 cannot be selected
+  moving_average: []                # extra windows, e.g. [8, 12]: average q/q growth (change for rates) over the
+                                    #   last k quarters (ma8 / dma8). ma4 = yoy/4 and ma2 = dlog2/2 add nothing new
+  volatility: []                    # e.g. [4, 8]: rolling std. dev. of q/q growth (change) over k quarters (vol4 / dvol4)
+  volatility_sign: -1               # expected sign of every volatility feature (more uncertainty, less growth)
 
 approaches: [screen_first, en_first]   # run one or both
+
+# -----------------------------------------------------------------------------
+# Models from the literature: EVERYTHING is in the workbook (sheets models, concepts, settings, references).
+#   models     one row per driver of each published model: variable (a concept or one of your series), transform,
+#              lag, expected sign, core
+#   concepts   each economic concept: expected sign, evidence, include yes/no, and YOUR series name (moodys_name)
+#   settings   the error-correction model, the channels hybrid, the regime threshold, the sign rule
+#   references the studies behind them
+# Template: python tools/literature_template.py (or download it in the app).
+literature:
+  workbook: config/literature_workbook.xlsx
+  # One master file for every target instead (literature_master.xlsx: each sheet has a 'target' column):
+  #   master: config/literature_master.xlsx    # literature workbook AND metadata (data.metadata.file can be left out)
+  #   target: mortgage                         # which target's rows (default: run_name)
+
+models:                             # which model families compete (all use the same backtest and OOS test)
+  only: []                          # run only these: model names or families, e.g. [Literature, "Screen first",
+                                    #   "Same growth as a driver"]; [] = all. The AR(1) benchmark is always kept.
+  same_growth: [disposable_income, house_prices]   # loans grow at the same rate as each of these (a literature
+                                    #   concept or a series name); two models each: exact, and plus the average gap.
+                                    #   Long form: {variable: FYPD.ION, lag: 0, gap: both}. [] to switch off
+  auto_ardl:                        # EViews-style ARDL: lags chosen by an information criterion
+    enabled: true
+    criterion: bic                  # aic | bic (Schwarz) | hq
+    max_p: 4                        # most lags of loan growth
+    max_q: 4                        # most lags of each driver (0 = same quarter only)
+    on: [core, screen_first]        # driver sets: core (literature), screen_first, en_first
+    levels: true                    # also the ARDL in levels with the Pesaran-Shin-Smith bounds test
+  horizon_combination:              # splice the models that forecast best at each horizon
+    enabled: true
+    buckets: [[1, 4], [5, 8], [9, 12]]   # quarters ahead; the best model in each bucket is chosen separately
+    top_k: 3                        # the weighted version averages the best top_k per bucket (weights 1/error)
+    min_history: 3                  # past forecast origins needed before a model can be chosen for a bucket
+    criterion: growth               # growth: error of the growth in those quarters (what is spliced);
+                                    #   balance: balance error at those horizons (as in the ranking table)
+  benchmarks: true                  # AR(1) and mean growth
+  literature: true
+  hybrids: true
+  hybrid_max_add: 2                 # data add-ons allowed on top of the theory core
+  machine_learning: [ridge, random_forest, gradient_boosting, neural_net]   # [] to switch off
+  machine_learning_settings: {}     # e.g. {random_forest: {n_estimators: 500}}
+  foundation:                       # pretrained AI forecasters; need: pip install chronos-forecasting
+    enabled: auto                   # auto = run if installed and downloadable; false = off
+    device: cpu
+    models:
+      - {name: "Chronos-Bolt (own history)", id: amazon/chronos-bolt-small}
+      - {name: "Chronos-2 (with drivers)", id: amazon/chronos-2, covariates: core}
+  regime:                           # models whose relation with the drivers changes with the state of the economy
+    models: [markov, threshold, smooth_transition, tvp, break_adaptive]   # [] to switch off
+    settings: {}                    # e.g. {markov: {switching_ar: true}, threshold: {trim: 0.2}}
+  statistical: [arimax, theta]      # classic time-series challengers (statsmodels); [] to switch off
+  deep:                             # small neural forecasters trained on this data; need: pip install darts
+    enabled: auto                   # auto = run if darts is installed; false = off
+    models: [tide, nhits, tft]      # also available: nbeats, tsmixer
+    settings: {epochs: 80, input_chunk: 8, output_chunk: 4, n_models: 3, refit_every: 4,
+               tft: {epochs: 50, n_models: 2}}   # per-model overrides; TFT is the slowest
+                                    # n_models = random seeds averaged; refit_every = quarters between retraining
+
+oos:                                # out-of-sample test (python run_oos.py): re-selects at every origin
+  first_origin: 2013Q4              # first forecast origin (needs a few years of history before it)
+  step: 4                           # quarters between origins (1 = every quarter; slower)
+  horizon: null                     # null = sample.horizon
+  window: expanding                 # expanding, or rolling (fixed length below)
+  window_length: 40                 # quarters, for a rolling window
+  holdout_quarters: 12              # final holdout: select on data up to hist_end - 12, forecast the last 12
+
+trace:                              # detailed log of every function call (outputs/<run>/trace/<date_time>/trace.html)
+  enabled: true
+  preview_rows: 20                  # rows shown per table in the page
+  save_tables: true                 # save returned tables as CSV
+  max_table_cells: 200000           # bigger tables are previewed but not saved
+  detail_calls: 1                   # repeated calls from the same place recorded in full
+  local_variables: true             # record each call's local variables (like a debugger)
+  local_preview_rows: 8             # rows shown per local table
+  library_functions: default        # library routines to trace: default, [] for none, or a list "module:function"
+  distinct_labels: 8                # calls with different text arguments (step names) shown separately
+  keep_runs: 10                     # trace folders kept
+  follow: auto                      # variable followed through the data story (trace.html, "Data story" view):
+                                    #   auto = the first driver chosen; or a feature such as FHPI.ION|dlog|L1
+
+docs:                               # function reference (docs/reference.html), rebuilt at the end of each run
+  enabled: true                     #   when the code has changed; also: python tools/make_docs.py --watch
+  folder: docs
+  examples: true                    # show each function's inputs and output from the latest run trace
+
+save:                               # what is kept after each run (outputs/<run>/)
+  fitted_models: true               # fitted/models.pkl: every estimated model, reusable without re-running
+  keep_runs: 20                     # saved_runs/<date_time>: a complete copy of the results of each run (0 = none)
+  formula_quarters: 4               # formula/: the recommended model's equation and its forecast for these quarters
+  origin_models: true               # fitted/backtest_models/ and oos/fitted_models/: every model at every origin
+  fitted_values: true               # fitted/fitted_values.csv: in-sample fit and residuals of every model
+  panels: true                      # fitted/panels/: the data each model was estimated on
 
 cache:                              # skip steps whose inputs, settings and code have not changed
   enabled: true
@@ -120,3 +241,12 @@ final_model:                        # shared final step for both approaches
   required_themes: []               # e.g. [Interest rates] to force a rate driver
   n_oos_candidates: 300
   selection_tolerance: 0.05         # simplest model within 5% of the best error wins
+
+panel:                              # used only when data.bank.panel_column is set (python run_panel.py)
+  models: [separate, pooled, partial, topdown]   # separate | pooled (fixed effects) | partial (shrinkage) | topdown
+  driver_sets: [panel, core]        # panel = chosen on all banks together; core = literature core model
+  min_obs: 20                       # quarters a bank needs for its own equation (fewer: fully pooled)
+  dk_lags: 4                        # Bartlett lags of the Driscoll-Kraay standard errors
+  n_search_candidates: 20           # driver combinations (lowest pooled BIC) backtested in the search
+  banks: []                         # [] = every bank; or a list of names
+  per_bank_full: false              # also the complete single-series project for every bank (slower)

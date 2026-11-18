@@ -7,10 +7,10 @@ before the real data is plugged in.
 Files written to ./data :
   bank_data.csv            date, loan_balance, deposit_balance            ($ millions, quarter-end)
   bank_events.csv          date, amount, description                      (inorganic events, e.g. acquisitions)
-  scenario_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
-  scenario_s1_upside.csv     same columns, upside scenario
-  scenario_s3_downside.csv   same columns, moderate recession
-  scenario_s4_severe.csv     same columns, severe recession
+  moodys_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
+  moodys_s1_upside.csv     same columns, upside scenario
+  moodys_s3_downside.csv   same columns, moderate recession
+  moodys_s4_severe.csv     same columns, severe recession
   macro_metadata.csv       mnemonic, description, geography, theme, transform, expected_sign
 
 The mnemonics imitate the Moody's style (e.g. FGDPR.ION = Ontario real GDP) but are illustrative only.
@@ -35,6 +35,7 @@ t = np.arange(N)
 
 
 def qpos(q):
+    """Position of a quarter in the simulated index."""
     return int(np.where(Q == pd.Period(q, freq="Q"))[0][0])
 
 
@@ -45,6 +46,7 @@ def anchors(points, n=NH):
 
 
 def episode(arr, start, end, value):
+    """Add a value to an array between two quarters (an economic episode)."""
     a, b = qpos(start), qpos(end)
     arr[a:b + 1] += value
 
@@ -115,6 +117,7 @@ h["us_shock"] = rng.normal(0, 0.003, NH)
 
 
 def scen_path(name):
+    """Future paths of the core factors under one scenario."""
     f = {}
     k = np.arange(NF)
     if name == "baseline":
@@ -156,6 +159,7 @@ def scen_path(name):
 
 
 def build_core(name):
+    """History + scenario path of every core factor, and the derived rates."""
     f = scen_path(name)
     c = {k: np.concatenate([h[k], f[k]]) for k in ["gdp", "policy", "bond10", "cpi", "pop", "hpi_shock",
                                                    "u_shock", "inc_shock", "tsx_shock", "oil", "fx", "us_shock"]}
@@ -191,6 +195,7 @@ specs = []   # (code, desc, geo, theme, kind, parent, beta, noise, base, mu, tra
 
 
 def add(code, desc, geo, theme, kind, parent, beta, noise, base, mu=0.0, sign=0):
+    """Register one simulated Moody's series (mnemonic, description, theme, link to a core factor)."""
     transform = "dlog" if kind == "level" else "diff"
     specs.append(dict(code=code, desc=desc, geo=geo, theme=theme, kind=kind, parent=parent, beta=beta,
                       noise=noise, base=base, mu=mu, transform=transform, expected_sign=sign))
@@ -369,6 +374,7 @@ GROWTH_PARENTS = {"gdp", "inc", "hpi", "cpi", "pop", "emp", "tsx", "oil", "fx", 
 
 
 def build_macro(core, noise_store):
+    """Generate every registered series from the core factors with noise."""
     out = {}
     for sp in specs:
         p = core[sp["parent"]]
@@ -407,8 +413,8 @@ for sp in specs:
     e[NH:] = e[NH - 1] * (0.7 ** np.arange(1, NF + 1)) if sp["kind"] == "rate" else 0.0
     noise_store[sp["code"]] = e
 
-SCEN = {"baseline": "scenario_baseline.csv", "s1_upside": "scenario_s1_upside.csv",
-        "s3_downside": "scenario_s3_downside.csv", "s4_severe": "scenario_s4_severe.csv"}
+SCEN = {"baseline": "moodys_baseline.csv", "s1_upside": "moodys_s1_upside.csv",
+        "s3_downside": "moodys_s3_downside.csv", "s4_severe": "moodys_s4_severe.csv"}
 cores = {}
 for s, fn in SCEN.items():
     cores[s] = build_core(s)

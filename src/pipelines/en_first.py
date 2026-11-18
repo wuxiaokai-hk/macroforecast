@@ -4,7 +4,7 @@ selection) -> group correlated picks, keep one per group -> shared final search.
 import numpy as np
 import pandas as pd
 
-from ..features.transforms import parse_feature
+from ..features.transforms import feature_sign, parse_feature
 from ..modelling.search import exhaustive_search
 from ..selection.clustering import cluster, representatives
 from ..selection.elastic_net import elastic_net_select, stability_selection
@@ -12,6 +12,15 @@ from ..utils.io import log
 
 
 def run(cfg, ctx, F, forms):
+    """Elastic Net first approach: Elastic Net (glmnet-style) -> stability selection -> group correlated
+    picks -> exhaustive search with the same rules as screen first.
+
+    Args:
+        cfg: configuration. ctx: Context. F: all candidate features (DataFrame). forms: transforms per series.
+
+    Returns:
+        dict with the final features, the search table and every intermediate table (written to en_first/).
+    """
     e = cfg["en_first"]
     log(f"[en_first] Elastic Net on {F.shape[1]} features (target {e['target_n']}) ...")
     full = elastic_net_select(cfg, ctx, F)
@@ -32,7 +41,7 @@ def run(cfg, ctx, F, forms):
     sel["mnemonic"] = sel["feature"].map(lambda f: parse_feature(f)[0])
     sel["theme"] = sel["mnemonic"].map(ctx.meta["theme"])
     sel["geography"] = sel["mnemonic"].map(ctx.meta["geography"])
-    sel["expected_sign"] = sel["mnemonic"].map(ctx.meta["expected_sign"]).astype(int)
+    sel["expected_sign"] = [int(feature_sign(ctx.meta, f)) for f in sel["feature"]]
     sel["description"] = sel["mnemonic"].map(ctx.meta["description"])
     Fs = F[sel["feature"]].iloc[ctx.est0:ctx.end + 1]
     sel["cluster"] = cluster(Fs, e["group_corr"]).reindex(sel["feature"]).values
@@ -42,6 +51,7 @@ def run(cfg, ctx, F, forms):
     log(f"[en_first] {len(sel)} selected -> {len(cands)} groups; searching ...")
     R, chosen = exhaustive_search(cfg, ctx, F[cands["feature"]], cands.reset_index(drop=True).set_index("feature"), "en_first")
     tables["B4_search"] = R
+    tables["B5_search_rules"] = pd.DataFrame(list(R.attrs.get("rules", {}).items()), columns=["step", "combinations"])
     log(f"[en_first] chosen: {chosen}")
     funnel = [("Candidate variables", forms["mnemonic"].nunique()),
               ("Features into the Elastic Net", F.shape[1]),

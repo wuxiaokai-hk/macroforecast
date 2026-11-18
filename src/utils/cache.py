@@ -11,6 +11,7 @@ Data are hashed by content after loading (not by file name), so renaming a file 
 config maps does not invalidate the cache, while any change to a value does.
 """
 import datetime as dt
+import ast
 import hashlib
 import json
 import os
@@ -24,11 +25,23 @@ SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _h(b):
+    """SHA-256 hex digest of bytes.
+
+    Args:
+        b: bytes.
+
+    Returns:
+        str.
+    """
     return hashlib.sha256(b).hexdigest()
 
 
 def _norm(o):
-    """Make equal settings hash equally: 5 == 5.0, tuples == lists, keys sorted by json."""
+    """Make equal settings hash equally: 5 == 5.0, tuples == lists, keys sorted by json.
+
+    Args:
+        o: any config-like object.
+    """
     if isinstance(o, dict):
         return {str(k): _norm(v) for k, v in o.items()}
     if isinstance(o, (list, tuple)):
@@ -41,13 +54,21 @@ def _norm(o):
 
 
 def hash_obj(obj):
-    """Stable hash of config-like objects (dicts, lists, numbers, strings)."""
+    """Stable hash of config-like objects (dicts, lists, numbers, strings).
+
+    Args:
+        obj: dict, list, number or string.
+    """
     return _h(json.dumps(_norm(obj), sort_keys=True).encode())
 
 
 def hash_frame(df):
     """Content hash of data: values and index. For a DataFrame the column labels count too (they are the
-    variable mnemonics); a Series' own name does not, so renaming the balance column changes nothing."""
+    variable mnemonics); a Series' own name does not, so renaming the balance column changes nothing.
+
+    Args:
+        df: DataFrame or Series.
+    """
     if isinstance(df, pd.Series):
         df = df.rename(None).to_frame()
         cols = b""
@@ -57,17 +78,53 @@ def hash_frame(df):
     return _h(rows + cols)
 
 
+def _code_only(src):
+    """Python source without docstrings, comments and formatting (so documentation edits do not re-run steps).
+
+    Args:
+        src: source text of a module.
+
+    Returns:
+        normalised source text (the original text if it cannot be parsed).
+    """
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return src
+    for n in ast.walk(tree):
+        b = getattr(n, "body", None)
+        if isinstance(n, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and b \
+                and isinstance(b[0], ast.Expr) and isinstance(getattr(b[0], "value", None), ast.Constant) \
+                and isinstance(b[0].value.value, str):
+            n.body = b[1:] or [ast.Pass()]
+    return ast.unparse(tree)
+
+
 def hash_code(*relpaths):
-    """Hash of source files under src/ (so editing the code re-runs the step)."""
+    """Hash of source files under src/ (so editing the code re-runs the step). Docstrings, comments and
+    formatting are ignored: improving the documentation does not invalidate the cache.
+
+    Args:
+        relpaths: files or folders under src/.
+    """
     m = hashlib.sha256()
     for rel in sorted(relpaths):
-        with open(os.path.join(SRC, rel), "rb") as f:
-            m.update(rel.encode() + f.read())
+        with open(os.path.join(SRC, rel), encoding="utf-8") as f:
+            m.update(rel.encode() + _code_only(f.read()).encode())
     return m.hexdigest()
 
 
 class StepCache:
+    """Hash-based cache of pipeline steps: a step is loaded from disk when the hash of its inputs,
+    settings and code is unchanged, and recomputed otherwise.
+    """
     def __init__(self, cache_dir, enabled=True, force=False, force_steps=()):
+        """Create the cache.
+
+        Args:
+            cache_dir: folder for the pickles. enabled: False = always compute. force: recompute every step.
+            force_steps: step names to recompute.
+        """
         self.dir = cache_dir
         self.enabled = enabled
         self.force = force
@@ -76,9 +133,15 @@ class StepCache:
         os.makedirs(cache_dir, exist_ok=True)
 
     def run(self, step, components, fn, log=print):
-        """Return fn()'s result, from cache when the fingerprint is unchanged."""
+        """Return fn()'s result, from cache when the fingerprint is unchanged.
+
+        Args:
+            step: step name (also the cache file name). components: dict of everything the step depends on
+            (hashed). fn: function computing the result.
+        """
         key = hash_obj(components)
-        path = os.path.join(self.dir, f"{step.replace(' ', '_').replace(':', '_')}__{key[:16]}.pkl")
+        safe = "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in step)[:80]
+        path = os.path.join(self.dir, f"{safe}__{key[:16]}.pkl")
         t0 = time.time()
         forced = self.force or step in self.force_steps or step.split(":")[0] in self.force_steps
         if self.enabled and not forced and os.path.exists(path):
@@ -97,11 +160,15 @@ class StepCache:
         return obj
 
     def write_manifest(self, out_dir, log=print):
-        """Save this run's fingerprints and report which components changed since the previous run."""
+        """Save this run's fingerprints and report which components changed since the previous run.
+
+        Args:
+            out_dir: run output folder.
+        """
         mpath = os.path.join(out_dir, "run_manifest.json")
         prev = {}
         if os.path.exists(mpath):
-            with open(mpath) as f:
+            with open(mpath, encoding="utf-8") as f:
                 prev = json.load(f).get("steps", {})
         rows = []
         for step, rec in self.records.items():
@@ -118,7 +185,7 @@ class StepCache:
             rows.append({"time": dt.datetime.now().isoformat(timespec="seconds"), "step": step,
                          "status": rec["status"], "key": rec["key"][:16], "seconds": rec["seconds"],
                          "vs_previous_run": changed})
-        with open(mpath, "w") as f:
+        with open(mpath, "w", encoding="utf-8") as f:
             json.dump({"time": dt.datetime.now().isoformat(timespec="seconds"), "steps": self.records}, f, indent=2)
         hist = os.path.join(out_dir, "run_history.csv")
         pd.DataFrame(rows).to_csv(hist, mode="a", header=not os.path.exists(hist), index=False)

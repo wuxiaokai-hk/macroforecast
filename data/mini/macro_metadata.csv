@@ -1,0 +1,13 @@
+mnemonic,description,geography,theme,transform,expected_sign
+FLBR.ION,"Unemployment rate, Ontario (%)",Ontario,Labour,diff,-1
+FYPD.ION,"Personal disposable income, Ontario (C$)",Ontario,Income,dlog,1
+FRS.ION,"Retail sales, Ontario (C$)",Ontario,Consumption,dlog,1
+FHST.ION,"Housing starts, Ontario (Ths., SAAR)",Ontario,Housing,dlog,1
+FHPI.ION,"House price index, Ontario (2005=100)",Ontario,Housing,dlog,1
+FCPI.ION,"Consumer price index, Ontario (2002=100)",Ontario,Prices,dlog,0
+FLBR.IQC,"Unemployment rate, Quebec (%)",Quebec,Labour,diff,-1
+FHPI.IHAM,"House price index, Hamilton CMA (2005=100)",Ontario - Hamilton,Housing,dlog,1
+FRGOV5Y.IC,5-year GoC bond yield (%),Canada,Interest rates,diff,-1
+FRMORT5Y.IC,5-year conventional mortgage rate (%),Canada,Interest rates,diff,-1
+FWAGE.IC,"Average hourly wages, Canada",Canada,Income,dlog,1
+FHPISFD.ITOR,"Single-detached price index, Toronto",Ontario,Housing,dlog,1

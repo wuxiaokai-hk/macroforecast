@@ -1,0 +1,53 @@
+# Panel system example: five simulated banks, each with two rates, two loans and deposits
+# (data/panel_system_data.csv: date, bank_name and one column per target; equations in
+# data/panel_system_equations.md).
+#   python run_system.py --config config/panel_system_example.yaml
+#   or: from macroforecast import System; System("config/panel_system_example.yaml").fit()
+#
+# The same as a system config, plus panel_column. Every target is a panel: drivers are chosen on all banks
+# together, from the macro data and the SAME bank's earlier targets ("uses"), and each bank is forecast by the
+# panel models (separate, pooled fixed effects, partial pooling, AR(1)). Each bank's chain then forecasts itself.
+run_name: panel_system_example
+system:
+  data: data/panel_system_data.csv
+  date_column: date
+  panel_column: bank_name
+  hyperparameters:           # any config setting, for every target
+    sample.horizon: 8
+    sample.report_horizons: [4, 8]
+    panel.min_obs: 20        # quarters a bank needs for its own equation (fewer: fully pooled)
+  targets:
+    - name: mortgage_rate
+      column: mortgage_rate
+      transform: diff
+      label: 5-year mortgage rate
+      metadata: data/macro_metadata_deposit_rate.csv
+    - name: deposit_rate
+      column: deposit_rate
+      transform: diff
+      label: deposit rate
+      metadata: data/macro_metadata_deposit_rate.csv
+    - name: mortgage
+      column: mortgage_balance
+      transform: dlog
+      label: mortgage balance
+      metadata: data/macro_metadata.csv
+      literature: config/literature_workbook.xlsx
+      uses:
+        - {target: mortgage_rate, sign: -1}
+    - name: commercial
+      column: commercial_balance
+      transform: dlog
+      label: commercial loan balance
+      metadata: data/macro_metadata_commercial_loans.csv
+      literature: config/commercial_loans_literature_workbook.xlsx
+    - name: deposits
+      column: deposit_balance
+      transform: dlog
+      label: deposit balance
+      metadata: data/macro_metadata_deposits.csv
+      uses:
+        - {target: deposit_rate, sign: 1, spread_over: FRBOC.IC}
+        - {target: mortgage, sign: 1}
+  ratios:
+    - {name: loan_to_deposit, numerator: [mortgage, commercial], denominator: [deposits]}

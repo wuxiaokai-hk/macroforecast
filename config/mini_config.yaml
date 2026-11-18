@@ -1,0 +1,99 @@
+# Small example for the step-by-step walkthrough (python tools/walkthrough.py).
+# 12 macro variables and 2 scenarios instead of ~400 and 4, with fewer transforms and lags,
+# so every intermediate table is small enough to read. The code is exactly the same as the full run.
+
+run_name: mini_walkthrough
+output_dir: outputs
+
+data:
+  bank:
+    file: data/bank_data.csv
+    date_column: date
+    target_column: loan_balance
+    frequency: Q
+  events:
+    file: data/bank_events.csv
+    date_column: date
+    series_column: series
+    amount_column: amount
+  macro:
+    date_column: date
+    scenarios:
+      Baseline: data/mini/macro_baseline.csv
+      S4 Severe: data/mini/macro_s4_severe.csv
+    base_scenario: Baseline
+  metadata:
+    file: data/mini/macro_metadata.csv
+  constructed:
+    - name: XMORTSPRD.IC
+      expression: "`FRMORT5Y.IC` - `FRGOV5Y.IC`"
+      description: Mortgage spread, 5Y mortgage rate minus 5Y GoC yield (pp)
+      geography: Canada
+      theme: Credit spreads
+      transform: diff
+      expected_sign: -1
+
+sample:
+  hist_end: 2025Q4
+  estimation_start: 2002Q2
+  backtest_start: 2010Q4
+  horizon: 9
+  dummy_quarters: [2020Q1, 2020Q2, 2020Q3, 2020Q4, 2021Q1, 2021Q2]
+
+features:
+  max_lag: 2                        # full run: 4
+  adf_p: 0.05
+  transforms_level: [dlog, yoy, gap]   # full run: dlog, yoy, dlog2, acc, gap
+  transforms_rate: [diff, diff4, lvl]  # full run: diff, diff2, diff4, lvl, rgap
+  real_themes: [Income]
+  deflator: FCPI.ION
+  allowed_geographies: [Ontario, Canada]
+  excluded_themes: []
+  require_sign_prior: true
+
+approaches: [screen_first, en_first]
+
+screen_first:
+  screen_p: 0.05
+  cluster_corr: 0.75
+  primary_geography: Ontario
+  rep_tolerance: 0.75
+  shortlist_max: 25
+
+en_first:
+  l1_ratio: 0.5
+  target_n: 5                       # full run: 10
+  unpenalized_controls: true
+  sign_constraints: true
+  stability:
+    enabled: true
+    n_subsamples: 50                # full run: 100
+    fraction: 0.75
+    block_length: 8
+    threshold: 0.6
+    seed: 42
+  group_corr: 0.75
+  primary_geography: Ontario
+  rep_tolerance: 0.75
+
+final_model:
+  min_vars: 1
+  max_vars: 3
+  t_min: 1.96
+  vif_max: 5
+  one_per_theme: true
+  required_themes: []
+  n_oos_candidates: 300
+  selection_tolerance: 0.05
+
+oos:
+  first_origin: 2015Q4
+  step: 4
+  horizon: null
+  window: expanding
+  window_length: 40
+  holdout_quarters: 8
+
+cache:
+  enabled: false
+  dir: cache

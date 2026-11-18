@@ -6,10 +6,23 @@ import pandas as pd
 
 
 def log(msg):
+    """Print a progress message immediately (also captured by the trace).
+
+    Args:
+        msg: text.
+    """
     print(msg, flush=True)
 
 
 def read_table(path, sheet=None):
+    """Read a CSV or Excel file.
+
+    Args:
+        path: file. sheet: Excel sheet name or index (None = first).
+
+    Returns:
+        DataFrame.
+    """
     ext = os.path.splitext(path)[1].lower()
     if ext in (".xlsx", ".xlsm", ".xls"):
         return pd.read_excel(path, sheet_name=sheet if sheet is not None else 0)
@@ -17,7 +30,11 @@ def read_table(path, sheet=None):
 
 
 def to_quarters(values):
-    """'2020Q1', '2020 Q1', '2020-03-31', datetime ... -> quarterly PeriodIndex."""
+    """'2020Q1', '2020 Q1', '2020-03-31', datetime ... -> quarterly PeriodIndex.
+
+    Args:
+        values: dates or quarter labels.
+    """
     s = pd.Series(values).astype(str).str.strip()
     if s.str.match(r"^\d{4}\s*[Qq]\d$").all():
         return pd.PeriodIndex(s.str.replace(" ", "").str.upper(), freq="Q")
@@ -25,12 +42,25 @@ def to_quarters(values):
 
 
 def _need(df, cols, label):
+    """Raise a clear error if columns are missing from an input file.
+
+    Args:
+        df: table. cols: required columns. label: file description for the message.
+    """
     miss = [c for c in cols if c not in df.columns]
     if miss:
         raise KeyError(f"{label}: column(s) {miss} not found. Available: {list(df.columns)[:15]} ...")
 
 
 def load_bank(cfg):
+    """Load the target as a quarterly series (monthly data: last month of each quarter).
+
+    Args:
+        cfg: configuration (data.bank, sample.hist_end).
+
+    Returns:
+        Series indexed by quarter.
+    """
     b = cfg["data"]["bank"]
     df = read_table(b["file"], b["sheet"])
     _need(df, [b["date_column"], b["target_column"]], "bank file")
@@ -41,8 +71,10 @@ def load_bank(cfg):
 
 
 def organic_growth(cfg, level):
-    """y_t = ln((L_t - A_t) / L_{t-1}), A_t = inorganic events in quarter t."""
-    y = np.log(level).diff()
+    """y_t = ln((L_t - A_t) / L_{t-1}) for a dlog target, (L_t - A_t) - L_{t-1} for a diff target;
+    A_t = inorganic events in quarter t."""
+    from . import target as tg
+    y = tg.growth(level)
     e = cfg["data"]["events"]
     if e["file"] and os.path.exists(e["file"]):
         ev = read_table(e["file"], e["sheet"])
@@ -50,11 +82,19 @@ def organic_growth(cfg, level):
         ev = ev[ev[e["series_column"]].astype(str) == cfg["data"]["bank"]["target_column"]]
         for q, a in zip(to_quarters(ev[e["date_column"]]), ev[e["amount_column"]]):
             if q in level.index and q != level.index[0]:
-                y.loc[q] = np.log((level.loc[q] - float(a)) / level.shift(1).loc[q])
+                y.loc[q] = tg.change(level.loc[q] - float(a), level.shift(1).loc[q])
     return y
 
 
 def load_macro(cfg):
+    """Load every Moody's scenario file.
+
+    Args:
+        cfg: configuration (data.macro).
+
+    Returns:
+        dict scenario name -> DataFrame (quarters x mnemonics).
+    """
     m = cfg["data"]["macro"]
     out = {}
     for name, f in m["scenarios"].items():
@@ -68,6 +108,14 @@ def load_macro(cfg):
 
 
 def load_metadata(cfg):
+    """Load the variable metadata (description, geography, theme, expected sign) and rename columns.
+
+    Args:
+        cfg: configuration (data.metadata).
+
+    Returns:
+        DataFrame indexed by mnemonic.
+    """
     md = cfg["data"]["metadata"]
     df = read_table(md["file"], md["sheet"])
     cmap = md["columns"]
@@ -82,7 +130,11 @@ def load_metadata(cfg):
 
 
 def add_constructed(cfg, macro, meta):
-    """Build the variables listed under data.constructed in every scenario."""
+    """Build the variables listed under data.constructed in every scenario.
+
+    Args:
+        macro: dict scenario -> DataFrame (updated).
+    """
     for c in cfg["data"].get("constructed") or []:
         try:
             for name in macro:
@@ -101,14 +153,30 @@ class Context:
     """Everything both approaches need: target, macro data, metadata, sample indices."""
 
     def __init__(self, cfg):
+        """Load and align everything a run needs: target, organic growth, scenarios, metadata, literature
+        table, dummies and the estimation window.
+
+        Args:
+            cfg: configuration from load_config.
+        """
         self.cfg = cfg
         level = load_bank(cfg)
         self.level = level
+        from . import target as tg
+        tcfg = cfg.setdefault("target", {})
+        tcfg["form"] = tg.resolve(tcfg.get("transform", "auto"), level)
+        tg.set_form(tcfg["form"])
+        self.target_form = tcfg["form"]
         self.y = organic_growth(cfg, level)
-        self.logL = np.log(level.iloc[0]) + self.y.fillna(0).cumsum()      # organic log level
+        # organic level in the space where changes add up: ln(L) for dlog targets, L for diff targets
+        self.logL = tg.state(level.iloc[0]) + self.y.fillna(0).cumsum()
         self.macro = load_macro(cfg)
         self.meta = load_metadata(cfg)
         self.macro, self.meta = add_constructed(cfg, self.macro, self.meta)
+        from ..models import literature as lit          # the literature table: names, signs, include flags
+        self.lit_table = lit.load(cfg)
+        if self.lit_table is not None and (cfg.get("literature") or {}).get("apply_signs_to_metadata", True):
+            self.meta = lit.apply_signs(self.meta, self.lit_table, log)
         self.base = self.macro[cfg["data"]["macro"]["base_scenario"]]
         unknown = [c for c in self.base.columns if c not in self.meta.index]
         if unknown:

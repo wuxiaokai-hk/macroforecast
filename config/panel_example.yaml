@@ -1,0 +1,277 @@
+# Panel example: five simulated banks (data/panel_bank_data.csv: date, bank_name, loan_balance).
+# Same settings as example_config.yaml, plus data.bank.panel_column and the panel: block at the end.
+#   python run_panel.py --config config/panel_example.yaml
+# panel:
+#   min_obs              quarters a bank needs in the estimation window to get its own equation
+#   dk_lags              Bartlett lags of the Driscoll-Kraay standard errors
+#   n_search_candidates  combinations (lowest pooled BIC) backtested in the driver search
+#   models               separate | pooled | partial | topdown (top-down: balances only)
+#   driver_sets          panel (chosen on all banks) and/or core (literature workbook core model)
+#   banks                [] = all; or a list of names to analyse a subset
+run_name: panel_example
+output_dir: outputs
+target:
+  transform: auto
+  label: loan balance
+  units: $ millions
+  display_scale: 1000
+  display_units: $ billions
+data:
+  bank:
+    file: data/panel_bank_data.csv
+    sheet: null
+    date_column: date
+    target_column: loan_balance
+    frequency: Q
+    panel_column: bank_name
+  events:
+    file: data/panel_bank_events.csv
+    sheet: null
+    date_column: date
+    series_column: series
+    amount_column: amount
+    bank_column: bank_name
+  macro:
+    date_column: date
+    sheet: null
+    scenarios:
+      Baseline: data/moodys_baseline.csv
+      S1 Upside: data/moodys_s1_upside.csv
+      S3 Downside: data/moodys_s3_downside.csv
+      S4 Severe: data/moodys_s4_severe.csv
+    base_scenario: Baseline
+  metadata:
+    file: data/macro_metadata.csv
+    sheet: null
+    columns:
+      mnemonic: mnemonic
+      description: description
+      geography: geography
+      theme: theme
+      transform: transform
+      expected_sign: expected_sign
+  constructed:
+  - name: XMORTSPRD.IC
+    expression: '`FRMORT5Y.IC` - `FRGOV5Y.IC`'
+    description: Mortgage spread, 5Y mortgage rate minus 5Y GoC yield (pp)
+    geography: Canada
+    theme: Credit spreads
+    transform: diff
+    expected_sign: -1
+  - name: XRMORTREAL.IC
+    expression: '`FRMORT5Y.IC` - 100 * (log(`FCPI.ION`) - log(`FCPI.ION`.shift(4)))'
+    description: Real 5-year mortgage rate (mortgage rate minus Ontario CPI inflation)
+    geography: Canada
+    theme: Interest rates
+    transform: diff
+    expected_sign: -1
+  - name: XTERM.IC
+    expression: '`FRGOV10Y.IC` - `FRBOC.IC`'
+    description: Term spread, 10Y GoC yield minus overnight rate (pp)
+    geography: Canada
+    theme: Yield curve
+    transform: diff
+    expected_sign: 0
+sample:
+  hist_end: 2025Q4
+  estimation_start: 2002Q2
+  backtest_start: 2018Q1
+  backtest_end: 2024Q4
+  backtest_step: 1
+  reestimate_every: 4
+  reestimate_quarter: 1
+  horizon: 12
+  report_horizons:
+  - 4
+  - 8
+  - 12
+  dummy_quarters:
+  - 2020Q1
+  - 2020Q2
+  - 2020Q3
+  - 2020Q4
+  - 2021Q1
+  - 2021Q2
+features:
+  max_lag: 4
+  adf_p: 0.05
+  transforms_level:
+  - dlog
+  - yoy
+  - dlog2
+  - acc
+  - gap
+  transforms_rate:
+  - diff
+  - diff2
+  - diff4
+  - lvl
+  - rgap
+  real_themes:
+  - Income
+  - Consumption
+  - Money & credit
+  deflator: FCPI.ION
+  allowed_geographies:
+  - Ontario
+  - Canada
+  excluded_themes:
+  - Other
+  - Output (by industry)
+  - Labour (by industry)
+  require_sign_prior: true
+  moving_average: []
+  volatility: []
+  volatility_sign: -1
+approaches:
+- screen_first
+- en_first
+literature:
+  workbook: config/literature_workbook.xlsx
+models:
+  only: []
+  same_growth:
+  - disposable_income
+  - house_prices
+  auto_ardl:
+    enabled: true
+    criterion: bic
+    max_p: 4
+    max_q: 4
+    true:
+    - core
+    - screen_first
+    levels: true
+  horizon_combination:
+    enabled: true
+    buckets:
+    - - 1
+      - 4
+    - - 5
+      - 8
+    - - 9
+      - 12
+    top_k: 3
+    min_history: 3
+    criterion: growth
+  benchmarks: true
+  literature: true
+  hybrids: true
+  hybrid_max_add: 2
+  machine_learning:
+  - ridge
+  - random_forest
+  - gradient_boosting
+  - neural_net
+  machine_learning_settings: {}
+  foundation:
+    enabled: auto
+    device: cpu
+    models:
+    - name: Chronos-Bolt (own history)
+      id: amazon/chronos-bolt-small
+    - name: Chronos-2 (with drivers)
+      id: amazon/chronos-2
+      covariates: core
+  regime:
+    models:
+    - markov
+    - threshold
+    - smooth_transition
+    - tvp
+    - break_adaptive
+    settings: {}
+  statistical:
+  - arimax
+  - theta
+  deep:
+    enabled: auto
+    models:
+    - tide
+    - nhits
+    - tft
+    settings:
+      epochs: 80
+      input_chunk: 8
+      output_chunk: 4
+      n_models: 3
+      refit_every: 4
+      tft:
+        epochs: 50
+        n_models: 2
+oos:
+  first_origin: 2013Q4
+  step: 4
+  horizon: null
+  window: expanding
+  window_length: 40
+  holdout_quarters: 12
+trace:
+  enabled: true
+  preview_rows: 20
+  save_tables: true
+  max_table_cells: 200000
+  detail_calls: 1
+  local_variables: true
+  local_preview_rows: 8
+  library_functions: default
+  distinct_labels: 8
+  keep_runs: 10
+  follow: auto
+docs:
+  enabled: true
+  folder: docs
+  examples: true
+save:
+  fitted_models: true
+  keep_runs: 20
+  formula_quarters: 4
+  origin_models: true
+  fitted_values: true
+  panels: true
+cache:
+  enabled: true
+  dir: cache
+screen_first:
+  screen_p: 0.05
+  cluster_corr: 0.75
+  primary_geography: Ontario
+  rep_tolerance: 0.75
+  shortlist_max: 25
+en_first:
+  l1_ratio: 0.5
+  target_n: 10
+  unpenalized_controls: true
+  sign_constraints: true
+  stability:
+    enabled: true
+    n_subsamples: 100
+    fraction: 0.75
+    block_length: 8
+    threshold: 0.6
+    seed: 42
+  group_corr: 0.75
+  primary_geography: Ontario
+  rep_tolerance: 0.75
+final_model:
+  min_vars: 1
+  max_vars: 3
+  t_min: 1.96
+  vif_max: 5
+  one_per_theme: true
+  required_themes: []
+  n_oos_candidates: 300
+  selection_tolerance: 0.05
+panel:
+  min_obs: 20
+  dk_lags: 4
+  n_search_candidates: 20
+  models:
+  - separate
+  - pooled
+  - partial
+  - topdown
+  driver_sets:
+  - panel
+  - core
+  banks: []

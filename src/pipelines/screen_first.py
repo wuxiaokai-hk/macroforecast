@@ -10,6 +10,14 @@ from ..utils.io import log
 
 
 def run(cfg, ctx, F, forms):
+    """Screen first approach: univariate screen -> correlation clusters -> shortlist -> exhaustive search.
+
+    Args:
+        cfg: configuration. ctx: Context. F: all candidate features. forms: transforms per series.
+
+    Returns:
+        dict with the final features, the search table and every intermediate table (written to screen_first/).
+    """
     s = cfg["screen_first"]
     log("[screen_first] univariate screen ...")
     sc, best = screen(cfg, ctx, F)
@@ -35,5 +43,6 @@ def run(cfg, ctx, F, forms):
               ("Features tested (form x lag)", len(sc)), ("Variables passing the screen", len(passed)),
               ("Clusters", int(clus["cluster"].nunique())), ("Shortlist", len(shortlist)), ("Final drivers", len(chosen))]
     tables = {"A1_screen_all": sc, "A2_screen_best_per_variable": best, "A3_clusters": clus.reset_index(drop=True),
-              "A4_shortlist": shortlist.reset_index(drop=True), "A5_search": R}
+              "A4_shortlist": shortlist.reset_index(drop=True), "A5_search": R,
+              "A6_search_rules": pd.DataFrame(list(R.attrs.get("rules", {}).items()), columns=["step", "combinations"])}
     return {"name": "Screen first", "features": chosen, "tables": tables, "funnel": funnel}

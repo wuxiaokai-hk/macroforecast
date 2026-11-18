@@ -1,0 +1,67 @@
+# System example: two rates, two loans and deposits (simulated: data/system_data.csv).
+#   python run_system.py --config config/system_example.yaml
+#   or: from macroforecast import System; System("config/system_example.yaml").fit()
+#
+# Each target runs through the complete single-target project with its own metadata (expected signs) and,
+# optionally, literature workbook. "uses" offers earlier targets as candidate drivers (as SYS.<NAME>, or as a
+# spread over a market rate SYS.<NAME>_SPREAD) with the sign the target should have; selection decides whether
+# they enter. Targets are ordered automatically so that every target comes after the ones it uses.
+run_name: system_example
+# macro:                     # scenario files; default: the example Moody's files in data/
+#   Baseline: data/moodys_baseline.csv
+system:
+  data: data/system_data.csv
+  date_column: date
+  presets: fast              # fast | medium | best | full, for every target
+  hyperparameters:           # any config setting, for every target (a target can add its own)
+    sample.horizon: 8
+    sample.report_horizons: [4, 8]
+  target_oos: false          # each target's own out-of-sample test (its earlier targets at their ACTUAL values)
+  oos: true                  # the system's out-of-sample test: re-selection at every origin, chained forecasts
+  reconcile: true
+  bvarx: {enabled: true, lambda: 0.2}   # lambda: prior std. dev. of cross-target effects (smaller = more shrinkage)
+  sur: {enabled: true, simulations: 300}  # the chain's equations estimated jointly; fan charts from 300 joint draws
+  vecm:                      # challenger with long-run relations between targets (error correction)
+    enabled: true
+    lambda: 0.2
+    relations:
+      - {name: loan_to_deposit, numerator: [mortgage, commercial], denominator: [deposits]}   # ln(loans / deposits)
+      - {name: mortgage_rate_vs_5y, target: mortgage_rate, against: FRGOV5Y.IC}   # own rate on market rate (estimated)
+      - {name: deposit_rate_vs_policy, target: deposit_rate, against: FRBOC.IC}
+  targets:
+    - name: mortgage_rate
+      column: mortgage_rate
+      transform: diff
+      label: 5-year mortgage rate
+      metadata: data/macro_metadata_deposit_rate.csv     # market rates +, unemployment -, others no prior
+    - name: deposit_rate
+      column: deposit_rate
+      transform: diff
+      label: deposit rate
+      metadata: data/macro_metadata_deposit_rate.csv
+    - name: mortgage
+      column: mortgage_balance
+      transform: dlog
+      label: mortgage balance
+      metadata: data/macro_metadata.csv
+      literature: config/literature_workbook.xlsx
+      uses:
+        - {target: mortgage_rate, sign: -1}              # a higher own mortgage rate lowers mortgage growth
+    - name: commercial
+      column: commercial_balance
+      transform: dlog
+      label: commercial loan balance
+      metadata: data/macro_metadata_commercial_loans.csv
+      literature: config/commercial_loans_literature_workbook.xlsx
+    - name: deposits
+      column: deposit_balance
+      transform: dlog
+      label: deposit balance
+      metadata: data/macro_metadata_deposits.csv
+      uses:
+        - {target: deposit_rate, sign: 1, spread_over: FRBOC.IC}   # paying more than the policy rate attracts deposits
+        - {target: mortgage, sign: 1}                     # new loans create deposits
+  identities:
+    - {name: total_loans, sum: [mortgage, commercial]}   # total also forecast on its own, then reconciled
+  ratios:
+    - {name: loan_to_deposit, numerator: [mortgage, commercial], denominator: [deposits]}

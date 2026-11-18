@@ -1,0 +1,466 @@
+<title>Loan Model Run Trace</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: debugger — call tree (left) | the selected call's frame (right) */
+:root {
+  --bg: #f3f5f4; --surface: #ffffff; --sunk: #eaeeec; --ink: #18201d; --ink2: #56625d; --line: #d6ddd9;
+  --accent: #0d6b66; --accent-soft: #dcefed; --warm: #a35a00; --warm-soft: #fbecd6;
+  --ok: #1d7a43; --bad: #b3261e; --bad-soft: #fbe3e1; --code-bg: #f7f9f8;
+  --kw: #4b54b8; --str: #9a5b00; --com: #7a8781;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111614; --surface: #182019; --sunk: #1f2824; --ink: #e2e9e5; --ink2: #9aa8a1; --line: #2d3833;
+  --accent: #52c2b7; --accent-soft: #1b3533; --warm: #f0a54a; --warm-soft: #3a2a14;
+  --ok: #5cc98a; --bad: #f08a80; --bad-soft: #3b1d1a; --code-bg: #141a17;
+  --kw: #9aa2ff; --str: #e0b060; --com: #6f7d76; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111614; --surface: #182019; --sunk: #1f2824; --ink: #e2e9e5; --ink2: #9aa8a1; --line: #2d3833;
+  --accent: #52c2b7; --accent-soft: #1b3533; --warm: #f0a54a; --warm-soft: #3a2a14;
+  --ok: #5cc98a; --bad: #f08a80; --bad-soft: #3b1d1a; --code-bg: #141a17;
+  --kw: #9aa2ff; --str: #e0b060; --com: #6f7d76; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.bar-in { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; max-width: 1600px; margin: 0 auto; }
+.brand { font-weight: 600; font-size: 15px; }
+.brand small { font-weight: 400; color: var(--ink2); margin-left: 8px; font-family: var(--mono); font-size: 12px; }
+.ctrl { display: flex; gap: 6px; align-items: center; margin-left: auto; flex-wrap: wrap; }
+button { font: inherit; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 5px 11px; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); font-weight: 500; }
+button:disabled { opacity: .4; cursor: default; }
+.keys { font-size: 12px; color: var(--ink2); }
+.keys kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--bg); }
+
+.wrap { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 20px; max-width: 1600px; margin: 0 auto;
+  padding-block: 18px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.treepane { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); align-self: start; max-height: calc(100vh - 84px);
+  display: grid; grid-template-rows: auto auto auto minmax(0, 1fr); gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.treepane h3 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); margin: 0; font-weight: 600; }
+#filter { font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
+.tree { overflow: auto; font-size: 12.5px; min-height: 0; }
+.tn { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px; align-items: center; padding: 2px 6px 2px 0; border-radius: 4px; cursor: pointer; }
+.tn:hover { background: var(--sunk); }
+.tn.cur { background: var(--accent-soft); }
+.tn .car { color: var(--ink2); font-size: 10px; text-align: center; user-select: none; }
+.tn .nm { font-family: var(--mono); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn .nm em { font-style: normal; color: var(--ink2); }
+.tn .rep { color: var(--warm); font-family: var(--mono); font-size: 11px; margin-left: 4px; }
+.tn .tm { font-family: var(--mono); font-size: 11px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.tn.err .nm { color: var(--bad); }
+.tn.lib .nm { color: var(--ink2); }
+.tn.lib .nm::before { content: "lib "; font-size: 10px; color: var(--accent); letter-spacing: .04em; }
+.tools { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink2); }
+.tools label { display: flex; gap: 5px; align-items: center; cursor: pointer; }
+details.sub { border-top: 1px solid var(--line); }
+details.sub summary { cursor: pointer; padding: 6px 12px; font-size: 12.5px; color: var(--ink2); }
+details.sub summary b { color: var(--ink); font-weight: 600; font-family: var(--mono); font-size: 12px; }
+details.doc-d { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+details.doc-d summary { cursor: pointer; padding: 8px 12px; font-size: 13px; }
+details.doc-d pre { margin: 0; padding: 8px 12px; white-space: pre-wrap; font-family: var(--mono); font-size: 12px; border-top: 1px solid var(--line); max-height: 360px; overflow: auto; }
+.tn.err .nm::after { content: " ✕"; }
+.tn.dim { opacity: .35; }
+
+.frame { min-width: 0; display: grid; gap: 14px; align-content: start; }
+.eyebrow { font-size: 12px; color: var(--accent); font-weight: 600; letter-spacing: .04em; }
+h1 { font-size: 23px; line-height: 1.25; margin: 2px 0 0; font-weight: 600; font-family: var(--mono); word-break: break-word; }
+.locs { display: flex; flex-wrap: wrap; gap: 6px; }
+.loc { font-family: var(--mono); font-size: 12px; color: var(--ink2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; background: var(--surface); }
+.loc b { color: var(--ink); font-weight: 500; }
+a.loc { cursor: pointer; text-decoration: none; }
+a.loc:hover { border-color: var(--accent); }
+.doc { white-space: pre-wrap; max-width: 80ch; margin: 0; font-size: 14px; background: var(--surface); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 6px 6px 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; }
+.stat small { display: block; color: var(--ink2); font-size: 11.5px; }
+.stat b { font-family: var(--mono); font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums; }
+.stat.warm { background: var(--warm-soft); border-color: transparent; }
+
+.out { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.out > header { padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink2); display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
+.out > header b { color: var(--ink); font-weight: 600; }
+.out > header .mono { word-break: break-all; }
+.tbl { overflow: auto; max-height: 440px; }
+table { border-collapse: collapse; font-size: 12.5px; width: max-content; min-width: 100%; }
+th, td { padding: 4px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; vertical-align: top; }
+th { position: sticky; top: 0; background: var(--sunk); font-weight: 600; font-size: 12px; z-index: 1; }
+td.num { text-align: right; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+th.num { text-align: right; }
+td.wrapc { white-space: normal; min-width: 220px; max-width: 560px; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+.chip { display: inline-block; font-size: 11px; padding: 0 7px; border-radius: 999px; font-weight: 500; }
+.chip.t { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.chip.f { background: var(--sunk); color: var(--ink2); }
+.logs { margin: 0; padding: 8px 12px; font-family: var(--mono); font-size: 12px; white-space: pre-wrap; background: var(--code-bg); border-radius: 0 0 8px 8px; }
+.err { background: var(--bad-soft); border-color: var(--bad); }
+.err pre { margin: 0; padding: 8px 12px; font-family: var(--mono); font-size: 11.5px; white-space: pre-wrap; color: var(--bad); }
+.kids { display: grid; gap: 2px; padding: 6px; }
+.kid { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 12.5px; align-items: baseline; }
+.kid:hover { background: var(--sunk); }
+.kid span:first-child { font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kid .tm, .kid .rep { font-family: var(--mono); font-size: 11.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.kid .rep { color: var(--warm); }
+.empty { padding: 8px 12px; color: var(--ink2); font-size: 13px; }
+
+details.src { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+details.src summary { cursor: pointer; padding: 8px 12px; font-size: 13px; }
+.code { overflow: auto; max-height: 560px; background: var(--code-bg); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
+.code table { font-family: var(--mono); font-size: 12px; width: 100%; }
+.code td { border: 0; padding: 0 10px; white-space: pre; line-height: 1.55; }
+.code td.ln { color: var(--com); text-align: right; user-select: none; width: 1%; padding-right: 12px; border-right: 1px solid var(--line); }
+.tok-k { color: var(--kw); font-weight: 500; } .tok-s { color: var(--str); } .tok-c { color: var(--com); font-style: italic; }
+.bars { display: grid; gap: 3px; padding: 8px 12px; }
+.brow { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr) 64px; gap: 10px; align-items: center; font-size: 12.5px; cursor: pointer; }
+.brow:hover span:first-child { color: var(--accent); }
+.brow span:first-child { font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brow i { display: block; height: 8px; background: var(--accent); border-radius: 2px; min-width: 2px; }
+.brow span:last-child { font-family: var(--mono); font-size: 11.5px; text-align: right; color: var(--ink2); font-variant-numeric: tabular-nums; }
+
+
+/* ---------- data story view */
+.views { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.views button { border: 0; border-radius: 0; padding: 5px 12px; }
+.views button[aria-pressed="true"] { background: var(--accent); color: var(--surface); font-weight: 500; }
+[hidden] { display: none !important; }
+.toc { display: grid; gap: 2px; overflow: auto; min-height: 0; font-size: 13px; }
+.toc a { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 6px; padding: 5px 6px; border-radius: 5px; color: var(--ink); text-decoration: none; cursor: pointer; }
+.toc a:hover { background: var(--sunk); }
+.toc a.cur { background: var(--accent-soft); }
+.toc a b { font-family: var(--mono); font-size: 11.5px; color: var(--accent); font-weight: 600; }
+.toc a span { line-height: 1.35; }
+.followbox { background: var(--warm-soft); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; }
+.followbox b { font-family: var(--mono); font-size: 12px; }
+.story-intro { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+.story-intro h1 { font-family: var(--sans); font-size: 24px; }
+.story-intro p { max-width: 82ch; margin: 8px 0 0; }
+.journey { margin: 10px 0 0; padding-left: 20px; font-size: 13px; }
+.journey li { margin: 2px 0; }
+.st { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px 18px; display: grid; gap: 12px; scroll-margin-top: 80px; }
+.st .eyebrow { font-family: var(--mono); }
+.st h2 { font-size: 19px; line-height: 1.3; margin: 0; font-weight: 600; }
+.st p { margin: 0; max-width: 84ch; }
+.st code { background: var(--sunk); padding: 0 4px; border-radius: 3px; }
+.eq { background: var(--code-bg); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 8px 14px; font-family: var(--mono); font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-x: auto; }
+.eq small { display: block; font-family: var(--sans); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); margin-bottom: 2px; }
+.rules { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+.rules small { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); margin-right: 2px; }
+.rule { border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; background: var(--bg); }
+.fol { background: var(--warm-soft); border-radius: 6px; padding: 7px 12px; font-size: 13px; }
+.fol::before { content: "Followed variable · "; font-weight: 600; color: var(--warm); }
+.st tr.mark td { background: var(--warm-soft); font-weight: 500; }
+.st .out > header { font-size: 12.5px; }
+.st .tnote { padding: 6px 12px; font-size: 12px; color: var(--ink2); border-top: 1px solid var(--line); }
+.where { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--ink2); align-items: center; }
+.where a { cursor: pointer; }
+
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); }
+  .treepane { position: static; max-height: 46vh; }
+  .keys { display: none; }
+  h1 { font-size: 19px; }
+  .brow { grid-template-columns: minmax(0, 1fr) 70px 56px; }
+}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <div class="brand">Run trace <small id="cmd"></small></div>
+  <div class="views" role="group" aria-label="View"><button id="v-story" type="button" aria-pressed="false">Data story</button><button id="v-calls" type="button" aria-pressed="false">Call tree</button></div>
+  <span class="keys" id="dbgkeys"><kbd>→</kbd> step into · <kbd>↓</kbd> step over · <kbd>↑</kbd> step out · <kbd>←</kbd> back</span>
+  <div class="ctrl" id="dbgctrl">
+    <button id="b-back" type="button" title="Previous call in execution order (←)">◀ Back</button>
+    <button id="b-out" type="button" title="Go to the caller (↑)">Step out</button>
+    <button id="b-over" type="button" title="Next call at this level or above (↓)">Step over</button>
+    <button id="b-into" type="button" class="primary" title="Next call in execution order (→)">Step into ▶</button>
+  </div>
+</div></div>
+
+<div class="wrap" id="storywrap" hidden>
+  <nav class="treepane" aria-label="Story steps">
+    <h3>The data, step by step</h3>
+    <div class="followbox" id="folbox"></div>
+    <div></div>
+    <div class="toc" id="toc"></div>
+  </nav>
+  <main class="frame" id="storymain"></main>
+</div>
+
+<div class="wrap" id="callwrap">
+  <nav class="treepane" aria-label="Call tree">
+    <h3>Call tree · execution order</h3>
+    <input id="filter" type="search" placeholder="Filter by function or file" aria-label="Filter calls">
+    <div class="tools"><label><input type="checkbox" id="showlib" checked> library calls</label></div>
+    <div class="tree" id="tree"></div>
+  </nav>
+  <main class="frame" id="frame"></main>
+</div>
+
+<script>
+const D = /*__DATA__*/null;
+const N = D.nodes, FN = D.functions, INFO = D.info;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nameCount = {};
+Object.values(FN).forEach((f) => { nameCount[f.name] = (nameCount[f.name] || 0) + 1; });
+const fnLabel = (k) => { const f = FN[k]; if (!f) return k; return nameCount[f.name] > 1 ? `${f.module.split(".").pop()}.${f.name}` : f.name; };
+const fname = (n) => n.id === 0 ? n.fn : fnLabel(n.fn);
+const secs = (t) => t >= 100 ? t.toFixed(0) + "s" : t >= 1 ? t.toFixed(1) + "s" : t >= 0.001 ? (t * 1000).toFixed(0) + "ms" : "<1ms";
+$("#cmd").textContent = `${INFO.command} · ${INFO.started} · ${secs(INFO.seconds)}`;
+
+// pre-order = execution order
+const order = [];
+(function walk(id) { order.push(id); N[id].children.forEach(walk); })(0);
+const pos = new Map(order.map((id, i) => [id, i]));
+let cur = 0;
+const open = new Set(N.filter((n) => n.depth <= 1 || n.error).map((n) => n.id));
+function errDesc(id) { const n = N[id]; return !!n.error || n.children.some(errDesc); }
+
+// short label: the first string argument (a step name, a feature...) helps tell calls apart
+function hint(n) {
+  if (n.label) return String(n.label).slice(0, 32);
+  const a = (n.args || []).find((x) => x.type === "str" && x.name !== "self");
+  return a ? a.detail.replace(/^'|'$/g, "").slice(0, 32) : "";
+}
+const isLib = (n) => !!(FN[n.fn] && FN[n.fn].library);
+
+// ---------- tree
+function renderTree() {
+  const q = $("#filter").value.trim().toLowerCase();
+  const match = (n) => !q || fname(n).toLowerCase().includes(q) || (FN[n.fn] && FN[n.fn].file.toLowerCase().includes(q));
+  const keep = new Set();
+  if (q) N.forEach((n) => { if (match(n)) { let p = n.id; while (p !== null && p !== undefined) { keep.add(p); p = N[p].parent; } } });
+  let h = "";
+  (function walk(id) {
+    const n = N[id];
+    if (q && !keep.has(id)) return;
+    if (id && !$("#showlib").checked && isLib(n)) return;
+    const kids = n.children.length;
+    const isOpen = q ? true : open.has(id);
+    const h1 = hint(n);
+    h += `<div class="tn${id === cur ? " cur" : ""}${n.error ? " err" : ""}${id && isLib(n) ? " lib" : ""}${q && !match(n) ? " dim" : ""}" data-id="${id}" style="padding-left:${n.depth * 12}px">` +
+      `<span class="car" data-t="${id}">${kids ? (isOpen ? "▾" : "▸") : ""}</span>` +
+      `<span class="nm">${esc(fname(n))}${id ? "()" : ""}${h1 ? ` <em>${esc(h1)}</em>` : ""}${n.calls > 1 ? `<span class="rep">×${n.calls}</span>` : ""}</span>` +
+      `<span class="tm">${secs(n.time)}</span></div>`;
+    if (isOpen) n.children.forEach(walk);
+  })(0);
+  $("#tree").innerHTML = h;
+  const c = $("#tree .tn.cur"); if (c) c.scrollIntoView({ block: "nearest" });
+}
+$("#tree").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-t]");
+  if (t && N[+t.dataset.t].children.length) { const id = +t.dataset.t; open.has(id) ? open.delete(id) : open.add(id); renderTree(); return; }
+  const r = e.target.closest(".tn"); if (r) go(+r.dataset.id);
+});
+$("#filter").addEventListener("input", renderTree);
+$("#showlib").addEventListener("change", renderTree);
+
+// ---------- formatting
+function fmt(v) {
+  if (v === null || v === undefined) return '<span style="color:var(--ink2)">NaN</span>';
+  if (typeof v === "boolean") return `<span class="chip ${v ? "t" : "f"}">${v ? "TRUE" : "FALSE"}</span>`;
+  if (typeof v === "number") {
+    if (Number.isInteger(v)) return String(v);
+    const a = Math.abs(v);
+    if (a !== 0 && (a < 1e-3 || a >= 1e7)) return v.toExponential(3);
+    return String(Number(v.toFixed(a < 1 ? 5 : a < 100 ? 4 : 2)));
+  }
+  return esc(v);
+}
+function table(t) {
+  const numc = t.columns.map((_, j) => t.rows.length && t.rows.every((r) => r[j] === null || typeof r[j] === "number"));
+  let h = "<thead><tr>" + t.columns.map((c, j) => `<th class="${numc[j] ? "num" : ""}">${esc(c)}</th>`).join("") + "</tr></thead><tbody>";
+  t.rows.forEach((r) => { h += "<tr>" + r.map((v, j) => `<td class="${numc[j] ? "num" : typeof v === "string" && v.length > 50 ? "wrapc" : ""}">${fmt(v)}</td>`).join("") + "</tr>"; });
+  return h + "</tbody>";
+}
+function hl(src) {
+  const re = /(#[^\n]*)|("""[\s\S]*?"""|'''[\s\S]*?'''|f?"(?:\\.|[^"\\\n])*"|f?'(?:\\.|[^'\\\n])*')|\b(def|return|for|in|if|else|elif|import|from|as|not|and|or|is|None|True|False|class|try|except|finally|continue|break|with|lambda|raise|while|self|yield)\b/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    const cls = m[1] ? "c" : m[2] ? "s" : "k";
+    out += m[0].split("\n").map((p) => `<span class="tok-${cls}">${esc(p)}</span>`).join("\n");
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+function argsTable(rows, title) {
+  if (!rows || !rows.length) return `<section class="out"><header><b>${title}</b></header><div class="empty">none</div></section>`;
+  return `<section class="out"><header><b>${title}</b></header><div class="tbl"><table><thead><tr><th>name</th><th>type</th><th>size</th><th>what is in it</th></tr></thead><tbody>` +
+    rows.map((a) => `<tr><td class="mono">${esc(a.name)}</td><td>${esc(a.type)}</td><td class="mono">${esc(a.size)}</td><td class="wrapc mono">${esc(a.detail)}</td></tr>`).join("") +
+    `</tbody></table></div></section>`;
+}
+
+// ---------- frame
+function renderRoot() {
+  const agg = {};
+  N.slice(1).forEach((n) => { const k = n.fn; agg[k] = agg[k] || { t: 0, c: 0, id: n.id }; agg[k].c += n.calls; if (!N.slice(1).some((m) => m.fn === k && isAncestor(m.id, n.id))) agg[k].t += n.time; });
+  const top = Object.entries(agg).sort((a, b) => b[1].t - a[1].t).slice(0, 12);
+  const mx = top.length ? top[0][1].t : 1;
+  const errs = N.filter((n) => n.error);
+  let h = `<div><div class="eyebrow">Run summary</div><h1>${esc(INFO.command)}</h1></div>`;
+  h += `<div class="stats">` + [["Started", INFO.started], ["Duration", secs(INFO.seconds)], ["Config", INFO.config || ""], ["Git commit", INFO.git || "not a git repo"],
+    ["Python", INFO.python], ["Project functions traced", INFO.functions_traced], ["Library routines traced", INFO.library_functions_traced ?? 0], ["Calls (in detail / total)", `${INFO.calls_recorded} / ${INFO.calls_total}`]]
+    .map(([k, v]) => `<div class="stat"><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("") + `</div>`;
+  if (errs.length) h += `<section class="out err"><header><b>${errs.length} call(s) failed</b></header><div class="kids">${errs.map((n) => `<div class="kid" data-go="${n.id}"><span>${esc(fname(n))}()</span><span class="tm">${esc(n.error)}</span><span></span></div>`).join("")}</div></section>`;
+  h += `<p class="doc">Every project function that ran is in the call tree on the left, in the order it ran, together with the library routines that do the numerical work (marked <b>lib</b>: OLS, ADF tests, the Elastic Net, clustering, least squares, file reading). Click one, or use <b>Step into</b> to go through the run call by call. For each call you see its arguments, its local variables when it finished, what it returned, the tables it produced (with the CSV it was saved to), the messages it printed, and its source code as it was when the run happened. A function called many times from the same place is shown once with ×N, and the other calls are listed on its page.</p>`;
+  h += `<section class="out"><header><b>Where the time went</b><span>total time per function, nested calls not double-counted</span></header><div class="bars">` +
+    top.map(([k, v]) => `<div class="brow" data-go="${v.id}"><span>${esc(fnLabel(k))}()${v.c > 1 ? ` ×${v.c}` : ""}</span><i style="width:${Math.max(1, v.t / mx * 100)}%"></i><span>${secs(v.t)}</span></div>`).join("") + `</div></section>`;
+  h += kids(N[0]);
+  return h;
+}
+function isAncestor(a, b) { let p = N[b].parent; while (p !== null && p !== undefined) { if (p === a) return true; p = N[p].parent; } return false; }
+function kids(n) {
+  if (!n.children.length) {
+    if (isLib(n)) return "";
+    const cached = FN[n.fn] && FN[n.fn].name === "StepCache.run";
+    return `<section class="out"><header><b>Calls made inside</b></header><div class="empty">${cached ? "None: this step's result was loaded from the cache, so nothing was computed. Run with --force to trace the computation." : "No project functions or traced library routines were called; everything here is plain Python, pandas or numpy."}</div></section>`;
+  }
+  return `<section class="out"><header><b>Calls made inside (${n.children.length})</b></header><div class="kids">` +
+    n.children.map((c) => { const k = N[c]; const h1 = hint(k); return `<div class="kid" data-go="${c}"><span>${isLib(k) ? '<em style="font-style:normal;color:var(--accent);font-size:10px">lib </em>' : ""}${esc(fname(k))}()${h1 ? ` <em style="font-style:normal;color:var(--ink2)">${esc(h1)}</em>` : ""}</span><span class="rep">${k.calls > 1 ? "×" + k.calls : ""}</span><span class="tm">${secs(k.time)}</span></div>`; }).join("") + `</div></section>`;
+}
+function render() {
+  const n = N[cur];
+  let h;
+  if (cur === 0) h = renderRoot();
+  else {
+    const f = FN[n.fn] || {};
+    const par = N[n.parent];
+    h = `<div><div class="eyebrow">Call ${pos.get(cur)} of ${order.length - 1} · depth ${n.depth} · started at ${n.start.toFixed(2)}s</div><h1>${esc(fnLabel(n.fn))}()</h1></div>`;
+    h += `<div class="locs">${f.library ? `<span class="loc"><b>library routine</b> · inside not traced</span>` : `<span class="loc"><b>${esc(f.file)}</b>:${f.line}</span>`}<span class="loc">module ${esc(f.module)}</span>` +
+      `<a class="loc" data-go="${par.id}">called from <b>${esc(fname(par))}${par.id ? "()" : ""}</b></a></div>`;
+    h += `<div class="stats"><div class="stat"><small>Time${n.calls > 1 ? " (all calls)" : ""}</small><b>${secs(n.time)}</b></div>` +
+      (n.calls > 1 ? `<div class="stat warm"><small>Called from this place</small><b>${n.calls} times · first one shown</b></div>` : "") +
+      (n.result ? `<div class="stat"><small>Returned</small><b>${esc(n.result.type)} ${esc(n.result.size)}</b></div>` : "") + `</div>`;
+    if (f.doc && f.library) h += `<details class="doc-d"><summary>Library documentation</summary><pre>${esc(f.doc)}</pre></details>`;
+    else if (f.doc) h += `<p class="doc">${esc(f.doc)}</p>`;
+    if (n.error) h += `<section class="out err"><header><b>Failed: ${esc(n.error)}</b></header><pre>${esc(n.traceback || "")}</pre></section>`;
+    h += argsTable(n.args, "Arguments (inputs)");
+    if (n.locals) {
+      h += argsTable(n.locals, "Local variables when the call ended").replace("</div></section>", "</div>" +
+        (n.local_tables || []).map((t) => `<details class="sub"><summary>Preview <b>${esc(t.label)}</b> · ${t.n} × ${t.n_cols}${t.rows.length < t.n ? ` · first ${t.rows.length} rows` : ""}</summary><div class="tbl"><table>${table(t)}</table></div></details>`).join("") + "</section>");
+    }
+    if (n.result) h += argsTable([{ name: "return value", ...n.result }], "Return value (output)");
+    (n.tables || []).forEach((t) => {
+      h += `<section class="out"><header><b>Returned table ${esc(t.label)} · ${t.n} × ${t.n_cols}${t.rows.length < t.n ? ` · first ${t.rows.length} rows` : ""}</b>${t.file ? `<span class="mono">saved to ${esc(t.file)}</span>` : t.not_saved ? `<span>${esc(t.not_saved)}</span>` : ""}</header><div class="tbl"><table>${table(t)}</table></div></section>`;
+    });
+    if (n.repeats && n.repeats.length) {
+      h += `<section class="out"><header><b>The other ${n.calls - 1} calls from this place</b><span>counted and timed, not recorded in detail${n.repeats.length < n.calls - 1 ? ` · first ${n.repeats.length} listed` : ""}</span></header><div class="tbl"><table><thead><tr><th class="num">call</th><th>arguments</th><th class="num">started at</th><th class="num">time</th><th>error</th></tr></thead><tbody>` +
+        n.repeats.map((r) => `<tr><td class="num">${r[0] ?? ""}</td><td class="mono wrapc">${esc(r[5] || r[1] || "")}</td><td class="num">${(+r[2]).toFixed(3)}s</td><td class="num">${secs(+r[3])}</td><td>${esc(r[4] ?? "")}</td></tr>`).join("") + `</tbody></table></div></section>`;
+    }
+    if (n.logs.length) h += `<section class="out"><header><b>Printed during this call</b></header><pre class="logs">${esc(n.logs.join("\n"))}</pre></section>`;
+    h += kids(n);
+    if (f.source) {
+      const lines = hl(f.source.replace(/\s+$/, "")).split("\n");
+      h += `<details class="src" open><summary>Source code at run time · <span class="mono">${esc(f.file)}:${f.line}</span></summary><div class="code"><table>${lines.map((l, i) => `<tr><td class="ln">${f.line + i}</td><td>${l || " "}</td></tr>`).join("")}</table></div></details>`;
+    }
+  }
+  $("#frame").innerHTML = h;
+  let p = n.parent; while (p !== null && p !== undefined) { open.add(p); p = N[p].parent; }
+  renderTree();
+  const i = pos.get(cur);
+  $("#b-back").disabled = i === 0; $("#b-into").disabled = i === order.length - 1; $("#b-out").disabled = cur === 0;
+  $("#b-over").disabled = overTarget() === null;
+  try { history.replaceState(null, "", "#call-" + cur); } catch (e) {}
+}
+$("#frame").addEventListener("click", (e) => { const g = e.target.closest("[data-go]"); if (g) go(+g.dataset.go); });
+
+function overTarget() {
+  let id = cur;
+  while (id !== null && id !== undefined) {
+    const p = N[id].parent; if (p === null || p === undefined) return null;
+    const sib = N[p].children; const k = sib.indexOf(id);
+    if (k < sib.length - 1) return sib[k + 1];
+    id = p;
+  }
+  return null;
+}
+function go(id) { if (id === null || id === undefined) return; cur = id; render(); window.scrollTo({ top: 0 }); }
+$("#b-into").addEventListener("click", () => go(order[pos.get(cur) + 1]));
+$("#b-back").addEventListener("click", () => go(order[pos.get(cur) - 1]));
+$("#b-out").addEventListener("click", () => go(N[cur].parent));
+$("#b-over").addEventListener("click", () => go(overTarget()));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("input, textarea, select")) return;
+  const k = { ArrowRight: () => go(order[pos.get(cur) + 1]), ArrowLeft: () => go(order[pos.get(cur) - 1]),
+    ArrowDown: () => go(overTarget()), ArrowUp: () => go(N[cur].parent) }[e.key];
+  if (k) { e.preventDefault(); k(); }
+});
+
+// ---------- data story view
+const STORY = D.story && D.story.steps && D.story.steps.length ? D.story : null;
+function md(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\*(.+?)\*/g, "<i>$1</i>").replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+function firstNode(fnKey) { const n = N.find((x) => x.fn === fnKey); return n ? n.id : null; }
+function storyTable(t) {
+  const numc = t.columns.map((_, j) => t.rows.length && t.rows.every((r) => r[j] === null || typeof r[j] === "number"));
+  let h = "<thead><tr>" + t.columns.map((c, j) => `<th class="${numc[j] ? "num" : ""}">${esc(c)}</th>`).join("") + "</tr></thead><tbody>";
+  t.rows.forEach((r, i) => { h += `<tr class="${(t.marked || []).includes(i) ? "mark" : ""}">` + r.map((v, j) => `<td class="${numc[j] ? "num" : typeof v === "string" && v.length > 50 ? "wrapc" : ""}">${v === null ? "" : fmt(v)}</td>`).join("") + "</tr>"; });
+  return h + "</tbody>";
+}
+function renderStory() {
+  const S = STORY.steps;
+  const fol = D.story.follow ? `<b>${esc(D.story.follow)}</b>${D.story.follow_description ? ` — ${esc(D.story.follow_description)}` : ""}` : "";
+  $("#folbox").innerHTML = fol ? `Followed through every step:<br>${fol}` : "Out-of-sample test";
+  $("#toc").innerHTML = S.map((st, i) => `<a data-step="${i}"><b>${esc(st.stage.split(" · ")[0])}</b><span>${esc(st.stage.split(" · ")[1] || "")}: ${esc(st.title)}</span></a>`).join("");
+  const journey = S.filter((st) => st.follow).map((st) => `<li><b>${esc(st.stage)}</b> — ${md(st.follow)}</li>`).join("");
+  let h = `<div class="story-intro"><div class="eyebrow">Data story · ${esc(INFO.command)}</div><h1>How the data moves through the model, step by step</h1>` +
+    `<p>Each step below says what goes in, the operation (as an equation), the rule applied, and what comes out, with this run's own numbers and a table of the data. ` +
+    `“Where in the code” opens the exact call in the <b>Call tree</b> view, with its inputs, outputs, local variables and source.</p>` +
+    (journey ? `<p><b>The followed variable's journey</b></p><ol class="journey">${journey}</ol>` : "") + `</div>`;
+  S.forEach((st, i) => {
+    h += `<section class="st" id="step-${i}"><div class="eyebrow">Step ${esc(st.stage)}</div><h2>${md(st.title)}</h2>`;
+    st.text.forEach((p) => { h += `<p>${md(p)}</p>`; });
+    if (st.equation.length) h += `<div class="eq"><small>Equation</small>${st.equation.map(esc).join("\n")}</div>`;
+    if (st.rules.length) h += `<div class="rules"><small>Rules</small>${st.rules.map((r) => `<span class="rule">${esc(r)}</span>`).join("")}</div>`;
+    if (st.numbers.length) h += `<div class="stats">${st.numbers.map(([k, v]) => `<div class="stat"><small>${esc(k)}</small><b>${fmt(v)}</b></div>`).join("")}</div>`;
+    if (st.follow) h += `<div class="fol">${md(st.follow)}</div>`;
+    st.tables.forEach((t) => {
+      h += `<section class="out"><header><b>${esc(t.label)}</b><span>${t.rows.length < t.n ? `first ${t.rows.length} of ${t.n} rows` : `${t.n} rows`}</span></header>` +
+        `<div class="tbl"><table>${storyTable(t)}</table></div>${t.note ? `<div class="tnote">${esc(t.note)}</div>` : ""}</section>`;
+    });
+    const links = st.functions.map((k) => { const id = firstNode(k); const f = FN[k]; const nm = f ? fnLabel(k) : k.split(".").pop();
+      return id !== null ? `<a class="loc" data-call="${id}"><b>${esc(nm)}()</b>${f && f.file ? ` · ${esc(f.file)}:${f.line}` : ""}</a>` : `<span class="loc" title="not called in this run (loaded from the cache, or only inside a repeated call)">${esc(nm)}()</span>`; }).join("");
+    const files = st.files.map((f) => `<span class="loc mono">${esc(f)}</span>`).join("");
+    if (links || files) h += `<div class="where">${links ? `Where in the code: ${links}` : ""}${files ? ` Full tables: ${files}` : ""}</div>`;
+    h += `</section>`;
+  });
+  if (D.story.error) h += `<section class="out err"><header><b>The story stopped: ${esc(D.story.error)}</b></header><pre>${esc(D.story.traceback || "")}</pre></section>`;
+  $("#storymain").innerHTML = h;
+}
+function setView(v, stepId) {
+  const story = v === "story" && STORY;
+  $("#storywrap").hidden = !story; $("#callwrap").hidden = !!story;
+  $("#dbgctrl").hidden = !!story; $("#dbgkeys").hidden = !!story;
+  $("#v-story").setAttribute("aria-pressed", story ? "true" : "false");
+  $("#v-calls").setAttribute("aria-pressed", story ? "false" : "true");
+  if (story) {
+    try { history.replaceState(null, "", "#" + (stepId !== undefined ? "step-" + stepId : "story")); } catch (e) {}
+    if (stepId !== undefined) { const el = document.getElementById("step-" + stepId); if (el) el.scrollIntoView(); } else window.scrollTo({ top: 0 });
+  } else render();
+}
+if (!STORY) $("#v-story").hidden = true;
+else renderStory();
+$("#v-story").addEventListener("click", () => setView("story"));
+$("#v-calls").addEventListener("click", () => setView("calls"));
+$("#toc").addEventListener("click", (e) => { const a = e.target.closest("[data-step]"); if (a) setView("story", +a.dataset.step); });
+$("#storymain").addEventListener("click", (e) => { const a = e.target.closest("[data-call]"); if (a) { cur = +a.dataset.call; setView("calls"); window.scrollTo({ top: 0 }); } });
+if (STORY) {
+  const obs = new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) {
+    const i = en.target.id.split("-")[1]; document.querySelectorAll("#toc a").forEach((a) => a.classList.toggle("cur", a.dataset.step === i)); } }), { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll(".st").forEach((el) => obs.observe(el));
+}
+const m = /^#call-(\d+)$/.exec(location.hash || "");
+if (m && N[+m[1]]) cur = +m[1];
+const ms = /^#step-(\d+)$/.exec(location.hash || "");
+if (STORY && !m) setView("story", ms ? +ms[1] : undefined); else setView("calls");
+</script>

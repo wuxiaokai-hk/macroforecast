@@ -1,0 +1,4759 @@
+{
+ "run_pipeline.main": {
+  "hash": "93559c486097",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "run_pipeline.run": {
+  "hash": "c24a8b4f7e7b",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "run_oos.main": {
+  "hash": "fcb1607202aa",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "run_oos.run": {
+  "hash": "473425fd6491",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.transform": {
+  "hash": "567e52adbc5a",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.feature_name": {
+  "hash": "9fb2cd8d9c56",
+  "added": "",
+  "changed": ""
+ },
+ "src.features.transforms.parse_feature": {
+  "hash": "314f8a3d7173",
+  "added": "",
+  "changed": ""
+ },
+ "src.features.transforms.feature_series": {
+  "hash": "8ab026c797f8",
+  "added": "",
+  "changed": ""
+ },
+ "src.features.transforms.feature_matrix": {
+  "hash": "20538aa62fbf",
+  "added": "",
+  "changed": ""
+ },
+ "src.features.transforms.describe": {
+  "hash": "778d14ffb793",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.candidate_forms": {
+  "hash": "e34792a9ab62",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.all_features": {
+  "hash": "983e758e5f25",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ols_np": {
+  "hash": "9b05cc38e75e",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.vif": {
+  "hash": "bd7e20e5b80b",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.make_panel": {
+  "hash": "e410bd66301e",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL": {
+  "hash": "cc09614beaee",
+  "added": "",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.ardl.ARDL.__init__": {
+  "hash": "5f6b47d66be6",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL.panel": {
+  "hash": "f71b219b142b",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL.spec": {
+  "hash": "5d54742b7351",
+  "added": "",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.ardl.ARDL.drivers": {
+  "hash": "b2763120114b",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL._X": {
+  "hash": "d9818b114f6a",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL.fit": {
+  "hash": "ec374c07124a",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.ardl.ARDL.forecast": {
+  "hash": "42275bf11e43",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.evaluate.backtest": {
+  "hash": "50a54e0f6615",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate.horizon_summary": {
+  "hash": "c89c0f428f9d",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.evaluate.diagnostics": {
+  "hash": "f58c2038d94e",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.modelling.evaluate.driver_table": {
+  "hash": "6d6f26bc7139",
+  "added": "",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.evaluate.scenario_forecasts": {
+  "hash": "4ed2c3932cf2",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate.evaluate": {
+  "hash": "acff1e48a47c",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.search.backtest_origins": {
+  "hash": "dc00d054bffe",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.search.refit_flags": {
+  "hash": "867d4e583a78",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.search.covid_mask": {
+  "hash": "2f4528e9c1af",
+  "added": "",
+  "changed": ""
+ },
+ "src.modelling.search.fast_backtest": {
+  "hash": "308df7bd739e",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.search.exhaustive_search": {
+  "hash": "b42213303c67",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "src.models.combination.Combination": {
+  "hash": "b1ffd621895c",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.__init__": {
+  "hash": "40aa6bd3e910",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.features": {
+  "hash": "6b56cd632fc6",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.spec": {
+  "hash": "1c6ed57e639d",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.drivers": {
+  "hash": "d29ab3137c50",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.panel": {
+  "hash": "7e4827829902",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.fit": {
+  "hash": "6bc7d3965c29",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination._weights": {
+  "hash": "34af5a2caeff",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.combination.Combination.forecast": {
+  "hash": "40d1f607353f",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.deep_available": {
+  "hash": "9db0836394a9",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep._dummies": {
+  "hash": "692742a06079",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel": {
+  "hash": "e989fa3462e3",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.models.deep.DeepModel.__init__": {
+  "hash": "80caf6885ba0",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel.spec": {
+  "hash": "48b71c6fae38",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel.drivers": {
+  "hash": "12a38a223c4b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel.panel": {
+  "hash": "f71b219b142b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel._cov_cols": {
+  "hash": "688ca9cd6852",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel._first_valid": {
+  "hash": "6ad9acf18e2b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel._series": {
+  "hash": "4713d17967af",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel._build": {
+  "hash": "3b4013246d75",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.DeepModel.fit": {
+  "hash": "7fdbc5e2b945",
+  "added": "",
+  "changed": "2026-10-28"
+ },
+ "src.models.deep.DeepModel.forecast": {
+  "hash": "698b1fcf489e",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX": {
+  "hash": "a4e2c4b1c86d",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.models.deep.ARIMAX.__init__": {
+  "hash": "71d2bb97a70b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX.spec": {
+  "hash": "9d7b71f2aaaf",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX.drivers": {
+  "hash": "b2763120114b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX.panel": {
+  "hash": "f71b219b142b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX._exog": {
+  "hash": "677653bcc07f",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX.fit": {
+  "hash": "b90011b877e9",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.ARIMAX.forecast": {
+  "hash": "49b9775d1a2b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta": {
+  "hash": "e1e3a5a3548d",
+  "added": "",
+  "changed": "2026-10-28"
+ },
+ "src.models.deep.Theta.__init__": {
+  "hash": "24f2064cf11b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta.spec": {
+  "hash": "a39bffd404eb",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta.drivers": {
+  "hash": "d281313b9cfd",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta.panel": {
+  "hash": "d89f88a49805",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta.fit": {
+  "hash": "f064896136a8",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.deep.Theta.forecast": {
+  "hash": "8f1e9231ee08",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.long_run_column": {
+  "hash": "bbfb7a1284a9",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM": {
+  "hash": "61f638ba08c6",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.models.ecm.ECM.__init__": {
+  "hash": "e15fa1bbe7c6",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM.spec": {
+  "hash": "07be7431f599",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM.drivers": {
+  "hash": "7c80aaaa83dd",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM.panel": {
+  "hash": "81270dec3a29",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.models.ecm.ECM._lr": {
+  "hash": "0d2f4b8c0441",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM._X": {
+  "hash": "b90874e7b99e",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM.fit": {
+  "hash": "995f84a2bad7",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ecm.ECM.forecast": {
+  "hash": "99061c45b9d4",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.available": {
+  "hash": "fe5dffd41beb",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.load": {
+  "hash": "be547e2e124a",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.load_error": {
+  "hash": "136b099b6d52",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel": {
+  "hash": "526ac04380be",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.__init__": {
+  "hash": "5948a7505c77",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.spec": {
+  "hash": "d8453d649cb2",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.drivers": {
+  "hash": "95519752a234",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.panel": {
+  "hash": "f71b219b142b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.fit": {
+  "hash": "f064896136a8",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel._context": {
+  "hash": "3fd2e90ea3b7",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.foundation.FoundationModel.forecast": {
+  "hash": "dff71bb89c25",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.hybrid._arrays": {
+  "hash": "a3a2787778de",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.hybrid.core_plus_addons": {
+  "hash": "74417c4cc5d7",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.hybrid.channels_data_measures": {
+  "hash": "8b32a082f259",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature._yes": {
+  "hash": "ff59d7b37d71",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature.load": {
+  "hash": "afcd55e37b1d",
+  "added": "",
+  "changed": "2026-10-28"
+ },
+ "src.models.literature.resolve": {
+  "hash": "6813f96d4e97",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature.resolve_feature": {
+  "hash": "3a35129c9735",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature.apply_signs": {
+  "hash": "d524b657936f",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature.channels": {
+  "hash": "48bf79ca1715",
+  "added": "",
+  "changed": "2026-10-29"
+ },
+ "src.models.literature.long_run": {
+  "hash": "79bc914cb362",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.literature.status": {
+  "hash": "8ee6cf911261",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.make_estimator": {
+  "hash": "2d02e3851c22",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel": {
+  "hash": "6a2afda4e58d",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.__init__": {
+  "hash": "46686235982a",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.spec": {
+  "hash": "972fcc5da041",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.drivers": {
+  "hash": "b2763120114b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.panel": {
+  "hash": "f71b219b142b",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel._X": {
+  "hash": "e85e67415e23",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.fit": {
+  "hash": "4b61da7cbc84",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.forecast": {
+  "hash": "cb3b25ab2f06",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.ml.MLModel.importance": {
+  "hash": "a97d89aa66f8",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.zoo.selection_info": {
+  "hash": "23069e8112c2",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.zoo._valid": {
+  "hash": "f3603b80ba6f",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.zoo.literature_models": {
+  "hash": "fa8023debf7d",
+  "added": "",
+  "changed": "2026-10-29"
+ },
+ "src.models.zoo._screen_tables": {
+  "hash": "03a2cbfe4be5",
+  "added": "",
+  "changed": ""
+ },
+ "src.models.zoo.build": {
+  "hash": "6990b94c8371",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.pipelines.en_first.run": {
+  "hash": "681327439870",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.pipelines.screen_first.run": {
+  "hash": "f556899203fb",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "src.reporting.report.write_tables": {
+  "hash": "8b02dfb061bb",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.best_per_family": {
+  "hash": "a0c280e34369",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.report.scenario_models": {
+  "hash": "524ee793ca50",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.report.chart_horizon": {
+  "hash": "b473e4c708bb",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.chart_family_bars": {
+  "hash": "ef3cc5ef85e9",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.chart_scenarios": {
+  "hash": "ee351affbba0",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.chart_stability": {
+  "hash": "0f336991368c",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.summary_md": {
+  "hash": "235d269df490",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.report.chart_oos": {
+  "hash": "93e9622e05c7",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.chart_driver_timeline": {
+  "hash": "93fd5dae3942",
+  "added": "",
+  "changed": ""
+ },
+ "src.reporting.report.chart_holdout": {
+  "hash": "5782a549f129",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.clustering.cluster": {
+  "hash": "f35c163c16a8",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.clustering.representatives": {
+  "hash": "d56f7d360a2a",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.elastic_net._prepare": {
+  "hash": "bf241fc4d293",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.selection.elastic_net._select_at_target": {
+  "hash": "1bbbf6a59884",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.elastic_net.elastic_net_select": {
+  "hash": "8b013012c00e",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.elastic_net.stability_selection": {
+  "hash": "a9655198f7ac",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.screening.controls": {
+  "hash": "455af1e96d30",
+  "added": "",
+  "changed": ""
+ },
+ "src.selection.screening.screen": {
+  "hash": "db761063dec3",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.utils.cache._h": {
+  "hash": "102e166793f6",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache._norm": {
+  "hash": "72e105326e0a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache.hash_obj": {
+  "hash": "c8d743828042",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache.hash_frame": {
+  "hash": "7e3695c6646b",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache.hash_code": {
+  "hash": "96e684236968",
+  "added": "",
+  "changed": "2026-10-26"
+ },
+ "src.utils.cache.StepCache": {
+  "hash": "247212611725",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.utils.cache.StepCache.__init__": {
+  "hash": "5bd406ca48c7",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache.StepCache.run": {
+  "hash": "065292ce0be0",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.cache.StepCache.write_manifest": {
+  "hash": "0d3fe7106d03",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.utils.config._merge": {
+  "hash": "66b6b723d6c7",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.config._path": {
+  "hash": "ee5831c68fd7",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.config.load_config": {
+  "hash": "0c66fcb57a29",
+  "added": "",
+  "changed": "2026-11-12"
+ },
+ "src.utils.docs.source_files": {
+  "hash": "95874720b287",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.module_name": {
+  "hash": "987b0d5ee396",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.parse_docstring": {
+  "hash": "ddcb8b9085c9",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.standard_meaning": {
+  "hash": "aa3ed6f95746",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._split_args": {
+  "hash": "7fcb9e462ef1",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.code_hash": {
+  "hash": "285a0c26e16f",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._signature": {
+  "hash": "ec993f241a46",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._config_keys": {
+  "hash": "b5a402cb6ee9",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._imports": {
+  "hash": "8c8256d0a4cc",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.scan": {
+  "hash": "70eff65d0809",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._calls": {
+  "hash": "94f506cbc3d7",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._resolve_calls": {
+  "hash": "cb24557394f3",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._lookup": {
+  "hash": "d90f7b575e2b",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.trace_files": {
+  "hash": "b5da64656491",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.collect_examples": {
+  "hash": "0ce5455e072d",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.observed_edges": {
+  "hash": "d229d6b4a238",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.update_changes": {
+  "hash": "b6fd20a7786d",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.fingerprint": {
+  "hash": "23073dbffaa2",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.is_stale": {
+  "hash": "deb1e7d6111e",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.build": {
+  "hash": "3c897c11f87e",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.refresh": {
+  "hash": "e334459b7e75",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._flow": {
+  "hash": "20bc95fd6955",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._e": {
+  "hash": "27569f0ce40a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._anchor": {
+  "hash": "77eb7d02c1bd",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._link": {
+  "hash": "892535f16aed",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._inline": {
+  "hash": "00daee6f2c8a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._table": {
+  "hash": "9de34e325fd5",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._fmt": {
+  "hash": "3b1a9ffd7dee",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._example_html": {
+  "hash": "a3b31fa0996d",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._card": {
+  "hash": "9c63b5502ea1",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs._group": {
+  "hash": "1cfaf8e2bfad",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.docs.render_html": {
+  "hash": "d12ba9b97001",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.utils.docs.render_md": {
+  "hash": "714efb55ccbd",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.env.ensure_packages": {
+  "hash": "24c8d2373b3a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.log": {
+  "hash": "bc7eaff39f4a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.read_table": {
+  "hash": "ab03db02ca2c",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.to_quarters": {
+  "hash": "743c37c93fab",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io._need": {
+  "hash": "ceb0615908c9",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.load_bank": {
+  "hash": "9e75eefc36be",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.organic_growth": {
+  "hash": "4bd6560debba",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.utils.io.load_macro": {
+  "hash": "46ff92471752",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.load_metadata": {
+  "hash": "0c78952991bd",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.add_constructed": {
+  "hash": "e28c385cbc47",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.io.Context": {
+  "hash": "4c1d4a2f93d8",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.utils.io.Context.__init__": {
+  "hash": "b0d224827b92",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.utils.trace._cell": {
+  "hash": "80c73f8add03",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace._is_fit_result": {
+  "hash": "74e0feadb194",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.summarize": {
+  "hash": "7fd35f524f6a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.table_json": {
+  "hash": "eaff6aaac750",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.coef_table": {
+  "hash": "bd6787050e82",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.tables_in": {
+  "hash": "6cfaedfdcc19",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.compact": {
+  "hash": "73f34f2b99d2",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace._project_function": {
+  "hash": "67a5e0111df7",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer": {
+  "hash": "4703d3fa1dce",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.utils.trace.Tracer.__init__": {
+  "hash": "6719406716a9",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "src.utils.trace.Tracer._register": {
+  "hash": "3c2c6d3e5948",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer.wrap": {
+  "hash": "78dd3008ed05",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "src.utils.trace.Tracer._safe": {
+  "hash": "02c8a3f577fd",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer._args": {
+  "hash": "88ce6ac5fd15",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer._example_call": {
+  "hash": "5686608ba722",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer._locals": {
+  "hash": "23d4af7c998a",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer._result": {
+  "hash": "4f0c9ebd36b0",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer.log": {
+  "hash": "d4cbd52f894e",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer.install": {
+  "hash": "bda24910a250",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer._tidy": {
+  "hash": "7f5a1c657de6",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.Tracer.write": {
+  "hash": "9f60bea43803",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.utils.trace.Tracer._text": {
+  "hash": "4269faf838b8",
+  "added": "",
+  "changed": ""
+ },
+ "src.utils.trace.start": {
+  "hash": "f358d9d9e6ce",
+  "added": "",
+  "changed": "2026-10-27"
+ },
+ "src.utils.trace.finish": {
+  "hash": "34cfcbb2d13d",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.inner_window": {
+  "hash": "2a9e80e1153e",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.truncated": {
+  "hash": "f84e9023ad37",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.select_at": {
+  "hash": "178cad5baf60",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.models_at": {
+  "hash": "597dc582fe1c",
+  "added": "",
+  "changed": "2026-11-02"
+ },
+ "src.validation.oos.forecast_errors": {
+  "hash": "641a03e30aef",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.validation.oos.dm_test": {
+  "hash": "cef54985246c",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.run_oos": {
+  "hash": "1f1dcf647041",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "src.validation.oos.summarise": {
+  "hash": "0125431fd6a9",
+  "added": "",
+  "changed": ""
+ },
+ "src.validation.oos.holdout": {
+  "hash": "e51e00cf050f",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "tools.make_docs.install_hook": {
+  "hash": "ea8a3bf12cb3",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "tools.make_docs.watch": {
+  "hash": "1ad09d00c97b",
+  "added": "",
+  "changed": ""
+ },
+ "tools.make_docs.main": {
+  "hash": "0d28fa329c57",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.qpos": {
+  "hash": "4b2a37a15112",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.anchors": {
+  "hash": "9f37fbf57597",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.episode": {
+  "hash": "64064b6c37b8",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.scen_path": {
+  "hash": "e172ae9bcb0b",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.build_core": {
+  "hash": "33b16a08cdc3",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.add": {
+  "hash": "84f8eec070b4",
+  "added": "",
+  "changed": ""
+ },
+ "tools.simulate_data.build_macro": {
+  "hash": "3d12fcbe5c07",
+  "added": "",
+  "changed": ""
+ },
+ "tools.trace_to_html.build": {
+  "hash": "f5fbeee13bb7",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "tools.trace_to_html.main": {
+  "hash": "d19dae573db4",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough._cell": {
+  "hash": "dfc694a88584",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.table": {
+  "hash": "6e87eb5d3c11",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.describe_obj": {
+  "hash": "ba75a5dc8cc5",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.Recorder": {
+  "hash": "5d44df5f74d4",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "tools.walkthrough.Recorder.__init__": {
+  "hash": "31d91520be70",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.Recorder.save": {
+  "hash": "6615b9b0ce9c",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "tools.walkthrough.Recorder.step": {
+  "hash": "065f2fcc76a6",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.chart": {
+  "hash": "8accaf3e052a",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.text": {
+  "hash": "5697f6253a7a",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.note": {
+  "hash": "f06bb4a82a90",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.kv": {
+  "hash": "8a999c94081b",
+  "added": "",
+  "changed": ""
+ },
+ "tools.walkthrough.main": {
+  "hash": "10cc907cb7ee",
+  "added": "",
+  "changed": "2026-11-03"
+ },
+ "report.make_reference.set_theme": {
+  "hash": "b8ab11ccd7b4",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.run_props": {
+  "hash": "735ad98e61d1",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.style_placeholder": {
+  "hash": "fbe9e80c1de9",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.master_text": {
+  "hash": "94b001866c23",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.footer": {
+  "hash": "ec70044ff8dc",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.dark_layout": {
+  "hash": "1424458e71b2",
+  "added": "",
+  "changed": ""
+ },
+ "report.make_reference.main": {
+  "hash": "f8e62072ba75",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.rgb": {
+  "hash": "18f8c84c623d",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.emu": {
+  "hash": "30d5ef339106",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.inch": {
+  "hash": "904d83200fa1",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.send_to_back": {
+  "hash": "a93dd4ac5f05",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.remove": {
+  "hash": "b0092a055f5d",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.rect": {
+  "hash": "8e5bf5f081c1",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.text": {
+  "hash": "7fb02bec0d3e",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.circle_icon": {
+  "hash": "9d2fcbc29351",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.parts": {
+  "hash": "bf5173c7d4b8",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.geom": {
+  "hash": "3dc9e3b51df0",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.set_geom": {
+  "hash": "231ae80ab4b7",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.tiles": {
+  "hash": "83744a5e907f",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.icon_grid": {
+  "hash": "150dc92cbbde",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "report.style_deck.steps": {
+  "hash": "3f862ef7adbc",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.cards": {
+  "hash": "8dd3188fd564",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.band": {
+  "hash": "3b9d333c7715",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.chart": {
+  "hash": "0a3dc8bbfd6c",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "report.style_deck._set_skip": {
+  "hash": "1d82b2a7cd9e",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.style_table": {
+  "hash": "b8c3d1c8ff96",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.style_title": {
+  "hash": "3958520bacd7",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.card_text": {
+  "hash": "3d273038d650",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.paragraphs_markers": {
+  "hash": "152d0c0328a1",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.process_slide": {
+  "hash": "0370edb31be6",
+  "added": "",
+  "changed": "2026-10-26"
+ },
+ "report.style_deck.process_title": {
+  "hash": "ae0b3f229501",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.process_section": {
+  "hash": "b61f6d4c51b4",
+  "added": "",
+  "changed": ""
+ },
+ "report.style_deck.main": {
+  "hash": "cb84d3f3a058",
+  "added": "",
+  "changed": "2026-10-31"
+ },
+ "src.utils.cache._code_only": {
+  "hash": "0d67799be457",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "report.make_reference.default_reference": {
+  "hash": "4930079e11e1",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.modelling.evaluate.regime_history": {
+  "hash": "275c3d819c54",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._dummies": {
+  "hash": "692742a06079",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime": {
+  "hash": "24e073d51bcf",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime.__init__": {
+  "hash": "8a9f630b476f",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime.spec": {
+  "hash": "b5214dd9249a",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime.drivers": {
+  "hash": "2d26621a3e6d",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime.panel": {
+  "hash": "87bf0e2f546d",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime._window": {
+  "hash": "4d8c06f5892e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime._row": {
+  "hash": "a3f76b7fa390",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime.forecast": {
+  "hash": "4f7705fc694a",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime._start_state": {
+  "hash": "84e3e2916fd7",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._Regime._named": {
+  "hash": "36d5768f6719",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime._ols": {
+  "hash": "8d813115f7ec",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL": {
+  "hash": "61a195ad7450",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL.__init__": {
+  "hash": "1dcc1b1cf306",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL.fit": {
+  "hash": "711843d32c9e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL._step": {
+  "hash": "96cf6900a8b5",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL.driver_rows": {
+  "hash": "93f36277efa0",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.ThresholdARDL.regime_path": {
+  "hash": "69e7d057d395",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL": {
+  "hash": "eb3fbdbfe2c9",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL.__init__": {
+  "hash": "1dad01878d35",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL._G": {
+  "hash": "848f2ced359a",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL.fit": {
+  "hash": "165c9350007e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL._step": {
+  "hash": "62e554743e48",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL.driver_rows": {
+  "hash": "cb1bb1e46b0c",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.SmoothTransitionARDL.regime_path": {
+  "hash": "5e82720173dc",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL": {
+  "hash": "419450f3dacb",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL.__init__": {
+  "hash": "f68a1e2b2da7",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._exog": {
+  "hash": "fa80dac527b0",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._std": {
+  "hash": "a62ca4191e50",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._model": {
+  "hash": "c557fdb1c78a",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL.fit": {
+  "hash": "7402d0e4d837",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._unpack": {
+  "hash": "4a008147f088",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._probs": {
+  "hash": "ca5cb5bb75b7",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._start_state": {
+  "hash": "18520fe32d56",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._row": {
+  "hash": "f5650e3f541b",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL._step": {
+  "hash": "efbd695d0b10",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL.driver_rows": {
+  "hash": "fb3b0b405845",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.MarkovSwitchingARDL.regime_path": {
+  "hash": "36b3e8c789c7",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL": {
+  "hash": "511531fa81ec",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL.__init__": {
+  "hash": "69509d6ce02e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL._kalman": {
+  "hash": "52f114cbf5c4",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL.fit": {
+  "hash": "114982aff54c",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL._step": {
+  "hash": "218164f17092",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL.driver_rows": {
+  "hash": "27b45a4870ff",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.TimeVaryingARDL.regime_path": {
+  "hash": "db621aa34451",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL": {
+  "hash": "2d3761922d65",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL.__init__": {
+  "hash": "71e2dfc0f821",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL.fit": {
+  "hash": "38fd4309657e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL._step": {
+  "hash": "218164f17092",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL.driver_rows": {
+  "hash": "d09e74f3fc44",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.BreakAdaptiveARDL.regime_path": {
+  "hash": "3ddf27570389",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.models.regime.build": {
+  "hash": "026aedccde9e",
+  "added": "2026-10-26",
+  "changed": "2026-10-26"
+ },
+ "src.reporting.report.chart_regimes": {
+  "hash": "d628f049cd83",
+  "added": "2026-10-26",
+  "changed": "2026-11-03"
+ },
+ "src.utils.preflight.Report": {
+  "hash": "874e3b6dac56",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.Report.__init__": {
+  "hash": "bfe51f85d727",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.Report.add": {
+  "hash": "e54fd7a01b56",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.Report.errors": {
+  "hash": "2d5d2fab932e",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.Report.warnings": {
+  "hash": "cbcdb17186e2",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.Report.text": {
+  "hash": "ffa7c2763f02",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight._q": {
+  "hash": "f9eeec9f9669",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight._gap": {
+  "hash": "1e3414e64371",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight._read": {
+  "hash": "6d37313be505",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight._dates": {
+  "hash": "5037aa0c4527",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.utils.preflight.check": {
+  "hash": "87f64a967a43",
+  "added": "2026-10-27",
+  "changed": "2026-11-03"
+ },
+ "src.utils.preflight.preflight": {
+  "hash": "b7ec2dcc9b15",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.check_config.main": {
+  "hash": "58bf877ae989",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.norm": {
+  "hash": "a8d64b768daa",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.find_date_column": {
+  "hash": "9c0bdb3b11a6",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.read_bank": {
+  "hash": "4a36f9e8a7b6",
+  "added": "2026-10-27",
+  "changed": "2026-11-12"
+ },
+ "tools.new_data_setup.scenario_name": {
+  "hash": "76635f7c9046",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.read_macro": {
+  "hash": "e721adb6c359",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.map_columns": {
+  "hash": "ff0fc189d49d",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.guess_transform": {
+  "hash": "bbfc8c23b45d",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.guess_theme": {
+  "hash": "487b2d2d9844",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.guess_sign": {
+  "hash": "da90410c1bb4",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.build_metadata": {
+  "hash": "13cf6f237ff9",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.match_concepts": {
+  "hash": "b8aca758f1d0",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.find_by": {
+  "hash": "33ac77c3e6e7",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.set_key": {
+  "hash": "82c2ca9d5551",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.replace_block": {
+  "hash": "568c0ee45925",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.yq": {
+  "hash": "7d1513fe7e9d",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.rel": {
+  "hash": "793f8079328d",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.main": {
+  "hash": "6b50f988fe54",
+  "added": "2026-10-27",
+  "changed": "2026-11-12"
+ },
+ "src.reporting.story.fmt": {
+  "hash": "eed3d9b34946",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.reporting.story.tbl": {
+  "hash": "124a6df70513",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.reporting.story.step": {
+  "hash": "56799248e194",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.reporting.story._pick_follow": {
+  "hash": "d396b1115fc3",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "src.reporting.story.build": {
+  "hash": "29921c059600",
+  "added": "2026-10-27",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.story._model_steps": {
+  "hash": "c389dc9642ba",
+  "added": "2026-10-27",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.story.build_oos": {
+  "hash": "c402fe0bf5f8",
+  "added": "2026-10-27",
+  "changed": "2026-11-03"
+ },
+ "src.utils.trace.add_story": {
+  "hash": "9c99a81e55d0",
+  "added": "2026-10-27",
+  "changed": "2026-10-27"
+ },
+ "tools.new_data_setup.propose": {
+  "hash": "a90ec134320b",
+  "added": "2026-10-28",
+  "changed": "2026-11-12"
+ },
+ "tools.new_data_setup.write_config": {
+  "hash": "3ec793b31b3f",
+  "added": "2026-10-28",
+  "changed": "2026-11-12"
+ },
+ "src.modelling.evaluate.driver_sensitivity": {
+  "hash": "32a737d6dfe0",
+  "added": "2026-10-28",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate._driver_rows": {
+  "hash": "8d5464c93e79",
+  "added": "2026-10-28",
+  "changed": "2026-11-03"
+ },
+ "src.models.deep.DeepModel.detail_rows": {
+  "hash": "0042732be516",
+  "added": "2026-10-28",
+  "changed": "2026-11-03"
+ },
+ "src.models.deep.ARIMAX.detail_rows": {
+  "hash": "7bf080730637",
+  "added": "2026-10-28",
+  "changed": "2026-11-03"
+ },
+ "src.models.deep.Theta.detail_rows": {
+  "hash": "c4b7da8fa90c",
+  "added": "2026-10-28",
+  "changed": "2026-10-28"
+ },
+ "src.models.literature.read_workbook": {
+  "hash": "5a558b639072",
+  "added": "2026-10-28",
+  "changed": "2026-10-29"
+ },
+ "src.models.literature.write_workbook": {
+  "hash": "e2c32ca477d2",
+  "added": "2026-10-28",
+  "changed": "2026-10-29"
+ },
+ "tools.literature_template.main": {
+  "hash": "09359ad1245f",
+  "added": "2026-10-28",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.evaluate._describe_term": {
+  "hash": "01adbd589f2e",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.evaluate._expected_sign": {
+  "hash": "35b0a7093f63",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.models.literature._settings_value": {
+  "hash": "446218345981",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.literature.apply_settings": {
+  "hash": "99e00009ec6f",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "tools.make_deck.find_quarto": {
+  "hash": "ca4472482251",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "tools.make_deck.build_deck": {
+  "hash": "d8b3881d3167",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "report.style_deck.drop_empty_slides": {
+  "hash": "0f9de480a830",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.literature.clean_settings": {
+  "hash": "7de495788ee3",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.utils.config._fix_switches": {
+  "hash": "9d9ed06eff1c",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.modelling.evaluate.test_rows": {
+  "hash": "51c63b370086",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate.freeze": {
+  "hash": "2a423df3ec4b",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth": {
+  "hash": "9722d90e1db7",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.models.simple.SameGrowth.__init__": {
+  "hash": "3e288ed5ca67",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.panel": {
+  "hash": "f71b219b142b",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.spec": {
+  "hash": "946cbcf1d613",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.drivers": {
+  "hash": "b2763120114b",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.fit": {
+  "hash": "6da07453139e",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.forecast": {
+  "hash": "7b2845ff2dd0",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.simple.SameGrowth.detail_rows": {
+  "hash": "6d0c1a501f83",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.models.zoo.wanted": {
+  "hash": "dfe8d3327ae9",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.models.zoo.same_growth_models": {
+  "hash": "0c31a721f180",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.has_formula": {
+  "hash": "731161ac2c13",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.reporting.formula.choose": {
+  "hash": "4deb3de91aaf",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.reporting.formula._x": {
+  "hash": "41a73c845d17",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.reporting.formula.definition": {
+  "hash": "ed7474a2ec1b",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula._lr_def": {
+  "hash": "a281cbe0d7b7",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.reporting.formula.terms": {
+  "hash": "7f61e720fd2c",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.equation_text": {
+  "hash": "88a0fb409a8e",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.worked": {
+  "hash": "ef67bf8def0e",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula._col": {
+  "hash": "96c3e3cdd038",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.reporting.formula._excel_feature": {
+  "hash": "7a12942a2e99",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.write_calculator": {
+  "hash": "45aa9791b835",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.write": {
+  "hash": "03823fb4af2c",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved.save_fitted": {
+  "hash": "914c8b6eb6ae",
+  "added": "2026-10-29",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved.load_models": {
+  "hash": "669feb34ac95",
+  "added": "2026-10-29",
+  "changed": "2026-10-31"
+ },
+ "src.utils.saved.snapshot": {
+  "hash": "616a43cc0f66",
+  "added": "2026-10-29",
+  "changed": "2026-10-31"
+ },
+ "src.utils.saved._best": {
+  "hash": "8c3cb7142dd3",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.utils.saved.list_snapshots": {
+  "hash": "36a7f519730b",
+  "added": "2026-10-29",
+  "changed": "2026-10-31"
+ },
+ "tools.make_deck.missing_packages": {
+  "hash": "935431a9a32a",
+  "added": "2026-10-29",
+  "changed": "2026-10-29"
+ },
+ "src.utils.saved.portable": {
+  "hash": "4f7afa2c5f39",
+  "added": "2026-10-29",
+  "changed": "2026-10-31"
+ },
+ "src.utils.saved.rebuild": {
+  "hash": "dcf3a792a5bf",
+  "added": "2026-10-29",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl._ic": {
+  "hash": "0816cd443366",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.select_orders": {
+  "hash": "478d49116058",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL": {
+  "hash": "da030544c510",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.__init__": {
+  "hash": "955d7cef22aa",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.panel": {
+  "hash": "585c844cc1ed",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.spec": {
+  "hash": "d82286efde53",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.drivers": {
+  "hash": "b2763120114b",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL._X": {
+  "hash": "be343bd4ff11",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.fit": {
+  "hash": "634386b56be4",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.forecast": {
+  "hash": "7e73caa26b80",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.long_run": {
+  "hash": "85398ba7ea34",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.AutoARDL.lag_summary": {
+  "hash": "d83b3aa484c3",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL": {
+  "hash": "13960fe95e05",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.models.autoardl.LevelsARDL.__init__": {
+  "hash": "7ecc40ae18be",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.panel": {
+  "hash": "592737142a60",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.models.autoardl.LevelsARDL.spec": {
+  "hash": "771ab25e9198",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.drivers": {
+  "hash": "fa4b3bf1899e",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL._design": {
+  "hash": "901ec653ef39",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.fit": {
+  "hash": "83de20591cd3",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.forecast": {
+  "hash": "2d3db5c7b62b",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.long_run_coefs": {
+  "hash": "989bffea3e5d",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.lag_summary": {
+  "hash": "8de4cee5690c",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.LevelsARDL.detail_rows": {
+  "hash": "4d49ecbb2631",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.models.autoardl.uecm_design": {
+  "hash": "89fda8d0c1f4",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.bounds_test": {
+  "hash": "ae217847327c",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.autoardl.base_of": {
+  "hash": "bc22e6752089",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon.buckets": {
+  "hash": "c38c11ad81ba",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon._bucket": {
+  "hash": "a470ca3f7525",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon._choose": {
+  "hash": "430d0fcb763f",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon._splice": {
+  "hash": "bb470f94ed0e",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.models.horizon.combine": {
+  "hash": "8554bbea5b8c",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon.by_horizon": {
+  "hash": "28ee1f417abb",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon.final_choice": {
+  "hash": "93a4e2fd6927",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon.scenarios": {
+  "hash": "22a07d16d897",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.models.horizon.describe": {
+  "hash": "fc44e1f77f14",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.reporting.formula.n_ylags": {
+  "hash": "d2b1869ccf52",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.reporting.formula.terms_levels": {
+  "hash": "bca775cab4d8",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula.worked_levels": {
+  "hash": "1769594058a6",
+  "added": "2026-10-31",
+  "changed": "2026-11-03"
+ },
+ "report.style_deck.fix_empty_text": {
+  "hash": "fc4b016ec284",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "report.style_deck.check_package": {
+  "hash": "fb14902d7c3a",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.models.horizon._sq_err": {
+  "hash": "002554d7a564",
+  "added": "2026-10-31",
+  "changed": "2026-10-31"
+ },
+ "src.reporting.report.rank_column": {
+  "hash": "d19e6f090385",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.story._rank": {
+  "hash": "945cdd26f5f4",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.set_form": {
+  "hash": "5ddd457cd0fc",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.form": {
+  "hash": "504638ea2326",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.is_log": {
+  "hash": "9c502fc9a99e",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.resolve": {
+  "hash": "57dc435c8f27",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.growth": {
+  "hash": "f0b7819af109",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.change": {
+  "hash": "891d15c7dd94",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.state": {
+  "hash": "36bd8557fba7",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.from_state": {
+  "hash": "062a5fa964cf",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.path": {
+  "hash": "1238cf0dd7d0",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.level_after": {
+  "hash": "c188ab4a66be",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.error": {
+  "hash": "9f2254bc4b5c",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.pct": {
+  "hash": "88b4d4ba4381",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.annualised": {
+  "hash": "63c374d70d81",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.growth_display": {
+  "hash": "a0d6373a2551",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.units": {
+  "hash": "f85c684b317d",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.describe": {
+  "hash": "ca6969bafbe8",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.from_display": {
+  "hash": "2776f841639c",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.per_year": {
+  "hash": "4c2344619dff",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.target.target_deflator": {
+  "hash": "b6d7eb572702",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.configure": {
+  "hash": "090f5495c0d5",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.window": {
+  "hash": "15182e35acad",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.is_rate_tr": {
+  "hash": "7302f224530c",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.is_volatility": {
+  "hash": "8f87450a96a3",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.tr_desc": {
+  "hash": "9109a425385c",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.lookback": {
+  "hash": "7eec2fe65d51",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.sign_of": {
+  "hash": "1f88fbc4eb3d",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.features.transforms.feature_sign": {
+  "hash": "aa3cc823f1c7",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate.fitted_values": {
+  "hash": "176e0c15eec3",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate.coefficient_table": {
+  "hash": "575c5fcafd73",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.reporting.formula._window_def": {
+  "hash": "4a9d08c7a775",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved._slug": {
+  "hash": "a5805df6b4d9",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved.save_all": {
+  "hash": "f01bb0ee29cf",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved.save_origin_models": {
+  "hash": "80248292b5c4",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.utils.saved.load_origin_models": {
+  "hash": "eb512bb518a1",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.modelling.evaluate._coefficient_table": {
+  "hash": "a3c568b8c659",
+  "added": "2026-11-03",
+  "changed": "2026-11-03"
+ },
+ "src.panel.data.load_long": {
+  "hash": "78f64cd5886f",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.bank_events": {
+  "hash": "3eb6533cc16e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.organic": {
+  "hash": "885d9389a7c2",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.aggregate": {
+  "hash": "d812b26ed7a6",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel": {
+  "hash": "7f828de929b5",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel.__init__": {
+  "hash": "dcee1b855e54",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel._bank_ctx": {
+  "hash": "0a7dfebb0e9a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel.pos": {
+  "hash": "e2175b7110ba",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel.window": {
+  "hash": "0910113d2635",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.data.Panel.active": {
+  "hash": "efb02acb704d",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.ols": {
+  "hash": "4b9d92cd3e22",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.driscoll_kraay": {
+  "hash": "3e28f64be12a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel": {
+  "hash": "c522437b1bdb",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.estimate.PanelModel.__init__": {
+  "hash": "eca030b8877a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel.fit": {
+  "hash": "f87547322343",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.estimate.PanelModel._own": {
+  "hash": "462b4c0b1019",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel._pooled": {
+  "hash": "7f0be19c3cff",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel._shrink": {
+  "hash": "55bbfe8a77fd",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel._topdown": {
+  "hash": "d293b9ff00a9",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.PanelModel.forecast": {
+  "hash": "c369069b2a5f",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.estimate.PanelModel.fitted": {
+  "hash": "ce3ad4d97c89",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.estimate.PanelModel.coefficient_rows": {
+  "hash": "079607d44f2c",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.settings": {
+  "hash": "9f71025e9295",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.build_models": {
+  "hash": "e3ddcb0b878f",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run._hist": {
+  "hash": "934aef95ca73",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run._covid": {
+  "hash": "a96e6f4d74d4",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.forecast_rows": {
+  "hash": "34d52171bea7",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.summarise": {
+  "hash": "cf300e98aa7e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.backtest": {
+  "hash": "1c91c5de8501",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.run.scenarios": {
+  "hash": "fe248e6ada9e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.fitted_values": {
+  "hash": "843d8222ee50",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.run.run_oos": {
+  "hash": "42bb04fe0a88",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.run._charts": {
+  "hash": "0239d9aad6f1",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.run.run": {
+  "hash": "7151eea40a9c",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.run._summary": {
+  "hash": "4def7e1ac4de",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.select._controls": {
+  "hash": "ade858b08d43",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.select.screen": {
+  "hash": "801912815b2f",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.shortlist": {
+  "hash": "370b9f1a5431",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.pooled_fit": {
+  "hash": "e516ab229ce4",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.search": {
+  "hash": "2db29fdd78a1",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.quick_error": {
+  "hash": "de642af951df",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.select": {
+  "hash": "5bc89487d997",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.sysname": {
+  "hash": "f78720712c4b",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.order": {
+  "hash": "44b0cb04ebeb",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.settings": {
+  "hash": "a188ec8eac88",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._augment": {
+  "hash": "1c704885c42b",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.run_chain": {
+  "hash": "68e81d03e0dc",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.series_level": {
+  "hash": "5d1ea218d0b7",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.Member": {
+  "hash": "77d22f181916",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.Member.__init__": {
+  "hash": "ee6031b6518e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.Member.panel_with": {
+  "hash": "de6b5a907f1c",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.joint_forecast": {
+  "hash": "85fbef9ede10",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._panel_with": {
+  "hash": "2601b543081f",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._rows": {
+  "hash": "bea3a15d666d",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.covid_checker": {
+  "hash": "4e5d111ab671",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.joint_backtest": {
+  "hash": "687a5694b2dc",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.members_by": {
+  "hash": "f40f1046b510",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.joint_oos": {
+  "hash": "cb261a0c33c2",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.BVARX": {
+  "hash": "e44beeed51c9",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.BVARX.__init__": {
+  "hash": "57f44dc22b2e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.BVARX.fit": {
+  "hash": "0d0fc6a37941",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.BVARX.forecast": {
+  "hash": "52aea6ae1ad0",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.BVARX.table": {
+  "hash": "3fe15faa764d",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.bvarx_inputs": {
+  "hash": "c2979d380201",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.bvarx_backtest": {
+  "hash": "0db73ec250a0",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._bvarx_rows": {
+  "hash": "9075ec6817ee",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.reconcile_levels": {
+  "hash": "1c20e94bc23a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.leaderboard": {
+  "hash": "79b67b21f30d",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.scenario_paths": {
+  "hash": "6f056d333a33",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.ratio_table": {
+  "hash": "273dc8fa80b7",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.links_table": {
+  "hash": "bb022805f018",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._chart": {
+  "hash": "a4184bdcf8bb",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run.run": {
+  "hash": "078c6e68349a",
+  "added": "2026-11-04",
+  "changed": "2026-11-12"
+ },
+ "src.system.run.reconcile_all": {
+  "hash": "731f49d2a3ab",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._summary": {
+  "hash": "42bbd2842647",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint._step": {
+  "hash": "a7944c9ba358",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint._path": {
+  "hash": "f957edbd762c",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.mdf_with": {
+  "hash": "3c3e9ca1af75",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.drivers_of": {
+  "hash": "3d6fd7953e71",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain": {
+  "hash": "42f0a7270549",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain.__init__": {
+  "hash": "7b668dd261eb",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain._design": {
+  "hash": "4370a1ce7468",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain.fit": {
+  "hash": "2dbb87963ea4",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain.forecast": {
+  "hash": "b60133fcd74a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain.table": {
+  "hash": "c639722e1424",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.SURChain.correlation": {
+  "hash": "6425456be40e",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint._res_rows": {
+  "hash": "0f7f9f27cd69",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.sur_backtest": {
+  "hash": "ebde14504828",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.sur_scenarios": {
+  "hash": "90338dda0942",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM": {
+  "hash": "6b9467fcb8c8",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM.__init__": {
+  "hash": "e9cf995cdcda",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM._levels": {
+  "hash": "6377f214f707",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM._ect": {
+  "hash": "62a94386762b",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM.fit": {
+  "hash": "0a72f279518b",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM.forecast": {
+  "hash": "c0380ca81aca",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.VECM.table": {
+  "hash": "60bd931a4e9d",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.cointegration_tests": {
+  "hash": "322d5bf2e345",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.vecm_backtest": {
+  "hash": "01ff5a28b1ad",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint.vecm_scenarios": {
+  "hash": "f398f58e3dfa",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.run._fan_chart": {
+  "hash": "8aa4e3c63633",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.system.joint._against": {
+  "hash": "36869577f24a",
+  "added": "2026-11-04",
+  "changed": "2026-11-04"
+ },
+ "src.panel.estimate.stacked": {
+  "hash": "7231a985df2d",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.estimate.of_bank": {
+  "hash": "0520e1702e37",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.run._arr": {
+  "hash": "97fd5491d308",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures": {
+  "hash": "57bc777bc5d3",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures.__init__": {
+  "hash": "cf72bcf2fdda",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures.array": {
+  "hash": "b0d063451f5c",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures.stacked": {
+  "hash": "91a0f2b7e487",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures.frame": {
+  "hash": "c8d361be85ba",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select.BankFeatures.meta": {
+  "hash": "dd999b7dae20",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.panel.select._fs": {
+  "hash": "2fac9a200b65",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel._target_cfg": {
+  "hash": "59e32bbcc473",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.sys_names": {
+  "hash": "a86cbf1aa912",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.bank_sys_frame": {
+  "hash": "a45dfaa87a36",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.sys_cube": {
+  "hash": "78d410f1475d",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.sys_meta": {
+  "hash": "6ef57a2c5c9e",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.Node": {
+  "hash": "cc7618c4d44f",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.Node.__init__": {
+  "hash": "be6069d9eb73",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.Node.bank_X": {
+  "hash": "632e6cd70c09",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.build_node": {
+  "hash": "e0b9c3ba3832",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.chain_forecast": {
+  "hash": "827e0deca03f",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel._err_rows": {
+  "hash": "47bcddd3910e",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.links": {
+  "hash": "f982e2fe856e",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel.run": {
+  "hash": "695fa9c9f879",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel._chart": {
+  "hash": "8a79fef5213a",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.panel._summary": {
+  "hash": "587ba94ec7f3",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.system.run.resolve_master": {
+  "hash": "713e6a3b8061",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master._sheets": {
+  "hash": "99e5d63df073",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master._norm": {
+  "hash": "6cf894a68bb6",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master.is_master": {
+  "hash": "f4bb0a349950",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master.targets": {
+  "hash": "5a91f4cc627a",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master._match": {
+  "hash": "2d79b75651fd",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master.extract": {
+  "hash": "0c4cf33ffc98",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master._write_if_changed": {
+  "hash": "21c6910fc024",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master.resolve": {
+  "hash": "5afcdd2c8e6c",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "src.utils.master.apply": {
+  "hash": "8f36b22f64ec",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.literature_master.build": {
+  "hash": "00d1db5ee470",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.literature_master.from_folder": {
+  "hash": "71e77e153921",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.literature_master.main": {
+  "hash": "bdaaefcbf206",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.new_data_setup.find_panel_column": {
+  "hash": "e89ae67f3da9",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.new_data_setup.bank_summary": {
+  "hash": "f4f7940d4b74",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "tools.new_data_setup._events_bank_column": {
+  "hash": "089122c72a25",
+  "added": "2026-11-12",
+  "changed": "2026-11-12"
+ },
+ "_log": [
+  {
+   "date": "2026-10-31",
+   "id": "src.utils.trace.Tracer",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "src.utils.trace.Tracer.write",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.make_deck.build_deck",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.make_docs.install_hook",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.trace_to_html.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.walkthrough.Recorder",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.walkthrough.Recorder.save",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "tools.walkthrough.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "report.style_deck.chart",
+   "what": "changed"
+  },
+  {
+   "date": "2026-10-31",
+   "id": "report.style_deck.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-02",
+   "id": "src.validation.oos.models_at",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.report.rank_column",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.report.best_per_family",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.report.scenario_models",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story._rank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story.build_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.set_form",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.form",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.is_log",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.resolve",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.growth",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.change",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.state",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.from_state",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.path",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.level_after",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.error",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.pct",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.annualised",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.growth_display",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.units",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.describe",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.backtest",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.test_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.driver_sensitivity",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.scenario_forecasts",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.search.fast_backtest",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.horizon._splice",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.horizon.scenarios",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.io.organic_growth",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.io.Context",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.io.Context.__init__",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.from_display",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.per_year",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.autoardl.LevelsARDL",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.autoardl.LevelsARDL.panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.ecm.ECM",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.ecm.ECM.panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.equation_text",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.worked",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.worked_levels",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.write_calculator",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.write",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.report.chart_regimes",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story._model_steps",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.config.load_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.target.target_deflator",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.validation.oos.forecast_errors",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.validation.oos.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.validation.oos.holdout",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "run_pipeline.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "run_oos.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.configure",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.window",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.is_rate_tr",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.is_volatility",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.tr_desc",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.lookback",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.sign_of",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.feature_sign",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.transform",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.describe",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.features.transforms.candidate_forms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.backtest",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate._expected_sign",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate._driver_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.evaluate",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.fitted_values",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.coefficient_table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.pipelines.en_first.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.definition",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula._window_def",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.terms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula._excel_feature",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.write_calculator",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.selection.elastic_net._prepare",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.selection.screening.screen",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.preflight.check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.saved.save_fitted",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.saved._slug",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.saved.save_all",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.saved.save_origin_models",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.saved.load_origin_models",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.validation.oos.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.coefficient_table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate._coefficient_table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "run_pipeline.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate._driver_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.fitted_values",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.autoardl.LevelsARDL",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.autoardl.LevelsARDL.detail_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.deep.DeepModel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.deep.DeepModel.detail_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.deep.ARIMAX",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.deep.ARIMAX.detail_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.simple.SameGrowth",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.simple.SameGrowth.detail_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.zoo.same_growth_models",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.models.zoo.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.terms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.terms_levels",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.formula.write_calculator",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.report.summary_md",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.reporting.story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.docs.render_html",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.utils.preflight.check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "tools.make_deck.build_deck",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "tools.new_data_setup.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "tools.walkthrough.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate._driver_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "src.modelling.evaluate.fitted_values",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-03",
+   "id": "tools.new_data_setup.write_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.load_long",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.bank_events",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.organic",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.aggregate",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel._bank_ctx",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel.pos",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel.window",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.data.Panel.active",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.ols",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.driscoll_kraay",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel.fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel._own",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel._pooled",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel._shrink",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel._topdown",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel.forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel.fitted",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.estimate.PanelModel.coefficient_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.build_models",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run._hist",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run._covid",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.forecast_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.summarise",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.backtest",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.scenarios",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.fitted_values",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.run_oos",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run._charts",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.run",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run._summary",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select._controls",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.screen",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.shortlist",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.pooled_fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.search",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.quick_error",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.select.select",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.summarise",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.panel.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.sysname",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.order",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._augment",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.run_chain",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.series_level",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.Member",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.Member.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.Member.panel_with",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.joint_forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._panel_with",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.covid_checker",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.joint_backtest",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.members_by",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.joint_oos",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.BVARX",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.BVARX.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.BVARX.fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.BVARX.forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.BVARX.table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.bvarx_inputs",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.bvarx_backtest",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._bvarx_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.reconcile_levels",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.leaderboard",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.scenario_paths",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.ratio_table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.links_table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._chart",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.run",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.reconcile_all",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._summary",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.links_table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.reconcile_all",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint._step",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint._path",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.mdf_with",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.drivers_of",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain._design",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain.fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain.forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain.table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.SURChain.correlation",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint._res_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.sur_backtest",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.sur_scenarios",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM._levels",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM._ect",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.cointegration_tests",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.vecm_backtest",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.vecm_scenarios",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.ratio_table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._fan_chart",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.run._summary",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint._res_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint._against",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.__init__",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM._ect",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.forecast",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.VECM.table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-04",
+   "id": "src.system.joint.cointegration_tests",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.stacked",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.of_bank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.PanelModel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.PanelModel.fit",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.PanelModel.forecast",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.estimate.PanelModel.fitted",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.run._arr",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.run.backtest",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.run.fitted_values",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.run.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures.array",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures.stacked",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures.frame",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.BankFeatures.meta",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select._fs",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.screen",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.shortlist",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.pooled_fit",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.search",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.panel.select.quick_error",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel._target_cfg",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.sys_names",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.bank_sys_frame",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.sys_cube",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.sys_meta",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.Node",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.Node.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.Node.bank_X",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.build_node",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.chain_forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel._err_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.links",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel.run",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel._chart",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.panel._summary",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.run.resolve_master",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.system.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.config.load_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master._sheets",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master._norm",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master.is_master",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master.targets",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master._match",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master.extract",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master._write_if_changed",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master.resolve",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "src.utils.master.apply",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.literature_master.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.literature_master.from_folder",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.literature_master.main",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.find_panel_column",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.bank_summary",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.read_bank",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup._events_bank_column",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.propose",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.write_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-12",
+   "id": "tools.new_data_setup.main",
+   "what": "changed"
+  }
+ ]
+}

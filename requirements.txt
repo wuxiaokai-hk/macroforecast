@@ -7,3 +7,10 @@ matplotlib
 openpyxl
 pyyaml
 tabulate
+# the presentation (tools/make_deck.py, or Build the presentation in the app); also needs Quarto from quarto.org
+python-pptx
+jupyter
+# optional: deep-learning models (TiDE, N-HiTS, TFT) - installs PyTorch
+# darts>=0.30
+# optional: the app (streamlit run app.py)
+# streamlit>=1.23 (any later version works)

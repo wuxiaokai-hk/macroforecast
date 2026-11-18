@@ -8,3 +8,5 @@ cache/
 *.pyc
 *.log
 .env
+outputs/
+.streamlit/secrets.toml

@@ -1,0 +1,24 @@
+# Settings for macroforecast.run(..., options="config/options_example.yaml").
+# Only what you change goes here; everything else keeps the example config's value.
+# Same keys as config/example_config.yaml.
+
+sample:
+  horizon: 12
+  report_horizons: [4, 8, 12]
+  dummy_quarters: [2020Q1, 2020Q2, 2020Q3, 2020Q4, 2021Q1, 2021Q2]
+  # hist_end / estimation_start / backtest_start: leave out to take them from the data
+
+en_first:
+  target_n: 10            # lambda is set so this many features are selected
+  l1_ratio: 0.5
+
+final_model:
+  max_vars: 3
+
+models:
+  machine_learning: [ridge, random_forest, gradient_boosting]   # [] for none
+  deep: {enabled: false}
+  foundation: {enabled: false}
+
+oos:
+  step: 4

@@ -1,5 +1,5 @@
 """
-Loan balance forecasting pipeline - entry point.
+Macro-driver forecasting pipeline - entry point.
 
     python run_pipeline.py                                   # uses config/example_config.yaml
     python run_pipeline.py --config config/my_portfolio.yaml
@@ -22,6 +22,7 @@ Folders
 """
 import argparse
 import os
+import pickle
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -37,19 +38,23 @@ import pandas as pd  # noqa: E402
 
 from src.features.transforms import all_features, candidate_forms  # noqa: E402
 from src.modelling.ardl import ARDL  # noqa: E402
-from src.modelling.evaluate import evaluate  # noqa: E402
+from src.modelling.evaluate import evaluate, horizon_summary  # noqa: E402
+from src.models import horizon, zoo  # noqa: E402
 from src.pipelines import en_first, screen_first  # noqa: E402
-from src.reporting import report  # noqa: E402
+from src.reporting import formula, report, story  # noqa: E402
 from src.utils.config import load_config  # noqa: E402
 from src.utils.cache import StepCache, hash_code, hash_frame, hash_obj  # noqa: E402
 from src.utils.io import Context, log  # noqa: E402
+from src.utils import docs, saved, trace  # noqa: E402
+from src.utils.preflight import preflight  # noqa: E402
 
 warnings.filterwarnings("ignore")
 APPROACHES = {"screen_first": screen_first, "en_first": en_first}
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Loan balance forecasting pipeline")
+    """Command line entry: parse arguments, load the config, start the trace and run the pipeline."""
+    ap = argparse.ArgumentParser(description="Macro-driver forecasting pipeline")
     ap.add_argument("--config", default=os.path.join(HERE, "config", "example_config.yaml"))
     ap.add_argument("--approach", choices=["both", "screen_first", "en_first"], default=None,
                     help="overrides 'approaches' in the config")
@@ -57,9 +62,27 @@ def main():
     ap.add_argument("--force-step", action="append", default=[],
                     help="recompute one step: features, screen_first, en_first or evaluate (repeatable)")
     ap.add_argument("--no-cache", action="store_true", help="do not read or write the cache")
+    ap.add_argument("--skip-check", action="store_true", help="do not stop on errors found by the pre-flight check")
+    ap.add_argument("--no-trace", action="store_true", help="do not write the detailed trace (outputs/<run>/trace/)")
     args = ap.parse_args()
 
     cfg = load_config(args.config)
+    preflight(cfg, log, strict=not args.skip_check)         # names, files and dates checked in seconds
+    tracer = trace.start(cfg, "run_pipeline.py", globals(), enabled=not args.no_trace)
+    try:
+        run(cfg, args)
+    finally:
+        trace.finish(tracer, {"config": os.path.relpath(cfg["config_file"], HERE), "run_name": cfg["run_name"]}, log)
+        docs.refresh(cfg, log)                       # function reference, if the code changed
+
+
+def run(cfg, args):
+    """The full pipeline: data -> features -> both selection approaches -> model zoo -> backtest,
+    diagnostics and scenarios for every model -> tables, charts and summary.
+
+    Args:
+        cfg: configuration. args: parsed command-line arguments.
+    """
     if args.approach is None:
         approaches = list(cfg["approaches"])
     else:
@@ -118,31 +141,68 @@ def main():
                                    cfg["en_first"]["stability"]["threshold"])
         results.append(r)
 
-    log("Evaluating final models ...")
-    models = [ARDL("AR(1) benchmark", [])] + [ARDL(r["name"], r["features"]) for r in results]
-    ev_code = hash_code("modelling/ardl.py", "modelling/evaluate.py", "modelling/search.py", "features/transforms.py")
+    log("Building the competing models (benchmarks, data-driven, literature, hybrid, machine learning, AI) ...")
+    sel = {r_a: zoo.selection_info(r_a, r) for r_a, r in zip(approaches, results)}
+    models, notes, extra = zoo.build(cfg, ctx, sel, log)
+    log(f"  {len(models)} models: " + ", ".join(f"{k} {v}" for k, v in notes["family"].value_counts(sort=False).items()))
+    ev_code = hash_code("modelling/ardl.py", "modelling/evaluate.py", "modelling/search.py", "features/transforms.py",
+                        "models/ecm.py", "models/ml.py", "models/combination.py", "models/foundation.py",
+                        "models/deep.py", "models/regime.py", "models/simple.py", "models/autoardl.py")
     ev = {}
     for m in models:
-        comp_m = {"drivers": hash_obj(m.features), "target": h_y, "balance": h_level, "metadata": h_meta,
+        comp_m = {"model": hash_obj(m.spec()), "target": h_y, "balance": h_level, "metadata": h_meta,
                   "scenarios": hash_obj(h_scen), "config.sample": cs["sample"],
                   "config.deflator": hash_obj(cfg["features"]["deflator"]), "code": ev_code}
         ev[m.name] = cache.run(f"evaluate:{m.name}", comp_m, lambda m=m: evaluate(ctx, m), log)
+    for k, v in ev.items():                     # lags chosen during estimation (auto-ARDL): update the model list
+        if v.get("fitted") is not None and k in set(notes["model"]):
+            try:
+                m_ = pickle.loads(v["fitted"])
+            except Exception:
+                continue
+            if hasattr(m_, "lag_summary"):
+                i_ = notes.index[notes["model"] == k][0]
+                notes.loc[i_, "drivers"] = ", ".join(m_.drivers())
+                notes.loc[i_, "how it is specified"] = f"{notes.loc[i_, 'how it is specified']}. Chosen on all the " \
+                                                       f"data: {m_.lag_summary()}"
     by_h = pd.concat([v["by_horizon"] for v in ev.values()])
     H = cfg["sample"]["horizon"]
-    comp = by_h.groupby("model", sort=False).agg(avg_MAPE_exCOVID_pct=("MAPE_exCOVID_pct", "mean"),
-                                                 avg_MAPE_all_pct=("MAPE_all_pct", "mean"),
-                                                 avg_bias_exCOVID_pct=("bias_exCOVID_pct", "mean")).reset_index()
-    for h in sorted({1, min(4, H), H}):
-        comp[f"MAPE_h{h}_exCOVID_pct"] = by_h[by_h["horizon_q"] == h].set_index("model").loc[comp["model"], "MAPE_exCOVID_pct"].values
-    bench = comp.loc[comp["model"] == "AR(1) benchmark", "avg_MAPE_exCOVID_pct"].iloc[0]
-    comp["improvement_vs_benchmark_pct"] = (1 - comp["avg_MAPE_exCOVID_pct"] / bench) * 100
-    comp["drivers"] = [", ".join(m.features) or "(none)" for m in models]
+    hz = cfg["sample"]["report_horizons"]
+    tests = pd.concat([v["test_forecasts"] for v in ev.values() if isinstance(v.get("test_forecasts"), pd.DataFrame)],
+                      ignore_index=True)
+    # horizon combinations: the best model for each forecast horizon, chosen from errors already known at each origin
+    hc_rows, hc_choices = horizon.combine(tests, cfg, H, lambda n: zoo.wanted(cfg, n, horizon.FAMILY))
+    hc_extra = {}
+    if hc_rows is not None:
+        log(f"Horizon combinations ({', '.join(f'{a}-{z}' for a, z in horizon.buckets(cfg, H))} quarters ahead) ...")
+        by_h = pd.concat([by_h, horizon.by_horizon(hc_rows)], ignore_index=True)
+        tests = pd.concat([tests, hc_rows.drop(columns=["error", "chosen"])], ignore_index=True)
+        B, fch = horizon.final_choice(tests, cfg, H)
+        scen_all = pd.concat([v["scenarios"] for v in ev.values()])
+        hc_extra["scen"] = horizon.scenarios(scen_all, B, fch, lambda n: zoo.wanted(cfg, n, horizon.FAMILY))
+        for k, nm in horizon.NAMES.items():
+            if nm in set(hc_rows["model"]):
+                txt, drows = horizon.describe(B, fch, k)
+                notes = pd.concat([notes, pd.DataFrame([{
+                    "model": nm, "family": horizon.FAMILY, "drivers": txt,
+                    "how it is specified": ("For each block of quarters ahead, the model with the smallest growth error "
+                                            if k == "best" else "For each block of quarters ahead, the best "
+                                            f"{cfg['models']['horizon_combination'].get('top_k', 3)} models weighted by "
+                                            "1/error ") + "on forecasts already realised at each origin (no look-ahead)",
+                    "source": ""}])], ignore_index=True)
+                hc_extra.setdefault("drivers", []).append(pd.DataFrame(drows))
+                hc_extra.setdefault("diag", []).append({"model": nm, "family": horizon.FAMILY, "note": "combination: "
+                                                        "residual tests do not apply; see each member model"})
+                log(f"  {nm}: {txt}")
+    comp = horizon_summary(by_h, hz)
+    comp = comp.merge(notes[["model", "drivers", "how it is specified", "source"]], on="model", how="left")
+    comp["avg_bias_1_%d_pct" % H] = by_h.groupby("model", sort=False)["bias_exCOVID_pct"].mean().reindex(comp["model"]).values
     comp = comp.round(3)
-    diag = pd.DataFrame([v["diagnostics"] for v in ev.values()])
-    drivers = pd.concat([v["drivers"] for v in ev.values()])
-    scen = pd.concat([v["scenarios"] for v in ev.values()])
+    diag = pd.DataFrame([v["diagnostics"] for v in ev.values()] + hc_extra.get("diag", []))
+    drivers = pd.concat([v["drivers"] for v in ev.values()] + hc_extra.get("drivers", []))
+    scen = pd.concat([v["scenarios"] for v in ev.values()] + ([hc_extra["scen"]] if len(hc_extra.get("scen", [])) else []))
     yearend = scen[scen["date"].str.endswith("Q4")].pivot_table(index=["model", "date"], columns="scenario",
-                                                                 values="balance_forecast").round(1).reset_index()
+                                                                 values="balance_forecast", sort=False).round(1).reset_index()
     coef_paths = pd.concat([v["coef_path"].assign(model=k).reset_index().rename(columns={"index": "origin"})
                             for k, v in ev.items()])
     overlap = None
@@ -150,18 +210,47 @@ def main():
         overlap = ", ".join(sorted(set(results[0]["features"]) & set(results[1]["features"])))
 
     cdir = os.path.join(out, "comparison")
-    report.write_tables(cdir, {"1_model_comparison": comp, "2_backtest_by_horizon": by_h.round(4),
-                               "3_drivers": drivers, "4_diagnostics": diag, "5_scenario_yearend": yearend,
-                               "6_scenario_forecasts": scen, "7_coefficient_paths": coef_paths})
-    report.chart_horizon(os.path.join(cdir, "backtest_by_horizon.png"), by_h)
-    report.chart_scenarios(os.path.join(cdir, "scenarios.png"), scen, ctx.level, [r["name"] for r in results])
+    tables = {"1_model_comparison": comp, "2_backtest_by_horizon": by_h.round(4), "3_drivers": drivers,
+              "4_diagnostics": diag, "5_scenario_yearend": yearend, "6_scenario_forecasts": scen,
+              "7_coefficient_paths": coef_paths, "9_model_list": notes, "12_backtest_forecasts": tests.round(6)}
+    if hc_choices is not None:
+        tables["13_horizon_choices"] = hc_choices
+    for k, v in extra.items():
+        tables[f"10_{k}"] = v
+    regimes = [v["regimes"] for v in ev.values() if isinstance(v.get("regimes"), pd.DataFrame)]
+    if regimes:
+        tables["11_regimes"] = pd.concat(regimes).round(4)
+    report.write_tables(cdir, tables)
+    if regimes:
+        report.chart_regimes(os.path.join(cdir, "regimes.png"), tables["11_regimes"], ctx.level)
+    report.chart_family_bars(os.path.join(cdir, "model_comparison.png"), comp, hz)
+    report.chart_horizon(os.path.join(cdir, "backtest_by_horizon.png"), by_h, report.best_per_family(comp, H))
+    report.chart_scenarios(os.path.join(cdir, "scenarios.png"), scen, ctx.level, report.scenario_models(comp, H))
     report.summary_md(os.path.join(out, "summary.md"), cfg, results, comp, diag, overlap)
+    trace.add_story(lambda: story.build(cfg, ctx, forms, F, results, models, notes, ev, comp), log)
 
-    log("\nResults (average balance error, 1–%d quarters, dummy quarters excluded):" % H)
-    for _, r in comp.iterrows():
-        log(f"  {r['model']:<20s} {r['avg_MAPE_exCOVID_pct']:.2f}%   drivers: {r['drivers']}")
+    log(f"\nResults (balance error, dummy quarters excluded; average over 1–h quarters):")
+    log(f"  {'model':<44s} {'family':<20s} " + " ".join(f"{'1-' + str(h):>7s}" for h in hz))
+    for _, r in comp.sort_values(f"avg_1_{H}_pct").iterrows():
+        log(f"  {r['model']:<44s} {r['family']:<20s} " + " ".join(f"{r[f'avg_1_{h}_pct']:6.2f}%" for h in hz))
+    if cfg["save"].get("fitted_models", True):
+        saved.save_all(out, ev, ctx, log)
+    fitted = {}
+    for k, v in ev.items():                                   # formula models only: cheap to rebuild
+        if v.get("fitted") is not None:
+            try:
+                m_ = pickle.loads(v["fitted"])
+                if formula.has_formula(m_):
+                    fitted[k] = m_
+            except Exception:
+                pass
+    try:
+        formula.write(cfg, ctx, fitted, comp, "backtest", log)
+    except Exception as ex:
+        log(f"  formula: not written ({type(ex).__name__}: {ex})")
     steps = cache.write_manifest(out, log)
     report.write_tables(os.path.join(out, "comparison"), {"8_run_steps": steps})
+    saved.snapshot(cfg, "pipeline", log)
     log(f"\nDone. Outputs in {out}")
 
 

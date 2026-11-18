@@ -6,7 +6,11 @@ from scipy.spatial.distance import squareform
 
 
 def cluster(F, corr_threshold):
-    """Average-linkage clustering on distance 1 - |corr|. Returns a Series of cluster labels."""
+    """Average-linkage clustering on distance 1 - |corr|. Returns a Series of cluster labels (one per feature).
+
+    Args:
+        corr_threshold: |correlation| above which series join the same cluster.
+    """
     if F.shape[1] == 1:
         return pd.Series([1], index=F.columns)
     C = F.corr().abs().fillna(0).values.copy()
@@ -17,7 +21,12 @@ def cluster(F, corr_threshold):
 
 def representatives(table, score_col, primary_geography=None, tolerance=0.75):
     """Within each cluster keep the highest score, unless a primary-geography member scores at least
-    `tolerance` x the best, in which case keep the best primary-geography member."""
+    `tolerance` x the best, in which case keep the best primary-geography member.
+
+    Args:
+        table: one row per variable with a cluster column. score_col: column to rank by. primary_geography:
+        preferred geography. tolerance: share of the best score a primary-geography member needs.
+    """
     keep = []
     for _, g in table.groupby("cluster"):
         g = g.sort_values(score_col, ascending=False)

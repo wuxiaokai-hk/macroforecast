@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macroforecast"
+version = "2.0.0"
+description = "Explainable forecasting of balances, volumes and rates from macro drivers: selection, model zoo, backtest, out-of-sample test"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy", "pandas", "scipy", "statsmodels", "scikit-learn", "matplotlib", "openpyxl", "pyyaml", "tabulate",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.23"]
+deck = ["python-pptx", "jupyter"]
+deep = ["darts>=0.30"]
+
+[project.scripts]
+macroforecast = "macroforecast.cli:main"
+
+# Install from the project folder with:  pip install -e .
+# (editable: the package keeps using this folder's data/, config/ and outputs/)
+[tool.setuptools]
+py-modules = ["run_pipeline", "run_oos", "run_panel", "run_system"]
+
+[tool.setuptools.packages.find]
+include = ["macroforecast*", "src*"]

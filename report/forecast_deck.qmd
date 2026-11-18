@@ -1,0 +1,992 @@
+---
+title: "Forecasting with macro drivers"
+subtitle: "An explainable macro model: methodology, model comparison and recommendation"
+author: "Model development"
+date: today
+date-format: "MMMM YYYY"
+format:
+  pptx:
+    reference-doc: reference.pptx
+    slide-level: 2
+execute:
+  echo: false
+  warning: false
+jupyter: python3
+---
+
+```{python}
+#| tags: [parameters]
+# Change these (or pass -P name:value to quarto render, which needs papermill) to build the deck for another run.
+# tools/make_deck.py and the app pass them as DECK_* environment variables instead (no papermill needed).
+import os
+config_file = os.environ.get("DECK_CONFIG", "../config/example_config.yaml")
+outputs_dir = os.environ.get("DECK_OUTPUTS", "../outputs")
+simulated = os.environ.get("DECK_SIMULATED", "True") == "True"   # adds the "simulated data" notes; False for real data
+region = os.environ.get("DECK_REGION", "")   # name used in the text and footer ("" = the config's primary geography)
+max_variables = int(os.environ.get("DECK_MAX_VARIABLES", 3))     # audience limit: fewer than 4 key variables
+```
+
+```{python}
+#| include: false
+# =====================================================================================================
+# How this deck is built
+#   1. quarto render writes a plain PowerPoint from this file (text, tables, markers);
+#   2. style_deck.py (run automatically, see _quarto.yml) turns the markers into the designed elements:
+#        [[tile: big | label | sub]]   [[icon: icon | heading | text]]   [[step: icon | heading | text]]
+#        [[card: heading | line; line]]   [[band: lead | text]]   [[chart: id]]   [[split: 60]]   [[dark-slide]]
+#      (a star after the kind, e.g. [[tile*: ...]], highlights; @red etc. picks a colour; icons: report/icons/)
+#      A column whose first line starts with ★ becomes a dark card. Charts are native PowerPoint charts,
+#      specified below with chart(id, spec) and stored in report/_charts/.
+#   Layout rule: one table, one chart or two columns per slide (pandoc moves stray text to a new slide).
+# =====================================================================================================
+import json
+import os
+
+import numpy as np
+import pandas as pd
+import yaml
+
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "..")))
+from src.models.literature import load as load_concepts  # noqa: E402
+from src.utils.config import load_config  # noqa: E402
+from src.utils.io import load_bank, read_table  # noqa: E402
+
+cfg = load_config(config_file)          # defaults filled in, paths resolved, literature workbook applied
+RUN = cfg["run_name"]
+REGION = str(region or cfg.get("region") or (cfg.get("screen_first") or {}).get("primary_geography")
+             or ((cfg.get("features") or {}).get("allowed_geographies") or ["the region"])[0])
+OUT = os.environ.get("DECK_RUN_DIR") or os.path.join(outputs_dir, RUN)   # a saved run, or the latest results
+H = int(cfg["sample"].get("horizon", 12))
+HZ = sorted({int(h) for h in cfg["sample"].get("report_horizons", [4, 8, 12]) if int(h) <= H} | {H})
+HM = max(HZ)
+_t = cfg.get("target") or {}
+TARGET = str(_t.get("label") or str(cfg["data"]["bank"]["target_column"]).replace("_", " "))   # e.g. "loan balance"
+CHANGE = "change" if str(_t.get("transform", "auto")).lower() == "diff" else "growth"
+if _t.get("display_scale"):                       # charts show level / SCALE, in UNITS
+    SCALE, UNITS = float(_t["display_scale"]), str(_t.get("display_units") or _t.get("units") or "")
+elif _t.get("units"):
+    SCALE, UNITS = 1.0, str(_t["units"])
+else:                                            # the example data: $ millions shown in billions
+    SCALE, UNITS = (1000.0, "$ billions") if CHANGE == "growth" else (1.0, "units")
+MAXV = int(max_variables)
+CH = os.path.join(os.getcwd(), "_charts")
+os.makedirs(CH, exist_ok=True)
+json.dump({"simulated": bool(simulated), "footer": f"{REGION} {TARGET} forecasting model",
+           "note": "Results on simulated data with the same structure as the production inputs"},
+          open(os.path.join(CH, "meta.json"), "w", encoding="utf-8"))
+
+
+def read(*p):
+    f = os.path.join(OUT, *p)
+    return pd.read_csv(f) if os.path.exists(f) else pd.DataFrame()
+
+
+comp = read("comparison", "1_model_comparison.csv")
+by_h = read("comparison", "2_backtest_by_horizon.csv")
+drv = read("comparison", "3_drivers.csv")
+diag = read("comparison", "4_diagnostics.csv")
+yearend = read("comparison", "5_scenario_yearend.csv")
+scen = read("comparison", "6_scenario_forecasts.csv")
+mlist = read("comparison", "9_model_list.csv")
+litstat = read("comparison", "10_literature_variables.csv")
+oos = read("oos", "1_oos_summary.csv")
+oos_h = read("oos", "2_oos_by_horizon.csv")
+dm = read("oos", "3_dm_tests_vs_benchmark.csv")
+picks = read("oos", "4_drivers_by_origin.csv")
+stab = read("oos", "5_driver_stability.csv")
+hold = read("oos", "7_holdout.csv")
+forms = read("common", "stationarity_tests.csv")
+a2, a3, a4 = (read("screen_first", f) for f in ("A2_screen_best_per_variable.csv", "A3_clusters.csv", "A4_shortlist.csv"))
+b3 = read("en_first", "B3_groups.csv")
+HAVE_OOS = not oos.empty and f"avg_1_{HM}_pct" in oos
+try:                                    # the concepts sheet of the literature workbook (or the old CSV table)
+    littab = load_concepts(cfg) if (cfg.get("literature") or {}).get("table") else pd.DataFrame()
+except Exception:
+    littab = pd.DataFrame()
+_m = cfg["data"]["macro"]
+_first = list(_m["scenarios"].values())[0]
+macro_cols = read_table(_first if isinstance(_first, str) else _first["file"], _m.get("sheet")).shape[1] - 1
+level = load_bank(cfg)
+
+FAM_ORDER = ["Benchmark", "Data-driven", "Literature", "Hybrid", "Auto ARDL", "Same growth as a driver",
+             "Horizon combination", "Regime switching", "Statistical time series", "Machine learning", "Deep learning",
+             "AI foundation model"]
+FAM_COL = {"Benchmark": "grey", "Data-driven": "teal", "Literature": "gold", "Hybrid": "green",
+           "Machine learning": "purple", "AI foundation model": "red", "Look-ahead check": "C9D3DC",
+           "Statistical time series": "orange", "Deep learning": "plum", "Regime switching": "sea",
+           "Auto ARDL": "3B5BA5", "Same growth as a driver": "8A6D3B", "Horizon combination": "B5487A"}
+
+ranking = (oos[oos["family"] != "Look-ahead check"] if HAVE_OOS else comp).copy()
+basis = "out of sample, re-selected at every origin" if HAVE_OOS else "rolling backtest"
+ranking = ranking.drop(columns=["drivers"], errors="ignore").merge(mlist[["model", "drivers"]], on="model", how="left")
+
+
+def n_variables(s):
+    """Distinct macro variables a model uses, long-run (error-correction) variables included."""
+    if not isinstance(s, str) or s == "(none)":
+        return 0
+    if "%" in s:
+        return np.nan
+    return len({d.replace("long run: ", "").split("|")[0].split(":")[0] for d in s.split(", ")})
+
+
+ranking["n_vars"] = ranking["drivers"].map(n_variables)
+ranking["single_equation"] = ranking["family"].isin(["Data-driven", "Literature", "Hybrid"]) & ranking["n_vars"].notna()
+ranking = ranking.sort_values(f"avg_1_{HM}_pct").reset_index(drop=True)
+within = ranking[ranking["single_equation"] & ranking["n_vars"].between(1, MAXV)]
+REC = within.iloc[0] if len(within) else ranking.iloc[0]
+BEST = ranking[ranking["family"] != "Benchmark"].iloc[0]
+CHALL = BEST if BEST["model"] != REC["model"] else ranking[ranking["model"] != REC["model"]].iloc[0]
+AR = ranking.set_index("model").loc["AR(1) benchmark"]
+
+
+def pct(x, d=2):
+    return f"{x:.{d}f}%"
+
+
+def less(r, h=HM):
+    return f"{(1 - r[f'avg_1_{h}_pct'] / AR[f'avg_1_{h}_pct']) * 100:.0f}%"
+
+
+def esc(s):
+    return str(s).replace("$", "\\$").replace("|", "\\|")
+
+
+def short(f):
+    if not isinstance(f, str) or "|" not in f:
+        return str(f).replace("long run: ", "LR ").replace(":", " ")
+    code, tr, lag = f.split("|")
+    tr = {"dlog": "q/q", "yoy": "y/y", "dlog2": "2q", "acc": "accel.", "gap": "gap", "rdlog": "real q/q",
+          "ryoy": "real y/y", "diff": "chg", "diff2": "2q chg", "diff4": "y/y chg", "lvl": "level", "rgap": "gap"}.get(tr, tr)
+    return f"{code} {tr} {lag}"
+
+
+def table(df, widths=None, floatfmt=".2f"):
+    """Pipe table; `widths` sets relative column widths in PowerPoint."""
+    df = df.copy()
+    for c in df.columns:
+        if df[c].dtype.kind == "f":
+            df[c] = df[c].map(lambda v: "" if pd.isna(v) else format(v, floatfmt))
+    widths = widths or [1] * df.shape[1]
+    dashes = [max(3, int(round(120 * w / sum(widths)))) for w in widths]
+    print("| " + " | ".join(esc(c) for c in df.columns) + " |")
+    print("|" + "|".join("-" * d for d in dashes) + "|")
+    for r in df.astype(str).values:
+        print("| " + " | ".join(esc(v) for v in r) + " |")
+    print()
+
+
+def chart(cid, spec):
+    """Write a native-chart spec and print its marker (drawn by style_deck.py)."""
+    json.dump(spec, open(os.path.join(CH, f"{cid}.json"), "w", encoding="utf-8"), default=float)
+    print(f"[[chart: {cid}]]\n")
+
+
+def family_bar_spec(t, title):
+    t = t.copy()
+    t["fo"] = t["family"].map({f: i for i, f in enumerate(FAM_ORDER)}).fillna(99)
+    t = t.sort_values(["fo", f"avg_1_{HM}_pct"])
+    return {"type": "barh", "categories": list(t["model"]), "title": title, "legend": False,
+            "series": [{"name": f"1–{HM} quarters", "values": [round(v, 3) for v in t[f"avg_1_{HM}_pct"]],
+                        "colors": [FAM_COL.get(f, "teal") for f in t["family"]]}],
+            "number_format": '0.00"%"', "axis_format": '0.0"%"', "cat_font_size": 8, "gap_width": 35, "y_min": 0}
+
+
+headline = (f"Within {MAXV} variables, {REC['model']} cuts the {HM}-quarter error by {less(REC)}")
+n_feat = len(read("screen_first", "A1_screen_all.csv"))
+n_rel = forms["mnemonic"].nunique() if not forms.empty else 0
+n_stat = forms[forms["stationary"]]["mnemonic"].nunique() if not forms.empty else 0
+n_origins = picks["origin"].nunique() if not picks.empty else 0
+n_lit_on = int((litstat["status"] == "in use").sum()) if not litstat.empty else 0
+_s = cfg["sample"]
+_step, _every = int(_s.get("backtest_step", 1)), int(_s.get("reestimate_every", 1))
+bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" from {_s['backtest_start']}"
+           + (f" to {_s['backtest_end']}" if _s.get("backtest_end") else "")
+           + ("; re-estimated at every origin" if _every == 1 else
+              "; re-estimated once a year (Q%d), coefficients kept for the other quarters" % int(_s.get("reestimate_quarter", 1))
+              if _every == 4 else f"; re-estimated every {_every} quarters"))
+```
+
+## `{python} headline`
+
+:::: {.columns}
+
+::: {.column}
+[[tile: `{python} len(ranking)` | models in `{python} ranking["family"].nunique()` families | same tests 4, 8 and 12 quarters ahead]]
+
+[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | best within `{python} MAXV` variables | `{python} REC["model"]`, average over 1–`{python} HM` quarters]]
+
+[[tile*: `{python} pct(BEST[f"avg_1_{HM}_pct"])` | most accurate overall | `{python} BEST["model"]`]]
+
+**What we found**
+
+- Theory-anchored models hold up best 8–12 quarters ahead
+- Data-chosen drivers change from origin to origin; the usual backtest flatters them
+- Every model beats the AR(1) benchmark (`{python} pct(AR[f"avg_1_{HM}_pct"])`) except the ECB BEAST specification
+:::
+
+::: {.column}
+★ **Recommendation**
+
+`{python} MAXV`-variable limit firm: **`{python} REC["model"]`**, challenger `{python} CHALL["model"]`
+
+Limit relaxed for a long-run anchor: **`{python} BEST["model"]`**
+:::
+
+::::
+
+::: notes
+Every number in this deck is computed from the pipeline outputs when it is rendered. Errors are tested `{python} basis`.
+:::
+
+## The model must be explainable, scenario-ready and accurate
+
+:::: {.columns}
+
+::: {.column}
+[[split: 36]]
+
+★ **Objective**
+
+Forecast the quarterly `{python} REGION` `{python} TARGET` from `{python} macro_cols` macro variables and internal data, under the `{python} len(cfg['data']['macro']['scenarios'])` macro scenarios.
+
+Uses: planning, scenario analysis, stress testing, capital and liquidity planning.
+:::
+
+::: {.column}
+[[icon: cloud | Scenario-ready | Every driver has a Moody's scenario path]]
+
+[[icon: balance | Economically sensible | Each coefficient has the expected sign]]
+
+[[icon: list | Few drivers | Fewer than 4 key variables for the audience]]
+
+[[icon: bullseye | Accurate out of sample | Beats the benchmark 4, 8 and 12 quarters ahead]]
+
+[[icon: stethoscope | Statistically sound | Stable coefficients, clean residual tests]]
+
+[[icon: sort | Sensible scenarios | Worse scenarios give lower balances]]
+:::
+
+::::
+
+# Methodology
+
+## Six steps take `{python} macro_cols` series to a small, tested model
+
+[[step: bullseye | 1. Target | Organic quarterly log change of the balance]]
+
+[[step: exchange | 2. Transform | Up to 7 stationary forms, lags 0–4]]
+
+[[step: filter | 3. Select | Screen first, or Elastic Net first]]
+
+[[step: layers | 4. Group | Near-duplicates count as one signal]]
+
+[[step: search | 5. Search | Every 1–3 driver combination under economic rules]]
+
+[[step: check-double | 6. Validate | Backtest, re-selection test, scenarios]]
+
+[[band: Guiding principle | theory sets the rules (channels, signs, geography); data does the measuring (series, form, lag); the final ranking is on out-of-sample accuracy]]
+
+## The target is the organic `{python} CHANGE` of the `{python} TARGET`, cleaned of one-off events
+
+:::: {.columns}
+
+::: {.column}
+[[split: 40]]
+
+**Target variable**
+
+y~t~ = ln[(L~t~ − A~t~) / L~t−1~]
+
+- L~t~ is the quarter-end balance; A~t~ removes acquisitions and portfolio sales
+- The balance is not stationary; its log change is
+- Each COVID quarter (2020Q1–2021Q2) has its own dummy and is left out of the error
+:::
+
+::: {.column}
+```{python}
+#| output: asis
+lv = level / SCALE
+chart("balance", {"type": "line", "markers": False, "categories": [str(p) for p in lv.index],
+                  "series": [{"name": TARGET.capitalize(), "values": [round(v, 2) for v in lv.values], "color": "teal"}],
+                  "title": f"Reported {TARGET} ({UNITS})", "legend": False, "number_format": "0",
+                  "label_skip": 16})
+```
+:::
+
+::::
+
+## Each variable is tried in several economically meaningful forms
+
+[[card: Levels (indexes, \$, counts) | q/q, y/y and 2-quarter growth; Acceleration of y/y growth; % gap from 3-year average; Real growth, deflated by CPI]]
+
+[[card: Rates (%, pp) | q/q, 2-quarter and y/y change; Level, if stationary; Gap from 3-year average]]
+
+[[card*: Constructed variables | Real 5-year mortgage rate; Mortgage spread over 5-year GoC; Term spread (10-year minus overnight)]]
+
+[[band: Only stationary forms are kept | every window looks backwards only; ADF test on each form; lags 0–4 give `{python} f"{n_feat:,}"` candidate features]]
+
+## The funnel narrows `{python} macro_cols` series to `{python} len(str(REC["drivers"]).split(", "))` drivers
+
+:::: {.columns}
+
+::: {.column}
+[[split: 58]]
+
+```{python}
+#| output: asis
+stages = [("Moody's + constructed", macro_cols), ("Relevant geography & theme", n_rel), ("Stationary form", n_stat),
+          ("Pass the screen", int(a2["passed"].sum()) if not a2.empty else 0),
+          ("Independent clusters", a3["cluster"].nunique() if not a3.empty else 0), ("Shortlist", len(a4)),
+          ("Screen-first drivers", len(str(mlist.set_index("model").loc["Screen first", "drivers"]).split(", ")) if "Screen first" in set(mlist["model"]) else 0)]
+chart("funnel", {"type": "barh", "categories": [s for s, _ in stages], "legend": False,
+                 "series": [{"name": "Variables", "values": [v for _, v in stages], "color": "teal"}],
+                 "number_format": "0", "gap_width": 40, "y_min": 0})
+```
+:::
+
+::: {.column}
+[[icon@gold: filter | Relevance | `{python} ' and '.join(map(str, cfg['features'].get('allowed_geographies') or ['All']))` series; industry detail dropped]]
+
+[[icon@gold: check | Screen | p < 0.05 and the expected sign, controlling for momentum and COVID]]
+
+[[icon@gold: layers | Cluster | Correlation above 0.75 counts as one signal; `{python} REGION` preferred]]
+
+[[icon@gold: search | Search | Best 1–3 driver combination by out-of-sample error]]
+:::
+
+::::
+
+## Two ways to choose the drivers, then the same final search
+
+:::: {.columns}
+
+::: {.column}
+**A. Screen first**
+
+1. Each candidate alone in y~t~ = a + ρy~t−1~ + dummies + βz~t~
+2. Pass: p < 0.05 and expected sign: `{python} int(a2["passed"].sum()) if not a2.empty else "–"` variables
+3. Cluster: `{python} a3["cluster"].nunique() if not a3.empty else "–"` groups, shortlist of `{python} len(a4)`
+4. Final search
+:::
+
+::: {.column}
+**B. Elastic Net first** (glmnet conventions)
+
+1. Momentum and dummies unpenalised; signs constrained
+2. λ set so 10 features enter; deterministic
+3. Kept if chosen in ≥ 60% of 100 subsamples: `{python} len(b3) if not b3.empty else "–"` features
+4. Group, then the same final search
+:::
+
+::::
+
+## Selection rules keep every model economic, simple and accurate
+
+:::: {.columns}
+
+::: {.column}
+[[split: 46]]
+
+**Each candidate on its own**
+
+y~t~ = α + ρ·y~t−1~ + Σ γ~q~·D~q,t~ + β·z~t−ℓ~ + ε~t~
+
+- z is one variable in one form; ℓ is its lag (0–4)
+- Lagged growth and COVID dummies are controls
+- Pass: p < 0.05 (Newey-West) and the expected sign
+:::
+
+::: {.column}
+[[icon@green: check | Every driver significant | Robust t-statistic above 1.96]]
+
+[[icon@green: balance | Every sign as expected | Explainable to the business and the regulator]]
+
+[[icon@green: compress | No strong collinearity | VIF below 5; one driver per economic theme]]
+
+[[icon@green: chart-line | Ranked out of sample | Balance error over `{python} H` quarters; simplest within 5% wins]]
+:::
+
+::::
+
+## The literature points to four channels for household credit
+
+[[icon: home | House prices | Collateral value and the size of mortgages. Hofmann (2004); Goodhart & Hofmann (2008); Muellbauer et al. (2015)]]
+
+[[icon: wallet | Household income | Borrowing capacity. Fitzpatrick & McQuinn (2007); Muellbauer, St-Amant & Williams (2015)]]
+
+[[icon: percent | Cost of credit | Mortgage rates, slow pass-through via 5-year renewals. Calza et al. (2003); Godbout, Xu & Su (2025)]]
+
+[[icon: user-tie | Labour market | Unemployment and income risk. Included in the ECB BEAST credit-demand block (Budnik et al. 2023)]]
+
+[[band: Also in the literature | real GDP and the policy rate (Hofmann 2004; Guo & Stepanyan 2011); inflation and the term spread have no clear sign]]
+
+## The literature table: drivers of household credit and our series
+
+```{python}
+#| output: asis
+if not littab.empty:
+    t = littab.copy()
+    st = litstat.set_index("concept_id")["status"] if not litstat.empty else pd.Series(dtype=str)
+    t["Effect"] = t["effect_on_loan_growth"].map({"Positive": "Positive", "Negative": "Negative", "Ambiguous": "Ambiguous"})
+    t["Evidence"] = t["evidence"].str.replace(r"\s*\(([^)]*?:[^)]*)\)", "", regex=True).map(
+        lambda s: "; ".join(x.strip() for x in str(s).split(";")[:3]) + (" …" if len(str(s).split(";")) > 3 else ""))
+    t["Our series"] = t["moodys_name"].fillna("—")
+    t["Status"] = t["concept_id"].map(st).fillna("").str.replace(" (not used by a model)", "", regex=False)
+    t = t[["concept", "Effect", "Evidence", "Our series", "Status"]]
+    t.columns = ["Concept", "Effect", "Evidence", "Our series", "Status"]
+    table(t, [2.2, 1.2, 5.2, 1.6, 1.6])
+```
+
+::: notes
+The table is the 'concepts' sheet of the literature workbook (full references in its 'references' sheet). Models refer to concepts, not Moody's names: map each concept to your series in the moodys_name column, and set include = no to drop a concept you do not believe from every literature and hybrid model.
+:::
+
+## `{python} len(ranking)` models in `{python} ranking["family"].nunique()` families compete on equal terms
+
+```{python}
+#| output: asis
+ICON = {"Benchmark": "flag", "Data-driven": "database", "Literature": "book", "Hybrid": "balance",
+        "Machine learning": "brain", "AI foundation model": "robot", "Statistical time series": "wave",
+        "Deep learning": "layers", "Regime switching": "exchange", "Auto ARDL": "search",
+        "Same growth as a driver": "percent", "Horizon combination": "calendar"}
+COLR = {"Benchmark": "grey", "Data-driven": "", "Literature": "gold", "Hybrid": "green",
+        "Machine learning": "purple", "AI foundation model": "red", "Statistical time series": "orange",
+        "Deep learning": "plum", "Regime switching": "sea", "Auto ARDL": "3B5BA5", "Same growth as a driver": "8A6D3B",
+        "Horizon combination": "B5487A"}
+for f in FAM_ORDER:
+    ms = mlist[mlist["family"] == f]["model"].map(lambda m: m.split(": ")[-1]).tolist()
+    if not ms and f != "AI foundation model":
+        continue
+    ms = [m.replace("Same growth as ", "").replace("Personal disposable income", "income") for m in ms]
+    shown = []
+    for m in ms:                                   # keep each card to about three short lines
+        if shown and len("; ".join(shown + [m])) > 58:
+            break
+        shown.append(m)
+    body = ("; ".join(shown) + (f" + {len(ms) - len(shown)} more" if len(ms) > len(shown) else "")) if ms else \
+        "Chronos-Bolt; Chronos-2 (need pip install chronos-forecasting)"
+    c = f"@{COLR.get(f, '')}" if COLR.get(f) else ""
+    print(f"[[icon{c}: {ICON.get(f, 'cogs')} | {f} | {esc(body)}]]\n")
+```
+
+## Regime-switching models: does the relation change with the cycle?
+
+:::: {.columns}
+
+::: {.column}
+[[split: 58]]
+
+```{python}
+#| output: asis
+reg = read("comparison", "11_regimes.csv")
+if reg.empty:
+    print("Regime-switching models were not run (models.regime in the config).")
+else:
+    show = [m for m in reg["model"].unique() if not m.startswith(("Time-varying",))]
+    dates = sorted(reg[reg["model"].isin(show)]["date"].unique())
+    cols = ["sea", "gold", "purple", "red"]
+    series = []
+    for i, m in enumerate(show):
+        d = reg[reg["model"] == m].set_index("date")["value"]
+        series.append({"name": f"{m}: {reg[reg['model'] == m]['meaning'].iloc[0]}",
+                       "values": [None if pd.isna(d.get(q)) else round(float(d.get(q)), 3) for q in dates],
+                       "color": cols[i % len(cols)], "width": 1.75})
+    chart("regimes", {"type": "line", "markers": False, "categories": dates, "series": series, "y_min": 0, "y_max": 1,
+                      "title": "Regime indicators over history (1 = high regime)", "number_format": "0.0",
+                      "label_skip": 8, "legend_pos": "bottom"})
+```
+:::
+
+::: {.column}
+```{python}
+#| output: asis
+if not reg.empty:
+    rk = ranking.set_index("model")
+    for m in reg["model"].unique():
+        first = drv[drv["model"] == m].iloc[0] if (drv["model"] == m).any() else None
+        err = rk[f"avg_1_{HM}_pct"].get(m) if m in rk.index else None
+        head = m + (f" — {err:.2f}%" if err is not None and pd.notna(err) else "")
+        print(f"**{esc(head)}**  \n{esc(str(first['reading']) if first is not None else '')}\n")
+```
+:::
+
+::::
+
+::: notes
+All five use the literature core drivers, so their errors compare directly with the four-channel core. Markov switching infers two unobserved regimes (low and high mean growth) and carries their probabilities forward; the threshold and smooth-transition models switch on the house price growth path, so a scenario can move them into the other regime; the time-varying model lets coefficients drift slowly; the break-adaptive model re-estimates after a detected structural break. Errors shown are the average over 1–12 quarters on the same basis as the ranking.
+:::
+
+## Machine learning and AI: what they add, and what they cost
+
+| Model | Inputs | Responds to scenarios | Run time |
+|------------------------------------|-----------------------------------------------|----------------------------------|-------------------|
+| Ridge regression | Momentum, dummies, pooled drivers (literature core + data-chosen) | Yes | Seconds |
+| Random forest, gradient boosting | Same | Yes, within the historical range | ~10 s each |
+| Neural network (5 small nets, averaged) | Same | Yes | ~10 s |
+| ARIMAX, Theta | Literature drivers with ARMA errors; Theta: own history only | ARIMAX yes, Theta no | Seconds |
+| TiDE (Google, 2023), TFT (2021) | Own history, literature drivers and their scenario paths | Yes | TiDE ~1.5 min, TFT ~4 min |
+| N-HiTS (2023) | Own history and the drivers as past inputs | Only beyond the first 4 quarters | ~1 min per run |
+| Chronos-Bolt (Amazon, 2024) | Own history only | No: same path in every scenario | < 1 s per forecast |
+| Chronos-2 (Amazon, 2025) | Own history, literature drivers and their scenario paths | Yes | < 1 s per forecast |
+
+::: notes
+Fixed hyperparameters, no tuning loop; machine-learning and deep-learning models are re-estimated once a year. The deep networks are kept small (a few thousand weights) because we have about 100 quarters; each is the average of 3 random seeds. Foundation models are not trained on our data, so they measure how much bank-specific modelling adds.
+:::
+
+## Every model is tested the same way, 4, 8 and 12 quarters ahead
+
+:::: {.columns}
+
+::: {.column}
+**Rolling backtest**
+
+- `{python} bt_desc`: forecast 1–`{python} H` quarters with realised macro values
+- Error on the balance level; COVID windows left out
+- Drivers chosen once with all the data, so optimistic
+:::
+
+::: {.column}
+★ **True out-of-sample test**
+
+- At `{python} n_origins` origins, the whole selection is re-run with data up to the origin
+- Compared at 4, 8 and 12 quarters ahead
+- Diebold-Mariano tests against AR(1); holdout of the last `{python} cfg["oos"]["holdout_quarters"]` quarters
+:::
+
+::::
+
+# Performance
+
+## Out of sample, theory-anchored models are the most accurate
+
+:::: {.columns}
+
+::: {.column}
+[[split: 64]]
+
+```{python}
+#| output: asis
+if HAVE_OOS:
+    chart("oos_bars", family_bar_spec(oos[oos["family"] != "Look-ahead check"],
+                                      f"Average balance error, 1–{HM} quarters, re-selected at each origin (%)"))
+```
+:::
+
+::: {.column}
+[[tile*: `{python} pct(BEST[f"avg_1_{HM}_pct"])` | `{python} BEST["model"]` | most accurate, `{python} int(BEST["n_vars"]) if pd.notna(BEST["n_vars"]) else ""` variables]]
+
+[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | `{python} REC["model"]` | best within `{python} MAXV` variables]]
+
+[[tile: `{python} pct(AR[f"avg_1_{HM}_pct"])` | AR(1) benchmark | own history only]]
+:::
+
+::::
+
+::: notes
+Colours: grey benchmark, blue data-driven, gold literature, green hybrid, orange statistical time series, purple machine learning, plum deep learning, red AI foundation models.
+:::
+
+## With drivers chosen on all the data, the ranking looks different
+
+:::: {.columns}
+
+::: {.column}
+[[split: 64]]
+
+```{python}
+#| output: asis
+chart("bt_bars", family_bar_spec(comp, f"Average balance error, 1–{HM} quarters, drivers chosen with all the data (%)"))
+```
+:::
+
+::: {.column}
+**Why the two rankings differ**
+
+The rolling backtest keeps the drivers chosen with all the data, so data-driven models look better than they are.
+
+The out-of-sample test re-chooses everything at each origin. Decisions use that test.
+:::
+
+::::
+
+## The best model of each family at 4, 8 and 12 quarters
+
+```{python}
+#| output: asis
+rows = []
+for f in FAM_ORDER:
+    d = ranking[ranking["family"] == f]
+    if d.empty:
+        continue
+    r = d.iloc[0]
+    row = {"Family": f, "Best model": r["model"].split(": ")[-1]}
+    for h in HZ:
+        row[f"1–{h}q"] = pct(r[f"avg_1_{h}_pct"])
+    row[f"vs AR(1), 1–{HM}q"] = "" if f == "Benchmark" else f"{less(r)} less"
+    if not dm.empty and f != "Benchmark":
+        s = dm[(dm["model"] == r["model"]) & (dm["horizon_q"] == min(HZ))]
+        row[f"Beats AR(1) at {min(HZ)}q (DM 5%)"] = ("yes" if bool(s["better_than_benchmark_at_5pct"].iloc[0]) else "no") if len(s) else ""
+    rows.append(row)
+t = pd.DataFrame(rows).fillna("")
+table(t, [1.7, 3] + [1] * len(HZ) + [1.4] + ([1.6] if t.shape[1] > len(HZ) + 3 else []))
+```
+
+::: notes
+Average balance error over 1 to h quarters, COVID windows excluded, `{python} basis`. Diebold-Mariano test with the small-sample correction; at 8 and 12 quarters there are too few independent origins for a reliable test.
+:::
+
+## The gap over the benchmark widens with the horizon
+
+```{python}
+#| output: asis
+def best_per_family(t):
+    t = t.sort_values(f"avg_1_{HM}_pct")
+    return ["AR(1) benchmark"] + [t[t["family"] == f]["model"].iloc[0] for f in FAM_ORDER[1:] if (t["family"] == f).any()]
+
+
+src, col = (oos_h, "MAPE_pct") if HAVE_OOS else (by_h, "MAPE_exCOVID_pct")
+series = []
+for m in best_per_family(ranking):
+    d = src[src["model"] == m].set_index("horizon_q")[col].reindex(range(1, H + 1))
+    fam = ranking.set_index("model").loc[m, "family"]
+    series.append({"name": m, "values": [None if pd.isna(v) else round(v, 3) for v in d.values],
+                   "color": FAM_COL.get(fam, "teal"), "dash": fam == "Benchmark"})
+chart("horizon", {"type": "line", "categories": [str(h) for h in range(1, H + 1)], "series": series,
+                  "title": f"Balance error by quarters ahead, best model of each family ({basis}, %)",
+                  "number_format": '0.0"%"', "y_min": 0})
+```
+
+## More variables buy accuracy at long horizons
+
+:::: {.columns}
+
+::: {.column}
+[[split: 64]]
+
+```{python}
+#| output: asis
+t = ranking.dropna(subset=["n_vars"])
+rng = np.random.default_rng(1)
+series = [{"name": f, "x": [round(float(v) + rng.uniform(-0.12, 0.12), 3) for v in d["n_vars"]],
+           "y": [round(float(v), 3) for v in d[f"avg_1_{HM}_pct"]], "color": FAM_COL.get(f, "teal")}
+          for f, d in t.groupby("family", sort=False)]
+chart("scatter", {"type": "scatter", "series": series, "x_title": "Distinct macro variables (long-run anchor included)",
+                  "y_title": f"Error, 1–{HM} quarters (%)", "number_format": "0.0", "x_min": 0,
+                  "x_max": int(t["n_vars"].max()) + 1, "y_min": 0, "legend_pos": "bottom"})
+```
+:::
+
+::: {.column}
+**The trade-off**
+
+Within `{python} MAXV` variables the best is `{python} REC["model"]` at `{python} pct(REC[f"avg_1_{HM}_pct"])`.
+
+`{python} BEST["model"]` reaches `{python} pct(BEST[f"avg_1_{HM}_pct"])` with `{python} int(BEST["n_vars"]) if pd.notna(BEST["n_vars"]) else ""` variables, its long-run anchor included.
+
+The limit is a decision for the model owner.
+:::
+
+::::
+
+## Choosing drivers with all the data flatters the backtest
+
+:::: {.columns}
+
+::: {.column}
+```{python}
+#| output: asis
+if HAVE_OOS:
+    rows = []
+    for m in [x for x in oos["model"] if x.endswith("(full-sample drivers)")]:
+        base = m.replace(" (full-sample drivers)", "")
+        if base not in set(oos["model"]):           # that approach was not run (models.only)
+            continue
+        r1, r2 = oos.set_index("model").loc[base], oos.set_index("model").loc[m]
+        for lab, r in (("re-selected each time", r1), ("fixed from all data", r2)):
+            rows.append({"Approach": base, "Drivers": lab, **{f"1–{h}q": pct(r[f"avg_1_{h}_pct"]) for h in HZ}})
+    table(pd.DataFrame(rows), [1.5, 2] + [1] * len(HZ))
+```
+:::
+
+::: {.column}
+[[split: 64]]
+
+★ **Look-ahead optimism**
+
+The gap between the two rows is what a backtest gains by keeping drivers chosen with all the data.
+
+Decisions in this deck use the re-selected numbers.
+:::
+
+::::
+
+## Which drivers keep being chosen, origin after origin
+
+```{python}
+#| output: asis
+if not stab.empty:
+    t = stab[~stab["model"].str.contains("50/50|performance")].copy()
+    t["most_common_drivers"] = t["most_common_drivers"].map(lambda s: ", ".join(short(x) for x in str(s).split(", ")))
+    t = t[["model", "distinct_driver_sets", "avg_overlap_with_previous_origin", "most_common_drivers"]]
+    t.columns = ["Model", "Driver sets", "Overlap with previous origin (1 = same)", "Most often chosen"]
+    table(t, [2.4, 1, 1.4, 5])
+```
+
+## Holdout: chosen and estimated without the last `{python} cfg["oos"]["holdout_quarters"]` quarters
+
+```{python}
+#| output: asis
+if not hold.empty:
+    keep = best_per_family(ranking)
+    h = hold[hold["model"].isin(keep)]
+    start = pd.Period(h.iloc[0]["train_end"], freq="Q")
+    hist = level.loc[:start].iloc[-8:]
+    dates = [str(p) for p in hist.index] + list(h.drop_duplicates("date")["date"])
+    nh = len(hist)
+    act = h.drop_duplicates("date")["actual_organic"].values
+    series = [{"name": "Actual", "values": [round(v / SCALE, 2) for v in hist.values] + [None] * len(act), "color": "ink", "width": 2.5},
+              {"name": "Actual, held out (organic)", "values": [None] * (nh - 1) + [round(hist.iloc[-1] / SCALE, 2)] + [round(v / SCALE, 2) for v in act],
+               "color": "ink", "dash": True}]
+    for m, d in h.groupby("model", sort=False):
+        fam = d["family"].iloc[0]
+        series.append({"name": f"{m} ({d['error_pct'].iloc[-1]:+.1f}%)",
+                       "values": [None] * (nh - 1) + [round(hist.iloc[-1] / SCALE, 2)] + [round(v / SCALE, 2) for v in d["forecast"]],
+                       "color": FAM_COL.get(fam, "teal"), "dash": fam == "Benchmark", "width": 1.75})
+    chart("holdout", {"type": "line", "markers": False, "categories": dates, "series": series,
+                      "title": f"{TARGET.capitalize()} ({UNITS}); error after the holdout in brackets", "number_format": "0",
+                      "label_skip": 2})
+```
+
+## `{python} REC["model"]`: the best model within `{python} MAXV` variables
+
+:::: {.columns}
+
+::: {.column}
+```{python}
+#| output: asis
+d = drv[drv["model"] == REC["model"]].copy()
+if "t" in d and d["t"].notna().any():
+    d = d[["term", "coef", "t", "reading"]]
+    d["term"] = d["term"].map(lambda x: "Momentum (last quarter)" if x == "y_lag1" else
+                              ("Gap to long-run level" if x == "ect_lag1" else short(x)))
+    d["coef"] = d["coef"].map(lambda v: f"{v:.3f}")
+    d["t"] = d["t"].map(lambda v: f"{v:.1f}")
+    d["reading"] = d["reading"].str.replace(r" \[.*?\]", "", regex=True).str.split(";").str[0]
+    d.columns = ["Driver", "Coef.", "t", "What it means"]
+    table(d, [2, 0.9, 0.7, 5])
+```
+:::
+
+::: {.column}
+[[split: 70]]
+
+```{python}
+#| output: asis
+r = diag.set_index("model").loc[REC["model"]] if REC["model"] in set(diag["model"]) else None
+print(f"[[tile: {pct(REC[f'avg_1_{HM}_pct'])} | error over 1–{HM} quarters | {pct(REC['avg_1_4_pct'])} over 1–4]]\n")
+if r is not None and pd.notna(r.get("adj_R2", np.nan)):
+    print(f"[[tile: {r['adj_R2']:.2f} | adjusted R² | full sample]]\n")
+    print(f"[[tile: {r['max VIF']:.1f} | largest VIF | limit 5]]\n")
+```
+:::
+
+::::
+
+## The model passes the statistical checks
+
+:::: {.columns}
+
+::: {.column}
+```{python}
+#| output: asis
+r = diag.set_index("model").loc[REC["model"]] if REC["model"] in set(diag["model"]) else None
+if r is not None and pd.notna(r.get("n_obs", np.nan)):
+    tests = [("Driver significance", "max p-value of drivers", lambda v: v < 0.05, "Largest p-value"),
+             ("Multicollinearity", "max VIF", lambda v: v < 5, "Largest VIF"),
+             ("Autocorrelation", "Ljung-Box p (4)", lambda v: v > 0.05, "Ljung-Box p, 4 lags"),
+             ("Autocorrelation", "Ljung-Box p (8)", lambda v: v > 0.05, "Ljung-Box p, 8 lags"),
+             ("Heteroskedasticity", "Breusch-Pagan p", lambda v: v > 0.05, "Breusch-Pagan p"),
+             ("Normality", "Jarque-Bera p", lambda v: v > 0.05, "Jarque-Bera p"),
+             ("Stability", "CUSUM p", lambda v: v > 0.05, "CUSUM p")]
+    rows = [{"Check": a, "Test": t, "Result": f"{r[c]:.3f}", "Pass": "Pass" if ok(r[c]) else "Review"}
+            for a, c, ok, t in tests if c in r and pd.notna(r[c])]
+    rows.append({"Check": "Economic sense", "Test": "Signs as expected", "Result": str(r["wrong-sign drivers"]),
+                 "Pass": "Pass" if r["wrong-sign drivers"] == "none" else "Review"})
+    table(pd.DataFrame(rows), [2, 2.2, 1, 0.8])
+```
+:::
+
+::: {.column}
+[[split: 66]]
+
+[[icon@green: shield | What else is reported | The same diagnostics for every regression model, wrong-sign flags, and an Engle-Granger test for the error-correction models]]
+:::
+
+::::
+
+```{python}
+#| include: false
+# Scenario order check that works with any scenario names: each name is ranked by keywords
+# (severe/stress < downside/adverse < baseline < upside); names without a keyword are left out of the check.
+def severity(name):
+    n = str(name).lower()
+    for words, rank in ((("severe", "stress", "extreme", "tail"), -2), (("downside", "adverse", "pessimistic", "down"), -1),
+                        (("upside", "optimistic", "upper", "strong"), 1), (("baseline", "base", "central", "reference"), 0)):
+        if any(w in n for w in words):
+            return rank
+    return None
+
+
+v_ = yearend[yearend["model"] == REC["model"]]
+ranked = sorted([(severity(c), c) for c in v_.columns if c not in ("model", "date") and severity(c) is not None])
+pairs = [(a, b) for (ra, a), (rb, b) in zip(ranked, ranked[1:]) if ra < rb]
+SC_OK = all(bool((v_[a] <= v_[b] + 1e-9).all()) for a, b in pairs) if pairs else None
+ORDER_TXT = " ≤ ".join(c for _, c in ranked) if len(ranked) > 1 else "only one scenario"
+SC_TITLE = ("All scenarios are ordered sensibly" if SC_OK else
+            "Scenario order needs a review" if SC_OK is False else "Forecasts under each scenario")
+```
+
+## `{python} SC_TITLE`
+
+:::: {.columns}
+
+::: {.column}
+[[split: 62]]
+
+```{python}
+#| output: asis
+s = scen[scen["model"] == REC["model"]]
+hist = level.iloc[-12:]
+cats = [str(p) for p in hist.index]
+series = [{"name": "Actual", "values": [round(v / SCALE, 2) for v in hist.values], "color": "ink", "width": 2.5}]
+SC = {-2: "red", -1: "gold", 0: "teal", 1: "green"}
+fut = None
+for sc, d in s.groupby("scenario", sort=False):
+    d = d.iloc[:H]
+    fut = list(d["date"])
+    series.append({"name": sc, "values": [None] * (len(hist) - 1) + [round(hist.iloc[-1] / SCALE, 2)] +
+                   [round(v / SCALE, 2) for v in d["balance_forecast"]], "color": SC.get(severity(sc), "purple")})
+series[0]["values"] += [None] * len(fut)
+chart("scenarios", {"type": "line", "markers": False, "categories": cats + fut, "series": series,
+                    "title": f"{REC['model']}: {TARGET} ({UNITS})", "number_format": "0", "label_skip": 4})
+```
+:::
+
+::: {.column}
+```{python}
+#| output: asis
+y = yearend[yearend["model"] == REC["model"]].drop(columns="model").set_index("date") / SCALE
+y = y.reset_index().head(3)
+y.columns = ["Year-end $bn"] + [c.split(" ", 1)[-1] for c in y.columns[1:]]
+table(y, [1.4] + [1] * (y.shape[1] - 1), floatfmt=".1f")
+```
+:::
+
+::::
+
+::: notes
+Last actual (`{python} str(level.index[-1])`): `{python} f"{level.iloc[-1] / SCALE:.1f}"` `{python} UNITS`. Expected order `{python} ORDER_TXT`: `{python} {True: "yes", False: "no, review", None: "not checked (scenario names without severe / downside / baseline / upside)"}[SC_OK]`.
+:::
+
+```{python}
+#| include: false
+_fj = os.path.join(OUT, "formula", "recommended.json")
+FORM = json.load(open(_fj, encoding="utf-8")) if os.path.exists(_fj) else None
+FORM_TITLE = f"The formula for the next {FORM['quarters']} quarters" if FORM else "The formula"
+```
+
+## `{python} FORM_TITLE`
+
+:::: {.columns}
+
+::: {.column}
+[[split: 58]]
+
+```{python}
+#| output: asis
+if FORM:
+    T_ = pd.read_csv(os.path.join(OUT, "formula", "1_terms.csv"))
+    lines = FORM["equation"].replace(";", ",").replace("L*", "Lorg").replace("(Lorg = organic balance)", "").split("\n")
+    lines += [f"{r.symbol} = {str(r.meaning).replace(';', ',').replace('|', '/')}" for r in T_.itertuples()
+              if str(r.symbol).startswith("x")]
+    if any("Lorg" in x for x in lines):
+        lines.append("ect = gap of the real organic target (Lorg) from its long-run level, z = long-run drivers")
+    lines = [x.replace("$", "\\$") for x in lines]        # "C$" twice would be read as a LaTeX formula
+    print(f"[[card: {FORM['formula_model']} | " + "; ".join(lines) + "]]")
+    print()
+    if not FORM.get("best_has_formula", True):
+        print(f"[[band: Also shown | most accurate overall is {FORM['best_model']} ({FORM['best_error_pct']:.2f}%), "
+              "which has no formula: its forecast is in formula/3_best_overall_next_quarters.csv]]")
+```
+:::
+
+::: {.column}
+```{python}
+#| output: asis
+if FORM:
+    W_ = pd.read_csv(os.path.join(OUT, "formula", "2_next_quarters.csv"))
+    t_ = W_.pivot_table(index="date", columns="scenario", values="balance", sort=False) / SCALE
+    t_ = t_.reset_index()
+    t_.columns = ["Quarter ($bn)"] + [str(c).split(" ", 1)[-1] for c in t_.columns[1:]]
+    table(t_, [1.4] + [1] * (t_.shape[1] - 1), floatfmt=".1f")
+```
+:::
+
+::::
+
+::: notes
+`{python} (f"{FORM['why']}." if FORM else "")` The same calculation is in formula/recommended_model_calculator.xlsx with live Excel formulas: change a driver's future value and the growth and balance update. g(t) is quarterly log loan growth; L(t) = L(t-1) × exp(g(t)).
+:::
+
+## Known limitations and how they are managed
+
+[[icon@red: crosshairs | Conditional accuracy | Tests use realised macro values; live error adds Moody's forecast error]]
+
+[[icon@red: compress | Small sample | About 95 quarters: sign priors, grouping and re-selection limit overfitting]]
+
+[[icon@red: random | Drivers move with the data | Re-selection test and stability table; theory-anchored challengers]]
+
+[[icon@red: coins | Credit aggregates as drivers | Mortgage-credit growth is close to the target: review or exclude that theme]]
+
+[[icon@red: robot | Machine learning and AI | Less transparent; trees cannot extrapolate in severe scenarios]]
+
+[[icon@red: database | `{python} "Simulated data" if simulated else "Data"` | `{python} "All figures must be re-run on actual bank and Moody's data" if simulated else "Results reflect the data supplied"`]]
+
+## Recommendation and next steps
+
+[[dark-slide]]
+
+[[card*@navy2: If the limit is firm | `{python} REC["model"]`; `{python} pct(REC[f"avg_1_{HM}_pct"])` error over 1–`{python} HM` quarters]]
+
+[[card*@navy2: Challenger | `{python} CHALL["model"]`; `{python} pct(CHALL[f"avg_1_{HM}_pct"])`; monitored alongside]]
+
+[[card*@navy2: If a long-run anchor is acceptable | `{python} BEST["model"]`; most accurate at 8–12 quarters]]
+
+[[band: Next steps | re-run on actual data; review the literature table and expected signs with the business; agree the variable limit with model risk; add the foundation models; monitor quarterly]]
+
+## Appendix: reproducing this deck
+
+:::: {.columns}
+
+::: {.column}
+**Commands**
+
+1. `python run_pipeline.py`
+2. `python run_oos.py`
+3. `quarto render` on `report/forecast_deck.qmd`
+
+Another data set: `python tools/make_deck.py --config config/my.yaml` (or ⑤ Results in the app)
+:::
+
+::: {.column}
+**How it is built**
+
+Every number, table and chart is read from `outputs/`. After rendering, `style_deck.py` applies the design (runs automatically).
+
+Each run writes a trace of every function call; `tools/walkthrough.py` steps through the method on a small example.
+:::
+
+::::

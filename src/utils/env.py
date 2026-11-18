@@ -5,10 +5,11 @@ import subprocess
 import sys
 
 REQUIRED = {"numpy": "numpy", "pandas": "pandas", "scipy": "scipy", "statsmodels": "statsmodels",
-            "sklearn": "scikit-learn", "matplotlib": "matplotlib", "openpyxl": "openpyxl", "yaml": "pyyaml", "tabulate": "tabulate"}
+            "sklearn": "scikit-learn", "matplotlib": "matplotlib", "openpyxl": "openpyxl", "yaml": "pyyaml", "tabulate": "tabulate", "pptx": "python-pptx"}
 
 
 def ensure_packages():
+    """Install missing required packages with pip (tries normal, --user and --break-system-packages)."""
     missing = [pip for mod, pip in REQUIRED.items() if importlib.util.find_spec(mod) is None]
     if not missing:
         return

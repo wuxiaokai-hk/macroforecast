@@ -1,0 +1,4 @@
+project:
+  type: default
+  # After rendering, apply the deck design (cards, icons, stat tiles, native charts, styled tables, footer).
+  post-render: style_deck.py

@@ -1,6 +1,6 @@
 """Elastic Net selection (the 'EN first' approach), matching glmnet's conventions.
 
-- Controls (constant, lagged loan growth, dummies) are left unpenalized by partialling them out first
+- Controls (constant, lagged target growth, dummies) are left unpenalized by partialling them out first
   (equivalent to glmnet penalty.factor = 0 for those columns).
 - X and y are standardized with the population standard deviation, as glmnet does.
 - Optional sign constraints: columns with an expected sign of -1 are flipped and all coefficients are
@@ -14,11 +14,20 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import ElasticNet
 
-from ..features.transforms import parse_feature
+from ..features.transforms import feature_sign, parse_feature
 from .screening import controls
 
 
 def _prepare(cfg, ctx, F, rows):
+    """Standardise the candidates and, if unpenalized_controls, partial out lagged growth and dummies
+    (Frisch-Waugh) so the Elastic Net only shrinks the macro drivers.
+
+    Args:
+        cfg: configuration. ctx: Context. F: candidate features. rows: positions used.
+
+    Returns:
+        (X standardised, y, feature names, expected signs).
+    """
     e = cfg["en_first"]
     y = ctx.y.values[rows]
     X = F.values[rows]
@@ -38,8 +47,7 @@ def _prepare(cfg, ctx, F, rows):
     y = (y - y.mean()) / y.std()
     signs = np.ones(len(names))
     if e["sign_constraints"]:
-        signs = np.array([ctx.meta.loc[parse_feature(n)[0], "expected_sign"] if not n.startswith("__") else 0
-                          for n in names], dtype=float)
+        signs = np.array([feature_sign(ctx.meta, n) if not n.startswith("__") else 0 for n in names], dtype=float)
         two = signs == 0                                 # no prior: allow both directions
         X = np.column_stack([X * np.where(two, 1, signs), -X[:, two]])
         names = names + [n for n, t in zip(names, two) if t]
@@ -49,7 +57,12 @@ def _prepare(cfg, ctx, F, rows):
 
 def _select_at_target(cfg, X, y, names, signs):
     """Walk down a log-spaced lambda grid with warm starts and stop at the first lambda where
-    target_n features are non-zero (same answer as reading it off the full path, much faster)."""
+    target_n features are non-zero (same answer as reading it off the full path, much faster).
+
+    Args:
+        X: standardised candidates. y: target (controls partialled out). names: feature names. signs: expected
+        signs.
+    """
     e = cfg["en_first"]
     n = len(y)
     lam_max = np.max(np.abs(X.T @ y)) / (n * max(e["l1_ratio"], 1e-3))
@@ -71,6 +84,14 @@ def _select_at_target(cfg, X, y, names, signs):
 
 
 def elastic_net_select(cfg, ctx, F):
+    """Elastic Net on the full estimation sample, with lambda set so that target_n features are kept.
+
+    Args:
+        cfg: configuration. ctx: Context. F: candidate features.
+
+    Returns:
+        DataFrame: feature, standardised coefficient, lambda.
+    """
     rows = np.arange(ctx.est0, ctx.end + 1)
     X, y, names, signs = _prepare(cfg, ctx, F, rows)
     b, lam = _select_at_target(cfg, X, y, names, signs)
@@ -80,6 +101,14 @@ def elastic_net_select(cfg, ctx, F):
 
 
 def stability_selection(cfg, ctx, F):
+    """Re-run the Elastic Net on many block subsamples and count how often each feature is picked.
+
+    Args:
+        cfg: configuration (en_first.stability). ctx: Context. F: candidate features.
+
+    Returns:
+        DataFrame: feature, selection_frequency (sorted).
+    """
     st = cfg["en_first"]["stability"]
     rng = np.random.default_rng(st["seed"])
     rows_all = np.arange(ctx.est0, ctx.end + 1)
