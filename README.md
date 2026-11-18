@@ -7,6 +7,10 @@ Selects a small set of macro drivers (at most 3 by default) for a loan balance, 
 
 Both approaches finish with the same final step, so their results are directly comparable.
 
+**Data:** everything in `data/` is simulated by `tools/simulate_data.py`, including the bank balances and the scenario files laid out like Moody's scenarios. The repository holds no real bank data and no licensed Moody's data.
+
+**Documents:** the methodology and literature review, the literature workbook and a short slide deck are in `docs/`.
+
 ## Run
 
 ```
