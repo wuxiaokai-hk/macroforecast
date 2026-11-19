@@ -480,9 +480,9 @@
   "changed": ""
  },
  "src.models.literature.load": {
-  "hash": "afcd55e37b1d",
+  "hash": "e35697989c3e",
   "added": "",
-  "changed": "2026-10-28"
+  "changed": "2026-11-18"
  },
  "src.models.literature.resolve": {
   "hash": "6813f96d4e97",
@@ -510,9 +510,9 @@
   "changed": ""
  },
  "src.models.literature.status": {
-  "hash": "8ee6cf911261",
+  "hash": "c382f9e2bb3e",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-18"
  },
  "src.models.ml.make_estimator": {
   "hash": "2d02e3851c22",
@@ -1760,9 +1760,9 @@
   "changed": "2026-10-27"
  },
  "src.utils.preflight.check": {
-  "hash": "87f64a967a43",
+  "hash": "007b3118faf4",
   "added": "2026-10-27",
-  "changed": "2026-11-03"
+  "changed": "2026-11-18"
  },
  "src.utils.preflight.preflight": {
   "hash": "b7ec2dcc9b15",
@@ -1825,9 +1825,9 @@
   "changed": "2026-10-27"
  },
  "tools.new_data_setup.match_concepts": {
-  "hash": "b8aca758f1d0",
+  "hash": "232f6ba3ebeb",
   "added": "2026-10-27",
-  "changed": "2026-10-27"
+  "changed": "2026-11-18"
  },
  "tools.new_data_setup.find_by": {
   "hash": "33ac77c3e6e7",
@@ -1855,9 +1855,9 @@
   "changed": "2026-10-27"
  },
  "tools.new_data_setup.main": {
-  "hash": "6b50f988fe54",
+  "hash": "107059b5d17a",
   "added": "2026-10-27",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "src.reporting.story.fmt": {
   "hash": "eed3d9b34946",
@@ -1880,14 +1880,14 @@
   "changed": "2026-10-27"
  },
  "src.reporting.story.build": {
-  "hash": "29921c059600",
+  "hash": "dfceb0d10b52",
   "added": "2026-10-27",
-  "changed": "2026-11-03"
+  "changed": "2026-11-18"
  },
  "src.reporting.story._model_steps": {
-  "hash": "c389dc9642ba",
+  "hash": "0b904661f082",
   "added": "2026-10-27",
-  "changed": "2026-11-03"
+  "changed": "2026-11-18"
  },
  "src.reporting.story.build_oos": {
   "hash": "c402fe0bf5f8",
@@ -1900,9 +1900,9 @@
   "changed": "2026-10-27"
  },
  "tools.new_data_setup.propose": {
-  "hash": "a90ec134320b",
+  "hash": "ede01e30c9fa",
   "added": "2026-10-28",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "tools.new_data_setup.write_config": {
   "hash": "3ec793b31b3f",
@@ -1935,14 +1935,14 @@
   "changed": "2026-10-28"
  },
  "src.models.literature.read_workbook": {
-  "hash": "5a558b639072",
+  "hash": "a2ba96346b3a",
   "added": "2026-10-28",
-  "changed": "2026-10-29"
+  "changed": "2026-11-18"
  },
  "src.models.literature.write_workbook": {
-  "hash": "e2c32ca477d2",
+  "hash": "60746683e382",
   "added": "2026-10-28",
-  "changed": "2026-10-29"
+  "changed": "2026-11-18"
  },
  "tools.literature_template.main": {
   "hash": "09359ad1245f",
@@ -3185,9 +3185,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master._norm": {
-  "hash": "6cf894a68bb6",
+  "hash": "e13b6f2f908e",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "src.utils.master.is_master": {
   "hash": "f4bb0a349950",
@@ -3285,7 +3285,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "1f89c8209116",
+  "hash": "60550026c742",
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
@@ -3380,7 +3380,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_literature": {
-  "hash": "8f29e323f99f",
+  "hash": "6dfe6b1e68f4",
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
@@ -3715,7 +3715,7 @@
   "changed": "2026-11-18"
  },
  "tools.fetch_statcan.post": {
-  "hash": "d35855307412",
+  "hash": "3b9249f5e99c",
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
@@ -3779,82 +3779,12 @@
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
+ "src.models.literature.legacy_columns": {
+  "hash": "faa7c7aa0a61",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
  "_log": [
-  {
-   "date": "2026-11-03",
-   "id": "tools.new_data_setup.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "tools.walkthrough.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate._driver_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.fitted_values",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "tools.new_data_setup.write_config",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.load_long",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.bank_events",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.organic",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.aggregate",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel._bank_ctx",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel.pos",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel.window",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.data.Panel.active",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.panel.estimate.ols",
@@ -5279,6 +5209,81 @@
    "date": "2026-11-18",
    "id": "tools.fetch_statcan.main",
    "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.models.literature.read_workbook",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.models.literature.write_workbook",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.models.literature.legacy_columns",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.models.literature.load",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.models.literature.status",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_literature",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story._model_steps",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master._norm",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.preflight.check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.post",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.new_data_setup.match_concepts",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.new_data_setup.propose",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.new_data_setup.main",
+   "what": "changed"
   }
  ]
 }

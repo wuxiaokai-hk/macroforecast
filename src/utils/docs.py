@@ -39,7 +39,7 @@ GLOSSARY = {
     "cfg": "the run configuration (from load_config).",
     "ctx": "the Context: loaded data, organic growth, scenarios, metadata and the estimation window.",
     "P": "the model's data panel (target y, drivers, D_ dummies), from model.panel().",
-    "mdf": "macro DataFrame (quarters x Moody's mnemonics): the history or one scenario.",
+    "mdf": "macro DataFrame (quarters x macro mnemonics): the history or one scenario.",
     "F": "candidate features (DataFrame, one column per feature).",
     "H": "forecast horizon in quarters.",
     "origin": "last known quarter of a forecast (Period).",

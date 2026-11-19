@@ -308,7 +308,7 @@ Apply one stationary transform to one macro series.
 
 | argument | default | meaning |
 |---|---|---|
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics). |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics). |
 | `code` |  | mnemonic of the series, e.g. "FHPI.ION". |
 | `tr` |  | transform code: diff, diff2, diff4, lvl, rgap, dlog, yoy, dlog2, acc, gap, rdlog (real growth). |
 | `deflator` | `None` | mnemonic of the price index, used by the real transforms. |
@@ -521,7 +521,7 @@ Quarterly panel for one scenario: target, dummies and features (history + scenar
 | argument | default | meaning |
 |---|---|---|
 | `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 | `features` |  | driver feature names ("code\|transform\|Llag"). |
 
 **Config:** `features.deflator`
@@ -568,8 +568,6 @@ Create an ARDL specification (nothing is estimated yet).
 | `family` | `''` | model family for the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
-**Called by:** `AutoARDL.__init__`, `ECM.__init__`, `build`, `models_at`
-
 <sub>src/modelling/ardl.py:65</sub>
 
 ### `ARDL.panel`
@@ -589,8 +587,6 @@ Part of the model interface (see src/models/zoo.py): build the model's data pane
 
 **Calls:** `make_panel`
 
-**Called by:** `Combination.panel`, `worked`, `write_calculator`, `forecast_errors`, `holdout`
-
 <sub>src/modelling/ardl.py:76</sub>
 
 ### `ARDL.spec`
@@ -603,8 +599,6 @@ Part of the model interface (see src/models/zoo.py): the settings that define th
 
 **Returns:** dict.
 
-**Called by:** `Combination.spec`, `ECM.spec`
-
 <sub>src/modelling/ardl.py:87</sub>
 
 ### `ARDL.drivers`
@@ -616,8 +610,6 @@ drivers()
 Part of the model interface (see src/models/zoo.py): the model's drivers for tables.
 
 **Returns:** list of feature names.
-
-**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/modelling/ardl.py:98</sub>
 
@@ -635,7 +627,7 @@ Regressor matrix: constant, lagged growth, drivers and dummies.
 
 **Returns:** DataFrame of regressors on P's index.
 
-**Called by:** `ARDL.fit`, `ECM._X`
+**Called by:** `ARDL.fit`
 
 <sub>src/modelling/ardl.py:106</sub>
 
@@ -654,9 +646,7 @@ fast=True: plain least squares, no standard errors (used inside combinations' we
 | `end` |  | last quarter of the estimation window (Period). |
 | `fast` | `False` | plain least squares without standard errors. |
 
-**Calls:** `ARDL._X`, `AutoARDL._X`, `ECM._X`
-
-**Called by:** `AutoARDL.fit`, `Combination.fit`, `ECM.fit`, `forecast_errors`, `holdout`
+**Calls:** `ARDL._X`
 
 <sub>src/modelling/ardl.py:124</sub>
 
@@ -677,8 +667,6 @@ Lagged growth is replaced by the model's own forecast after the first quarter; d
 | `H` |  | quarters ahead. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
-
-**Called by:** `Combination.forecast`, `worked`, `forecast_errors`, `holdout`
 
 <sub>src/modelling/ardl.py:142</sub>
 
@@ -902,7 +890,7 @@ Rows of the driver table before the scenario-effect columns: coefficients, impor
 scenario_forecasts(ctx, model)
 ```
 
-Forecast every Moody's scenario with the model estimated on all history.
+Forecast every scenario with the model estimated on all history.
 
 | argument | default | meaning |
 |---|---|---|
@@ -1258,10 +1246,6 @@ Create the model (nothing is estimated yet).
 | `note` | `''` | as for ARDL. |
 | `signs` | `None` | expected sign per base variable "code\|transform" (optional). |
 
-**Calls:** `ARDL.__init__`
-
-**Called by:** `build`
-
 <sub>src/models/autoardl.py:94</sub>
 
 ### `AutoARDL.panel`
@@ -1275,11 +1259,9 @@ Part of the model interface (see src/models/zoo.py): target, dummies and every c
 | argument | default | meaning |
 |---|---|---|
 | `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 
 **Calls:** `make_panel`
-
-**Called by:** `worked`, `write_calculator`, `holdout`
 
 <sub>src/models/autoardl.py:110</sub>
 
@@ -1301,8 +1283,6 @@ drivers()
 
 Part of the model interface (see src/models/zoo.py): the drivers with their chosen lags.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/autoardl.py:118</sub>
 
 ### `AutoARDL._X`
@@ -1316,8 +1296,6 @@ Constant, the chosen lags of target growth, the chosen driver lags and the dummi
 | argument | default | meaning |
 |---|---|---|
 | `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
-
-**Called by:** `ARDL.fit`
 
 <sub>src/models/autoardl.py:122</sub>
 
@@ -1338,9 +1316,7 @@ Choose the lags on start..end (unless frozen), then estimate by OLS with HAC sta
 
 **Returns:** self.
 
-**Calls:** `ARDL.fit`, `select_orders`
-
-**Called by:** `holdout`
+**Calls:** `select_orders`
 
 <sub>src/models/autoardl.py:133</sub>
 
@@ -1359,8 +1335,6 @@ Part of the model interface (see src/models/zoo.py): iterate the equation, own f
 | `H` |  | forecast horizon in quarters. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
-
-**Called by:** `worked`, `holdout`
 
 <sub>src/models/autoardl.py:153</sub>
 
@@ -1432,8 +1406,6 @@ Create the model.
 | `family` | `FAMILY` | model family used in the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
-**Called by:** `build`
-
 <sub>src/models/autoardl.py:201</sub>
 
 ### `LevelsARDL.panel`
@@ -1447,11 +1419,9 @@ Part of the model interface (see src/models/zoo.py): target, dummies, y* = ln(L*
 | argument | default | meaning |
 |---|---|---|
 | `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
-
-**Called by:** `holdout`
 
 <sub>src/models/autoardl.py:216</sub>
 
@@ -1472,8 +1442,6 @@ drivers()
 ```
 
 Part of the model interface (see src/models/zoo.py): the long-run variables with their chosen lags.
-
-**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/autoardl.py:231</sub>
 
@@ -1512,8 +1480,6 @@ Choose the lags (unless frozen), estimate by OLS (HAC), and run the bounds test.
 
 **Calls:** `LevelsARDL._design`, `bounds_test`, `select_orders`
 
-**Called by:** `holdout`
-
 <sub>src/models/autoardl.py:247</sub>
 
 ### `LevelsARDL.forecast`
@@ -1531,8 +1497,6 @@ Part of the model interface (see src/models/zoo.py): iterate y* forward; growth 
 | `H` |  | forecast horizon in quarters. |
 
 **Returns:** array of up to H forecasts of quarterly log growth of the organic balance.
-
-**Called by:** `holdout`
 
 <sub>src/models/autoardl.py:272</sub>
 
@@ -1694,8 +1658,6 @@ Create a combination.
 | `hmax` | `4` | horizons used. |
 | `shrink` | `0.5` | share of the way back to equal weights (0 = pure inverse-MSE). |
 
-**Called by:** `build`
-
 <sub>src/models/combination.py:19</sub>
 
 ### `Combination.features`
@@ -1720,8 +1682,6 @@ Part of the model interface (see src/models/zoo.py): settings of the combination
 
 **Returns:** dict.
 
-**Calls:** `ARDL.spec`
-
 <sub>src/models/combination.py:42</sub>
 
 ### `Combination.drivers`
@@ -1733,8 +1693,6 @@ drivers()
 Part of the model interface (see src/models/zoo.py): members with their current weights.
 
 **Returns:** list of str like "Screen first (40%)".
-
-**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/combination.py:51</sub>
 
@@ -1752,10 +1710,6 @@ Part of the model interface (see src/models/zoo.py): one panel holding the colum
 | `mdf` |  | macro DataFrame. |
 
 **Returns:** DataFrame.
-
-**Calls:** `ARDL.panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/combination.py:59</sub>
 
@@ -1775,9 +1729,7 @@ Part of the model interface (see src/models/zoo.py): estimate the weights (inv_m
 
 **Returns:** self.
 
-**Calls:** `ARDL.fit`, `Combination._weights`
-
-**Called by:** `holdout`
+**Calls:** `Combination._weights`
 
 <sub>src/models/combination.py:74</sub>
 
@@ -1816,10 +1768,6 @@ Part of the model interface (see src/models/zoo.py): weighted average of the mem
 | `H` |  | quarters ahead. |
 
 **Returns:** array of forecasts.
-
-**Calls:** `ARDL.forecast`
-
-**Called by:** `holdout`
 
 <sub>src/models/combination.py:116</sub>
 
@@ -2113,8 +2061,6 @@ Create an ARIMAX.
 | `order` | `(1, 0, 1)` | (p, d, q) of the errors. |
 | `note` | `''` | free text. |
 
-**Called by:** `build`
-
 <sub>src/models/deep.py:297</sub>
 
 ### `ARIMAX.spec`
@@ -2139,8 +2085,6 @@ Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/deep.py:315</sub>
 
 ### `ARIMAX.panel`
@@ -2159,8 +2103,6 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/deep.py:323</sub>
 
@@ -2202,8 +2144,6 @@ Part of the model interface (see src/models/zoo.py): maximum-likelihood estimate
 
 **Calls:** `ARIMAX._exog`
 
-**Called by:** `holdout`
-
 <sub>src/models/deep.py:345</sub>
 
 ### `ARIMAX.detail_rows`
@@ -2239,8 +2179,6 @@ Part of the model interface (see src/models/zoo.py): run the Kalman filter with 
 
 **Returns:** array of forecasts.
 
-**Called by:** `holdout`
-
 <sub>src/models/deep.py:388</sub>
 
 ### `Theta`
@@ -2273,8 +2211,6 @@ Create a Theta model.
 | `name` |  | display name. |
 | `note` | `''` | free text. |
 
-**Called by:** `build`
-
 <sub>src/models/deep.py:417</sub>
 
 ### `Theta.spec`
@@ -2299,8 +2235,6 @@ Part of the model interface (see src/models/zoo.py): "(own history only)".
 
 **Returns:** list of str.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/deep.py:435</sub>
 
 ### `Theta.panel`
@@ -2319,8 +2253,6 @@ Part of the model interface (see src/models/zoo.py): panel with target and dummi
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/deep.py:443</sub>
 
@@ -2359,8 +2291,6 @@ Part of the model interface (see src/models/zoo.py): remembers the start; the me
 
 **Returns:** self.
 
-**Called by:** `holdout`
-
 <sub>src/models/deep.py:476</sub>
 
 ### `Theta.forecast`
@@ -2381,8 +2311,6 @@ Part of the model interface (see src/models/zoo.py): fit Theta on start..origin 
 
 **Calls:** `_dummies`
 
-**Called by:** `holdout`
-
 <sub>src/models/deep.py:488</sub>
 
 
@@ -2400,7 +2328,7 @@ One long-run regressor. form: log | log_real (deflated by CPI) | level | real_ra
 
 | argument | default | meaning |
 |---|---|---|
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 | `item` |  | {mnemonic, form} with form log, log_real, level or real_rate. |
 | `deflator` |  | mnemonic of the price index. |
 
@@ -2450,10 +2378,6 @@ Create an ECM.
 | `family` | `''` | as for ARDL. |
 | `note` | `''` | as for ARDL. |
 
-**Calls:** `ARDL.__init__`
-
-**Called by:** `build`
-
 <sub>src/models/ecm.py:45</sub>
 
 ### `ECM.spec`
@@ -2466,8 +2390,6 @@ Part of the model interface (see src/models/zoo.py): ARDL settings plus the long
 
 **Returns:** dict.
 
-**Calls:** `ARDL.spec`
-
 <sub>src/models/ecm.py:57</sub>
 
 ### `ECM.drivers`
@@ -2479,8 +2401,6 @@ drivers()
 Part of the model interface (see src/models/zoo.py): short-run drivers and the long-run variables.
 
 **Returns:** list of str.
-
-**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/ecm.py:65</sub>
 
@@ -2500,8 +2420,6 @@ Part of the model interface (see src/models/zoo.py): ARDL panel plus the log lev
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
-
-**Called by:** `holdout`
 
 <sub>src/models/ecm.py:73</sub>
 
@@ -2537,10 +2455,6 @@ ARDL regressors plus the lagged error-correction term.
 
 **Returns:** DataFrame.
 
-**Calls:** `ARDL._X`
-
-**Called by:** `ARDL.fit`
-
 <sub>src/models/ecm.py:100</sub>
 
 ### `ECM.fit`
@@ -2560,9 +2474,7 @@ Part of the model interface (see src/models/zoo.py): both Engle-Granger steps on
 
 **Returns:** self (beta = long-run coefficients, params = short-run coefficients).
 
-**Calls:** `ARDL.fit`, `ECM._lr`
-
-**Called by:** `holdout`
+**Calls:** `ECM._lr`
 
 <sub>src/models/ecm.py:114</sub>
 
@@ -2581,8 +2493,6 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, upd
 | `H` |  | quarters ahead. |
 
 **Returns:** array of forecasts.
-
-**Called by:** `holdout`
 
 <sub>src/models/ecm.py:142</sub>
 
@@ -3090,7 +3000,7 @@ True for yes/true/1/y (any case), as used in the include and core columns.
 
 **Returns:** bool.
 
-**Called by:** `load`, `read_workbook`
+**Called by:** `read_workbook`
 
 <sub>src/models/literature.py:24</sub>
 
@@ -3129,7 +3039,7 @@ Sheets: "models" (one row per driver of each published model, with its expected 
 
 **Returns:** (models, concepts) or, with full=True, a dict with models, concepts, settings (dict) and references.
 
-**Calls:** `_settings_value`, `_yes`
+**Calls:** `_settings_value`, `_yes`, `legacy_columns`
 
 **Called by:** `load_config`, `check`, `main`, `propose`
 
@@ -3151,7 +3061,7 @@ Tidy the settings sheet: text values, and Excel's TRUE/FALSE or yes/no read the 
 
 **Called by:** `apply_settings`, `check`
 
-<sub>src/models/literature.py:132</sub>
+<sub>src/models/literature.py:133</sub>
 
 ### `apply_settings`
 
@@ -3172,7 +3082,7 @@ Put the workbook's settings into the configuration (literature.ecm, channels, si
 
 **Called by:** `load_config`
 
-<sub>src/models/literature.py:167</sub>
+<sub>src/models/literature.py:168</sub>
 
 ### `write_workbook`
 
@@ -3194,7 +3104,23 @@ Write the literature workbook (sheets models, concepts, settings, references, ho
 
 **Called by:** `main`, `write_config`
 
-<sub>src/models/literature.py:190</sub>
+<sub>src/models/literature.py:191</sub>
+
+### `legacy_columns`
+
+```python
+legacy_columns(t)
+```
+
+Accept workbooks made with older versions, where the series column was called 'moodys_name'.
+
+| argument | default | meaning |
+|---|---|---|
+| `t` |  |  |
+
+**Called by:** `load`, `read_workbook`
+
+<sub>src/models/literature.py:242</sub>
 
 ### `load`
 
@@ -3210,11 +3136,11 @@ The table with two helper columns: active (included and mapped) and mnemonic.
 
 **Config:** `literature`
 
-**Calls:** `_yes`
+**Calls:** `legacy_columns`
 
 **Called by:** `Context.__init__`, `check`, `main`
 
-<sub>src/models/literature.py:241</sub>
+<sub>src/models/literature.py:249</sub>
 
 ### `resolve`
 
@@ -3222,16 +3148,16 @@ The table with two helper columns: active (included and mapped) and mnemonic.
 resolve(token, table)
 ```
 
-concept_id -> Moody's name (None if switched off or not mapped); anything else is returned unchanged.
+concept_id -> series name (None if switched off or not mapped); anything else is returned unchanged.
 
 | argument | default | meaning |
 |---|---|---|
-| `token` |  | concept_id or a Moody's name. |
+| `token` |  | concept_id or a series name. |
 | `table` |  | the literature table. |
 
 **Called by:** `resolve_feature`, `build`, `same_growth_models`
 
-<sub>src/models/literature.py:261</sub>
+<sub>src/models/literature.py:270</sub>
 
 ### `resolve_feature`
 
@@ -3250,7 +3176,7 @@ resolve_feature(name, table)
 
 **Called by:** `build`, `literature_models`
 
-<sub>src/models/literature.py:273</sub>
+<sub>src/models/literature.py:282</sub>
 
 ### `apply_signs`
 
@@ -3268,7 +3194,7 @@ Set the metadata expected sign from the table for mapped series; excluded concep
 
 **Called by:** `Context.__init__`
 
-<sub>src/models/literature.py:287</sub>
+<sub>src/models/literature.py:296</sub>
 
 ### `channels`
 
@@ -3286,7 +3212,7 @@ Concepts as channels for the 'theory channels, data measures' hybrid (theme from
 
 **Called by:** `build`
 
-<sub>src/models/literature.py:308</sub>
+<sub>src/models/literature.py:317</sub>
 
 ### `long_run`
 
@@ -3302,7 +3228,7 @@ Long-run (error-correction) regressors: active concepts with a long_run_form.
 
 **Called by:** `build`
 
-<sub>src/models/literature.py:326</sub>
+<sub>src/models/literature.py:335</sub>
 
 ### `status`
 
@@ -3320,7 +3246,7 @@ The table as a report: is each concept switched on, mapped, found in the data, a
 
 **Called by:** `build`
 
-<sub>src/models/literature.py:339</sub>
+<sub>src/models/literature.py:348</sub>
 
 
 ## src/models/ml.py
@@ -3384,8 +3310,6 @@ Create a machine-learning model.
 | `note` | `''` | free text. |
 | `refit_every` | `4` | quarters between re-estimations in the backtest. |
 
-**Called by:** `build`
-
 <sub>src/models/ml.py:64</sub>
 
 ### `MLModel.spec`
@@ -3410,8 +3334,6 @@ Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/ml.py:87</sub>
 
 ### `MLModel.panel`
@@ -3430,8 +3352,6 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/ml.py:95</sub>
 
@@ -3472,8 +3392,6 @@ Part of the model interface (see src/models/zoo.py): train the estimator on comp
 
 **Calls:** `MLModel._X`, `make_estimator`
 
-**Called by:** `holdout`
-
 <sub>src/models/ml.py:122</sub>
 
 ### `MLModel.forecast`
@@ -3493,8 +3411,6 @@ Part of the model interface (see src/models/zoo.py): predict one quarter at a ti
 **Returns:** array of forecasts.
 
 **Calls:** `MLModel._X`
-
-**Called by:** `holdout`
 
 <sub>src/models/ml.py:140</sub>
 
@@ -3591,8 +3507,6 @@ Part of the model interface (see src/models/zoo.py): drivers, plus the regime va
 
 **Returns:** list of str.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/regime.py:75</sub>
 
 ### `_Regime.panel`
@@ -3611,8 +3525,6 @@ Part of the model interface (see src/models/zoo.py): target, drivers, regime var
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/regime.py:83</sub>
 
@@ -3674,9 +3586,7 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, one
 
 **Returns:** array of forecasts.
 
-**Calls:** `MarkovSwitchingARDL._row`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._step`, `_Regime._row`, `_Regime._start_state`
-
-**Called by:** `holdout`
+**Calls:** `_Regime._row`, `_Regime._start_state`
 
 <sub>src/models/regime.py:128</sub>
 
@@ -3775,8 +3685,6 @@ Create a threshold model.
 
 **Calls:** `_Regime.__init__`
 
-**Called by:** `build`
-
 <sub>src/models/regime.py:188</sub>
 
 ### `ThresholdARDL.fit`
@@ -3796,8 +3704,6 @@ Part of the model interface (see src/models/zoo.py): grid search of the threshol
 **Returns:** self.
 
 **Calls:** `_Regime._named`, `_Regime._window`, `_ols`
-
-**Called by:** `holdout`
 
 <sub>src/models/regime.py:199</sub>
 
@@ -3889,8 +3795,6 @@ Create a smooth-transition model.
 
 **Calls:** `_Regime.__init__`
 
-**Called by:** `build`
-
 <sub>src/models/regime.py:283</sub>
 
 ### `SmoothTransitionARDL._G`
@@ -3928,8 +3832,6 @@ Part of the model interface (see src/models/zoo.py): grid search of slope gamma 
 **Returns:** self.
 
 **Calls:** `SmoothTransitionARDL._G`, `_Regime._named`, `_Regime._window`, `_ols`
-
-**Called by:** `holdout`
 
 <sub>src/models/regime.py:305</sub>
 
@@ -4027,8 +3929,6 @@ Create a Markov-switching model.
 
 **Calls:** `_Regime.__init__`
 
-**Called by:** `build`
-
 <sub>src/models/regime.py:382</sub>
 
 ### `MarkovSwitchingARDL._exog`
@@ -4106,8 +4006,6 @@ Part of the model interface (see src/models/zoo.py): maximum likelihood with sev
 
 **Calls:** `MarkovSwitchingARDL._exog`, `MarkovSwitchingARDL._model`, `MarkovSwitchingARDL._std`, `MarkovSwitchingARDL._unpack`, `_dummies`, `_ols`
 
-**Called by:** `holdout`
-
 <sub>src/models/regime.py:441</sub>
 
 ### `MarkovSwitchingARDL._unpack`
@@ -4162,8 +4060,6 @@ Probability of each regime at the origin.
 
 **Calls:** `MarkovSwitchingARDL._probs`, `BankFeatures.array`
 
-**Called by:** `_Regime.forecast`
-
 <sub>src/models/regime.py:540</sub>
 
 ### `MarkovSwitchingARDL._row`
@@ -4181,8 +4077,6 @@ Exogenous regressors for quarter pos (dummies zero ahead).
 | `yprev` |  | last (forecast) growth. |
 
 **Returns:** dict column -> value.
-
-**Called by:** `_Regime.forecast`
 
 <sub>src/models/regime.py:560</sub>
 
@@ -4203,8 +4097,6 @@ One quarter ahead: carry the regime probabilities forward and average the regime
 | `h` |  | step. |
 
 **Returns:** (forecast, new probabilities).
-
-**Called by:** `_Regime.forecast`
 
 <sub>src/models/regime.py:572</sub>
 
@@ -4272,8 +4164,6 @@ Create a time-varying-parameter model.
 
 **Calls:** `_Regime.__init__`
 
-**Called by:** `build`
-
 <sub>src/models/regime.py:632</sub>
 
 ### `TimeVaryingARDL._kalman`
@@ -4316,8 +4206,6 @@ Part of the model interface (see src/models/zoo.py): choose q by likelihood, the
 **Returns:** self.
 
 **Calls:** `TimeVaryingARDL._kalman`, `_Regime._named`, `_Regime._window`
-
-**Called by:** `holdout`
 
 <sub>src/models/regime.py:671</sub>
 
@@ -4407,8 +4295,6 @@ Create a break-adaptive model.
 
 **Calls:** `_Regime.__init__`
 
-**Called by:** `build`
-
 <sub>src/models/regime.py:740</sub>
 
 ### `BreakAdaptiveARDL.fit`
@@ -4428,8 +4314,6 @@ Part of the model interface (see src/models/zoo.py): sup-F (Quandt-Andrews) test
 **Returns:** self.
 
 **Calls:** `_Regime._named`, `_Regime._window`, `_ols`
-
-**Called by:** `holdout`
 
 <sub>src/models/regime.py:752</sub>
 
@@ -4498,7 +4382,7 @@ Create one regime-switching model.
 
 **Returns:** model.
 
-**Calls:** `BreakAdaptiveARDL`, `BreakAdaptiveARDL.__init__`, `MarkovSwitchingARDL`, `MarkovSwitchingARDL.__init__`, `SmoothTransitionARDL`, `SmoothTransitionARDL.__init__`, `ThresholdARDL`, `ThresholdARDL.__init__`, `TimeVaryingARDL`, `TimeVaryingARDL.__init__`
+**Calls:** `BreakAdaptiveARDL`, `MarkovSwitchingARDL`, `SmoothTransitionARDL`, `ThresholdARDL`, `TimeVaryingARDL`
 
 **Called by:** `build`
 
@@ -4545,8 +4429,6 @@ Create the rule.
 | `family` | `FAMILY` | model family. |
 | `note` | `''` | free text for the model list. |
 
-**Called by:** `same_growth_models`
-
 <sub>src/models/simple.py:22</sub>
 
 ### `SameGrowth.panel`
@@ -4565,8 +4447,6 @@ Part of the model interface (see src/models/zoo.py): target, dummies and the var
 **Returns:** DataFrame with y, the feature and the D_ dummies.
 
 **Calls:** `make_panel`
-
-**Called by:** `holdout`
 
 <sub>src/models/simple.py:34</sub>
 
@@ -4592,8 +4472,6 @@ Part of the model interface (see src/models/zoo.py): the one variable.
 
 **Returns:** list with one feature name.
 
-**Called by:** `build`, `holdout`, `run_oos`
-
 <sub>src/models/simple.py:53</sub>
 
 ### `SameGrowth.fit`
@@ -4615,8 +4493,6 @@ Quarters with a one-off dummy (e.g. COVID) are left out of the average.
 
 **Returns:** self, with params = {const, feature: 1.0}.
 
-**Called by:** `holdout`
-
 <sub>src/models/simple.py:61</sub>
 
 ### `SameGrowth.forecast`
@@ -4634,8 +4510,6 @@ Part of the model interface (see src/models/zoo.py): g = const + x for each quar
 | `H` |  | quarters ahead. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
-
-**Called by:** `holdout`
 
 <sub>src/models/simple.py:83</sub>
 
@@ -4705,7 +4579,7 @@ Split features into those whose series exist in the macro data and those that do
 literature_models(cfg, ctx, log, used=None)
 ```
 
-Literature specifications with concepts resolved to Moody's names through the literature table.
+Literature specifications with concepts resolved to series names through the literature table.
 
 | argument | default | meaning |
 |---|---|---|
@@ -4789,7 +4663,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Config:** `models`
 
-**Calls:** `resolve`, `SameGrowth`, `SameGrowth.__init__`
+**Calls:** `resolve`, `SameGrowth`
 
 **Called by:** `build`
 
@@ -4812,7 +4686,7 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 
 **Config:** `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
 
-**Calls:** `ARDL`, `ARDL.__init__`, `ARDL.drivers`, `AutoARDL`, `AutoARDL.__init__`, `AutoARDL.drivers`, `LevelsARDL`, `LevelsARDL.__init__`, `LevelsARDL.drivers`, `base_of`, `Combination`, `Combination.__init__`, `Combination.drivers`, `ARIMAX`, `ARIMAX.__init__`, `ARIMAX.drivers`, `DeepModel`, `Theta`, `Theta.__init__`, `Theta.drivers`, `deep_available`, `ECM`, `ECM.__init__`, `ECM.drivers`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `MLModel.__init__`, `MLModel.drivers`, `_Regime.drivers`, `build`, `SameGrowth.drivers`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
+**Calls:** `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
 
 **Called by:** `run`, `models_at`
 
@@ -6176,7 +6050,7 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Returns:** DataFrame: scenario, date, each driver's value and contribution, growth (log, % q/q, % annualised), balance.
 
-**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
+**Calls:** `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
 
 **Called by:** `write`
 
@@ -6264,7 +6138,7 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Config:** `features`
 
-**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
+**Calls:** `lookback`, `parse_feature`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
 
 **Called by:** `write`
 
@@ -6436,7 +6310,7 @@ read(*p)
 |---|---|---|
 | `*p` |  |  |
 
-**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `write_config`, `install_hook`, `write_config`, `build`, `main`
+**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
 <sub>src/reporting/process_story.py:121</sub>
 
@@ -7241,7 +7115,7 @@ Average balance error over 1..h quarters for every model, grouped by family; one
 chart_scenarios(path, scen, level, models)
 ```
 
-Balance paths under each Moody's scenario, one panel per model.
+Balance paths under each scenario, one panel per model.
 
 | argument | default | meaning |
 |---|---|---|
@@ -9695,8 +9569,6 @@ Return fn()'s result, from cache when the fingerprint is unchanged.
 
 **Calls:** `hash_obj`
 
-**Called by:** `select_at`
-
 <sub>src/utils/cache.py:135</sub>
 
 ### `StepCache.write_manifest`
@@ -10614,7 +10486,7 @@ y_t = ln((L_t - A_t) / L_{t-1}) for a dlog target, (L_t - A_t) - L_{t-1} for a d
 load_macro(cfg)
 ```
 
-Load every Moody's scenario file.
+Load every scenario file.
 
 | argument | default | meaning |
 |---|---|---|
@@ -10759,7 +10631,7 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `catalog`
 
-<sub>src/utils/master.py:45</sub>
+<sub>src/utils/master.py:47</sub>
 
 ### `targets`
 
@@ -10777,7 +10649,7 @@ The targets in a master file, with what each one has.
 
 **Called by:** `apply`, `catalog`, `main`
 
-<sub>src/utils/master.py:53</sub>
+<sub>src/utils/master.py:55</sub>
 
 ### `_match`
 
@@ -10794,7 +10666,7 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 
 **Called by:** `apply`, `extract`, `catalog`
 
-<sub>src/utils/master.py:66</sub>
+<sub>src/utils/master.py:68</sub>
 
 ### `extract`
 
@@ -10816,7 +10688,7 @@ Write one target's workbook and metadata from the master.
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
-<sub>src/utils/master.py:73</sub>
+<sub>src/utils/master.py:75</sub>
 
 ### `_write_if_changed`
 
@@ -10833,7 +10705,7 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 
 **Called by:** `extract`
 
-<sub>src/utils/master.py:131</sub>
+<sub>src/utils/master.py:133</sub>
 
 ### `resolve`
 
@@ -10854,7 +10726,7 @@ path if it is an ordinary file; the target's extracted file if path is a master.
 
 **Called by:** `resolve_master`
 
-<sub>src/utils/master.py:147</sub>
+<sub>src/utils/master.py:149</sub>
 
 ### `apply`
 
@@ -10877,7 +10749,7 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Called by:** `load_config`
 
-<sub>src/utils/master.py:161</sub>
+<sub>src/utils/master.py:163</sub>
 
 
 ## src/utils/multi.py
@@ -11203,7 +11075,7 @@ Run the check at the start of a run: print problems and stop on errors.
 
 **Called by:** `main`, `main`
 
-<sub>src/utils/preflight.py:484</sub>
+<sub>src/utils/preflight.py:486</sub>
 
 
 ## src/utils/saved.py
@@ -11750,7 +11622,7 @@ A diff target (a rate) is not deflated: the column is 0, so the long run is in t
 
 | argument | default | meaning |
 |---|---|---|
-| `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 | `deflator` |  | mnemonic of the price index. |
 | `index` |  |  |
 
@@ -12302,7 +12174,7 @@ Run one approach using data up to end_pos only. Cached by the truncated data + s
 
 **Config:** `oos.window`, `oos.window_length`
 
-**Calls:** `all_features`, `candidate_forms`, `selection_info`, `StepCache.run`, `hash_code`, `hash_frame`, `hash_obj`, `truncated`
+**Calls:** `all_features`, `candidate_forms`, `selection_info`, `hash_code`, `hash_frame`, `hash_obj`, `truncated`
 
 **Called by:** `run`, `models_at`
 
@@ -12325,7 +12197,7 @@ Every model, specified with data up to end_pos only (plus the look-ahead variant
 | `cache` |  | the StepCache. |
 | `full_sample_drivers` | `None` | drivers chosen with all data, for the look-ahead variants (None = none). |
 
-**Calls:** `ARDL`, `ARDL.__init__`, `build`, `select_at`, `truncated`
+**Calls:** `ARDL`, `build`, `select_at`, `truncated`
 
 **Called by:** `joint_oos`, `holdout`, `run_oos`
 
@@ -12350,7 +12222,7 @@ Fit on est_start..origin and forecast H quarters; return level % errors (organic
 
 **Returns:** errors (fractions), or (errors, forecast growth, actual growth) with detail=True.
 
-**Calls:** `ARDL.fit`, `ARDL.forecast`, `ARDL.panel`, `error`
+**Calls:** `error`
 
 **Called by:** `run_oos`
 
@@ -12395,7 +12267,7 @@ Out-of-sample test: at each origin, re-run selection and re-estimate every model
 
 **Config:** `oos.first_origin`, `oos.horizon`, `oos.step`, `oos.window`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.horizon`
 
-**Calls:** `ARDL.drivers`, `freeze`, `AutoARDL.drivers`, `LevelsARDL.drivers`, `Combination.drivers`, `ARIMAX.drivers`, `Theta.drivers`, `ECM.drivers`, `MLModel.drivers`, `_Regime.drivers`, `SameGrowth.drivers`, `log`, `growth_display`, `level_after`, `forecast_errors`, `models_at`
+**Calls:** `freeze`, `log`, `growth_display`, `level_after`, `forecast_errors`, `models_at`
 
 **Called by:** `run`, `main`
 
@@ -12441,7 +12313,7 @@ Select and estimate every model on data up to hist_end - holdout_quarters; forec
 
 **Config:** `oos.holdout_quarters`, `oos.window`, `sample.estimation_start`
 
-**Calls:** `ARDL.drivers`, `ARDL.fit`, `ARDL.forecast`, `ARDL.panel`, `AutoARDL.drivers`, `AutoARDL.fit`, `AutoARDL.forecast`, `AutoARDL.panel`, `LevelsARDL.drivers`, `LevelsARDL.fit`, `LevelsARDL.forecast`, `LevelsARDL.panel`, `Combination.drivers`, `Combination.fit`, `Combination.forecast`, `Combination.panel`, `ARIMAX.drivers`, `ARIMAX.fit`, `ARIMAX.forecast`, `ARIMAX.panel`, `Theta.drivers`, `Theta.fit`, `Theta.forecast`, `Theta.panel`, `ECM.drivers`, `ECM.fit`, `ECM.forecast`, `ECM.panel`, `MLModel.drivers`, `MLModel.fit`, `MLModel.forecast`, `MLModel.panel`, `BreakAdaptiveARDL.fit`, `MarkovSwitchingARDL.fit`, `SmoothTransitionARDL.fit`, `ThresholdARDL.fit`, `TimeVaryingARDL.fit`, `_Regime.drivers`, `_Regime.forecast`, `_Regime.panel`, `SameGrowth.drivers`, `SameGrowth.fit`, `SameGrowth.forecast`, `SameGrowth.panel`, `log`, `error`, `level_after`, `models_at`
+**Calls:** `log`, `error`, `level_after`, `models_at`
 
 **Called by:** `run`
 
@@ -12475,13 +12347,15 @@ Real example data from Statistics Canada: download, build the files the project 
 post(method, body, tries=4)
 ```
 
-POST to the Web Data Service; returns the parsed JSON (retries on network errors and rate limits).
+POST to the Web Data Service; returns the parsed JSON (retries on network errors and rate limits). Standard library only; the HTTPS_PROXY environment variable is honoured.
 
 | argument | default | meaning |
 |---|---|---|
 | `method` |  |  |
 | `body` |  |  |
 | `tries` | `4` |  |
+
+**Calls:** `Story.read`
 
 **Called by:** `download`, `metadata`
 
@@ -12501,7 +12375,7 @@ cached(path, refresh, fetch)
 
 **Called by:** `download`, `metadata`
 
-<sub>tools/fetch_statcan.py:63</sub>
+<sub>tools/fetch_statcan.py:70</sub>
 
 ### `metadata`
 
@@ -12521,7 +12395,7 @@ A table's metadata: title, frequency and dimensions with their members.
 
 **Called by:** `build`, `describe`
 
-<sub>tools/fetch_statcan.py:72</sub>
+<sub>tools/fetch_statcan.py:79</sub>
 
 ### `_words`
 
@@ -12535,7 +12409,7 @@ _words(x)
 
 **Called by:** `coordinate`, `find_member`
 
-<sub>tools/fetch_statcan.py:82</sub>
+<sub>tools/fetch_statcan.py:89</sub>
 
 ### `find_member`
 
@@ -12554,7 +12428,7 @@ The member of a dimension named by `want` (exact name, else every word of a stri
 
 **Called by:** `coordinate`
 
-<sub>tools/fetch_statcan.py:86</sub>
+<sub>tools/fetch_statcan.py:93</sub>
 
 ### `coordinate`
 
@@ -12573,7 +12447,7 @@ Coordinate string ('1.2.0...') from member names per dimension; notes on the cho
 
 **Called by:** `build`
 
-<sub>tools/fetch_statcan.py:109</sub>
+<sub>tools/fetch_statcan.py:116</sub>
 
 ### `download`
 
@@ -12593,7 +12467,7 @@ download(pid, coord, raw, refresh=False, n=800)
 
 **Called by:** `build`
 
-<sub>tools/fetch_statcan.py:127</sub>
+<sub>tools/fetch_statcan.py:134</sub>
 
 ### `quarterly`
 
@@ -12608,7 +12482,7 @@ quarterly(s, agg)
 
 **Called by:** `build`
 
-<sub>tools/fetch_statcan.py:143</sub>
+<sub>tools/fetch_statcan.py:150</sub>
 
 ### `scenario_paths`
 
@@ -12629,7 +12503,7 @@ Each scenario: history, then the baseline path plus the scenario's shock (see th
 
 **Called by:** `build`
 
-<sub>tools/fetch_statcan.py:152</sub>
+<sub>tools/fetch_statcan.py:159</sub>
 
 ### `build`
 
@@ -12647,7 +12521,7 @@ build(spec_file, refresh=False, log=print)
 
 **Called by:** `main`
 
-<sub>tools/fetch_statcan.py:179</sub>
+<sub>tools/fetch_statcan.py:186</sub>
 
 ### `write_config`
 
@@ -12670,7 +12544,7 @@ config/<name>.yaml through the set-up tool (tools/new_data_setup.py): dates from
 
 **Called by:** `build`
 
-<sub>tools/fetch_statcan.py:230</sub>
+<sub>tools/fetch_statcan.py:237</sub>
 
 ### `describe`
 
@@ -12687,7 +12561,7 @@ describe(pid, raw)
 
 **Called by:** `main`
 
-<sub>tools/fetch_statcan.py:257</sub>
+<sub>tools/fetch_statcan.py:264</sub>
 
 ### `main`
 
@@ -12697,7 +12571,7 @@ main()
 
 **Calls:** `build`, `describe`
 
-<sub>tools/fetch_statcan.py:269</sub>
+<sub>tools/fetch_statcan.py:276</sub>
 
 
 ## tools/literature_master.py
@@ -13493,7 +13367,7 @@ History + scenario path of every core factor, and the derived rates.
 add(code, desc, geo, theme, kind, parent, beta, noise, base, mu=0.0, sign=0)
 ```
 
-Register one simulated Moody's series (mnemonic, description, theme, link to a core factor).
+Register one simulated vendor-style series (mnemonic, description, theme, link to a core factor).
 
 | argument | default | meaning |
 |---|---|---|

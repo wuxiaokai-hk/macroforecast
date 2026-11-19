@@ -3,7 +3,7 @@
   Chronos-Bolt (Amazon, 2024)  forecasts target growth from its own history only. It cannot use scenarios,
                                so every scenario gets the same forecast; it is a strong "AI benchmark".
   Chronos-2   (Amazon, 2025)   also takes covariates, with their future values: the literature-core drivers and
-                               their scenario paths, so it does respond to the Moody's scenarios.
+                               their scenario paths, so it does respond to the scenarios.
 
 Requires `pip install chronos-forecasting` (installs PyTorch). The weights are downloaded from Hugging Face
 on first use (chronos-bolt-small about 190 MB, chronos-2 about 480 MB) and cached. Without the package or

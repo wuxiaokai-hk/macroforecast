@@ -256,7 +256,7 @@ Uses: planning, scenario analysis, stress testing, capital and liquidity plannin
 :::
 
 ::: {.column}
-[[icon: cloud | Scenario-ready | Every driver has a Moody's scenario path]]
+[[icon: cloud | Scenario-ready | Every driver has a scenario path]]
 
 [[icon: balance | Economically sensible | Each coefficient has the expected sign]]
 
@@ -337,7 +337,7 @@ chart("balance", {"type": "line", "markers": False, "categories": [str(p) for p 
 
 ```{python}
 #| output: asis
-stages = [("Moody's + constructed", macro_cols), ("Relevant geography & theme", n_rel), ("Stationary form", n_stat),
+stages = [("Vendor + constructed", macro_cols), ("Relevant geography & theme", n_rel), ("Stationary form", n_stat),
           ("Pass the screen", int(a2["passed"].sum()) if not a2.empty else 0),
           ("Independent clusters", a3["cluster"].nunique() if not a3.empty else 0), ("Shortlist", len(a4)),
           ("Screen-first drivers", len(str(mlist.set_index("model").loc["Screen first", "drivers"]).split(", ")) if "Screen first" in set(mlist["model"]) else 0)]
@@ -433,7 +433,7 @@ if not littab.empty:
     t["Effect"] = t["effect_on_loan_growth"].map({"Positive": "Positive", "Negative": "Negative", "Ambiguous": "Ambiguous"})
     t["Evidence"] = t["evidence"].str.replace(r"\s*\(([^)]*?:[^)]*)\)", "", regex=True).map(
         lambda s: "; ".join(x.strip() for x in str(s).split(";")[:3]) + (" …" if len(str(s).split(";")) > 3 else ""))
-    t["Our series"] = t["moodys_name"].fillna("—")
+    t["Our series"] = t["series_name"].fillna("—")
     t["Status"] = t["concept_id"].map(st).fillna("").str.replace(" (not used by a model)", "", regex=False)
     t = t[["concept", "Effect", "Evidence", "Our series", "Status"]]
     t.columns = ["Concept", "Effect", "Evidence", "Our series", "Status"]
@@ -441,7 +441,7 @@ if not littab.empty:
 ```
 
 ::: notes
-The table is the 'concepts' sheet of the literature workbook (full references in its 'references' sheet). Models refer to concepts, not Moody's names: map each concept to your series in the moodys_name column, and set include = no to drop a concept you do not believe from every literature and hybrid model.
+The table is the 'concepts' sheet of the literature workbook (full references in its 'references' sheet). Models refer to concepts, not series names: map each concept to your series in the series_name column, and set include = no to drop a concept you do not believe from every literature and hybrid model.
 :::
 
 ## `{python} len(ranking)` models in `{python} ranking["family"].nunique()` families compete on equal terms
@@ -943,7 +943,7 @@ if FORM:
 
 ## Known limitations and how they are managed
 
-[[icon@red: crosshairs | Conditional accuracy | Tests use realised macro values; live error adds Moody's forecast error]]
+[[icon@red: crosshairs | Conditional accuracy | Tests use realised macro values; live error adds scenario forecast error]]
 
 [[icon@red: compress | Small sample | About 95 quarters: sign priors, grouping and re-selection limit overfitting]]
 
@@ -953,7 +953,7 @@ if FORM:
 
 [[icon@red: robot | Machine learning and AI | Less transparent; trees cannot extrapolate in severe scenarios]]
 
-[[icon@red: database | `{python} "Simulated data" if simulated else "Data"` | `{python} "All figures must be re-run on actual bank and Moody's data" if simulated else "Results reflect the data supplied"`]]
+[[icon@red: database | `{python} "Simulated data" if simulated else "Data"` | `{python} "All figures must be re-run on actual bank and macro scenario data" if simulated else "Results reflect the data supplied"`]]
 
 ## Recommendation and next steps
 

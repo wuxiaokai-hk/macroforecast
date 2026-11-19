@@ -144,7 +144,7 @@ def chart_family_bars(path, comp, horizons):
 
 
 def chart_scenarios(path, scen, level, models):
-    """Balance paths under each Moody's scenario, one panel per model.
+    """Balance paths under each scenario, one panel per model.
 
     Args:
         path: PNG. scen: scenario forecasts. level: actual balance. models: models to show.

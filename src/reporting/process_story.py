@@ -462,8 +462,8 @@ class Story:
         L = self.litstat
         if L.empty:
             return
-        T = L[["concept", "effect_on_loan_growth", "moodys_name", "status"]].copy() if "effect_on_loan_growth" in L else \
-            L[[c for c in L.columns if c in ("concept", "moodys_name", "status")]].copy()
+        T = L[["concept", "effect_on_loan_growth", "series_name", "status"]].copy() if "effect_on_loan_growth" in L else \
+            L[[c for c in L.columns if c in ("concept", "series_name", "status")]].copy()
         T.columns = ["Concept", "Expected effect", "Our series", "Status"][:T.shape[1]]
         n_use = int((L["status"] == "in use").sum())
         lm = self.mlist[self.mlist["family"] == "Literature"]

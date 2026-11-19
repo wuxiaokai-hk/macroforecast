@@ -366,8 +366,8 @@ def run(target, metadata, literature=None, *, target_column=None, date_column=No
         metadata: macro metadata file (mnemonic, description, geography, theme, transform, expected_sign).
         literature: literature workbook (.xlsx). None switches the literature, hybrid and same-growth models off.
         target_column / date_column: needed only when the file has several numeric columns / no 'date' column.
-        macro: scenario files: {"Baseline": path, "S4 Severe": path, ...} or one path. Default: the Moody's
-            files of the base config (data/moodys_*.csv in the project).
+        macro: scenario files: {"Baseline": path, "S4 Severe": path, ...} or one path. Default: the example scenario
+            files of the base config (data/scenario_*.csv in the project).
         base_scenario: the scenario whose history is used for estimation (default: the first one).
         events: file of inorganic events (date, series, amount), or None.
         options: any other setting, in config keys: dict (nested or dotted), list of "key=value" strings, or a

@@ -786,13 +786,13 @@ if mode == "New data set":
             lit = P["lit"].copy()
             lit["include"] = lit["include"].astype(str).str.lower().isin(["yes", "y", "true", "1"])
             opts = series + [c[0] for c in P["constructed"]]
-            show = lit[["concept", "include", "moodys_name", "core", "expected_sign", "setup_note"]].rename(
-                columns={"moodys_name": "your series", "setup_note": "how it was matched"})
+            show = lit[["concept", "include", "series_name", "core", "expected_sign", "setup_note"]].rename(
+                columns={"series_name": "your series", "setup_note": "how it was matched"})
             ed = st.data_editor(show, hide_index=True, use_container_width=True, key="lit_edit",
                                 disabled=["concept", "core", "expected_sign", "how it was matched"],
                                 column_config={"your series": st.column_config.SelectboxColumn(options=opts),
                                                "include": st.column_config.CheckboxColumn()})
-            P["lit"]["moodys_name"] = ed["your series"].values
+            P["lit"]["series_name"] = ed["your series"].values
             P["lit"]["include"] = ["yes" if v else "no" for v in ed["include"]]
             st.subheader("Published models to compare (from your workbook)")
             st.caption("One row per driver; rows with the same model name form one model. The variable is a concept above "

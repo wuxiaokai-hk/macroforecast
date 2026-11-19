@@ -7,13 +7,13 @@ before the real data is plugged in.
 Files written to ./data :
   bank_data.csv            date, loan_balance, deposit_balance            ($ millions, quarter-end)
   bank_events.csv          date, amount, description                      (inorganic events, e.g. acquisitions)
-  moodys_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
-  moodys_s1_upside.csv     same columns, upside scenario
-  moodys_s3_downside.csv   same columns, moderate recession
-  moodys_s4_severe.csv     same columns, severe recession
+  scenario_baseline.csv      date + ~400 macro variables (history 2000Q1-2025Q4 + forecast to 2030Q4)
+  scenario_s1_upside.csv     same columns, upside scenario
+  scenario_s3_downside.csv   same columns, moderate recession
+  scenario_s4_severe.csv     same columns, severe recession
   macro_metadata.csv       mnemonic, description, geography, theme, transform, expected_sign
 
-The mnemonics imitate the Moody's style (e.g. FGDPR.ION = Ontario real GDP) but are illustrative only.
+The mnemonics imitate a commercial vendor naming style (e.g. FGDPR.ION = Ontario real GDP) but are illustrative only.
 The "true" loan equation used to generate the data is printed at the end, so you can check
 whether the variable-selection pipeline recovers the real drivers.
 """
@@ -112,7 +112,7 @@ h["fx"] = rng.normal(0, 0.03, NH)
 h["us_shock"] = rng.normal(0, 0.003, NH)
 
 # ---------------------------------------------------------------------------
-# 2. SCENARIO PATHS for 2026Q1-2030Q4 (deterministic, smooth like Moody's forecasts)
+# 2. SCENARIO PATHS for 2026Q1-2030Q4 (deterministic, smooth like vendor forecasts)
 # ---------------------------------------------------------------------------
 
 
@@ -187,7 +187,7 @@ def build_core(name):
 
 
 # ---------------------------------------------------------------------------
-# 3. ~400 DERIVED MOODY'S-STYLE VARIABLES
+# 3. ~400 DERIVED VENDOR-STYLE VARIABLES
 #    growth-type ("level") series: g = mean_parent*(1-beta) + beta*parent + mu + noise -> level
 #    rate-type series:            x = base + beta*(parent - mean_parent) + AR(1) noise
 # ---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ specs = []   # (code, desc, geo, theme, kind, parent, beta, noise, base, mu, tra
 
 
 def add(code, desc, geo, theme, kind, parent, beta, noise, base, mu=0.0, sign=0):
-    """Register one simulated Moody's series (mnemonic, description, theme, link to a core factor)."""
+    """Register one simulated vendor-style series (mnemonic, description, theme, link to a core factor)."""
     transform = "dlog" if kind == "level" else "diff"
     specs.append(dict(code=code, desc=desc, geo=geo, theme=theme, kind=kind, parent=parent, beta=beta,
                       noise=noise, base=base, mu=mu, transform=transform, expected_sign=sign))
@@ -400,7 +400,7 @@ def build_macro(core, noise_store):
     return pd.DataFrame(out, index=Q.astype(str))
 
 
-# Idiosyncratic noise: same in history for all scenarios, zero in forecast period (smooth Moody's paths)
+# Idiosyncratic noise: same in history for all scenarios, zero in forecast period (smooth vendor paths)
 noise_store = {}
 for sp in specs:
     if sp["kind"] == "level":
@@ -413,8 +413,8 @@ for sp in specs:
     e[NH:] = e[NH - 1] * (0.7 ** np.arange(1, NF + 1)) if sp["kind"] == "rate" else 0.0
     noise_store[sp["code"]] = e
 
-SCEN = {"baseline": "moodys_baseline.csv", "s1_upside": "moodys_s1_upside.csv",
-        "s3_downside": "moodys_s3_downside.csv", "s4_severe": "moodys_s4_severe.csv"}
+SCEN = {"baseline": "scenario_baseline.csv", "s1_upside": "scenario_s1_upside.csv",
+        "s3_downside": "scenario_s3_downside.csv", "s4_severe": "scenario_s4_severe.csv"}
 cores = {}
 for s, fn in SCEN.items():
     cores[s] = build_core(s)

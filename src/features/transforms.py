@@ -89,7 +89,7 @@ def transform(mdf, code, tr, deflator=None):
     """Apply one stationary transform to one macro series.
 
     Args:
-        mdf: macro DataFrame (quarters x Moody's mnemonics).
+        mdf: macro DataFrame (quarters x macro mnemonics).
         code: mnemonic of the series, e.g. "FHPI.ION".
         tr: transform code: diff, diff2, diff4, lvl, rgap, dlog, yoy, dlog2, acc, gap, rdlog (real growth).
         deflator: mnemonic of the price index, used by the real transforms.

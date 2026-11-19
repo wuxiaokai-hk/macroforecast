@@ -4,7 +4,7 @@ The master holds, for many targets, what the project otherwise reads from two fi
 
     sheet        columns                                                           becomes
     models       target + model, source, variable, transform, lag, expected_sign, core     the workbook's 'models'
-    concepts     target + concept_id, concept, ..., moodys_name, notes                    the workbook's 'concepts'
+    concepts     target + concept_id, concept, ..., series_name, notes                    the workbook's 'concepts'
     settings     target + setting, value, meaning                                       the workbook's 'settings'
     references   short, reference, link, used_by (targets, comma separated)             the workbook's 'references'
     how_to_fill  target + line                                                          the workbook's 'how to fill'
@@ -39,6 +39,8 @@ def _sheets(path):
 def _norm(df):
     df = df.copy()
     df.columns = [str(c).strip() for c in df.columns]
+    if "moodys_name" in df.columns and "series_name" not in df.columns:   # older workbooks
+        df = df.rename(columns={"moodys_name": "series_name"})
     return df
 
 

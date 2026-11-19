@@ -130,7 +130,7 @@ def build(cfg, ctx, forms, F, results, models, notes, ev, comp):
         show[f"{fcode} (raw)"] = ctx.hist[fcode].values
     S.append(step("1 · Data", f"{len(ctx.idx)} quarters of the target and {ctx.base.shape[1]} macro series go in",
                   [f"The target is `{bank['target_column']}`, {ctx.idx[0]} to {ctx.idx[-1]}. Each of the "
-                   f"{len(ctx.macro)} Moody's scenario files holds the same {ctx.base.shape[1]} series: history, then "
+                   f"{len(ctx.macro)} scenario files holds the same {ctx.base.shape[1]} series: history, then "
                    f"the scenario path. The base scenario's history is used for estimation.",
                    f"The variable followed through this story is **{fol}**: {fdesc}."],
                   numbers=[("quarters of target data", len(ctx.idx)), ("macro series", ctx.base.shape[1]),
@@ -484,7 +484,7 @@ def _model_steps(cfg, ctx, m, ev, fol):
     tabs = [tbl(pd.DataFrame(rows), "Baseline scenario: each quarter's growth forecast (%) = the sum of its parts (percentage points)", H)]
     if sc is not None and len(sc):
         ye = sc[sc["date"].str.endswith("Q4")].pivot_table(index="date", columns="scenario", values="balance_forecast", sort=False)
-        tabs.append(tbl(ye.round(1).reset_index().rename(columns={"date": "year end"}), "Year-end balance under each Moody's scenario", 8))
+        tabs.append(tbl(ye.round(1).reset_index().rename(columns={"date": "year end"}), "Year-end balance under each scenario", 8))
     out.append(step("13 · Forecast", f"The baseline forecast taken apart: what each driver contributes, quarter by quarter",
                     [f"From the last actual quarter, {end}, the model is iterated forward with the scenario's path of each "
                      "driver. Each column below is one term of the equation; their sum is the quarter's growth, and the "

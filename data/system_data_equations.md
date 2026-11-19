@@ -1,6 +1,6 @@
 # Simulated system (data/system_data.csv): the equations that generated it
 
-Quarterly, 2000Q1-2025Q4, from the history of the example Moody's baseline (data/moodys_baseline.csv).
+Quarterly, 2000Q1-2025Q4, from the history of the example scenario baseline (data/scenario_baseline.csv).
 e = independent normal noise (std. dev. in brackets). Δ = change from the previous quarter. g = log growth.
 
 | Target | Equation |

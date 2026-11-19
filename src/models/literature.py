@@ -1,9 +1,9 @@
 """The literature workbook (config: literature.workbook, e.g. config/literature_workbook.xlsx) and its concept table.
 
 One row per economic concept: what the literature says drives household/mortgage credit, the expected sign of
-the effect, the evidence, and the name of the matching series in YOUR Moody's file (column `moodys_name`).
+the effect, the evidence, and the name of the matching series in YOUR macro file (column `series_name`).
 
-  - Rename only here: models in the config refer to concepts (house_prices|dlog|L1), not to Moody's names,
+  - Rename only here: models in the config refer to concepts (house_prices|dlog|L1), not to series names,
     so a different vendor name or vintage means editing one cell.
   - Filter here: set include = no for a concept you do not believe; it is dropped from every literature and
     hybrid model, from the error-correction long run and from the Chronos-2 covariates.
@@ -12,7 +12,7 @@ the effect, the evidence, and the name of the matching series in YOUR Moody's fi
     the series cannot be selected by the data either).
 
 Columns used by the code: concept_id, concept, expected_sign, core (yes/no), long_run_form (log | log_real |
-level | real_rate, or empty), include (yes/no), moodys_name. The other columns are documentation.
+level | real_rate, or empty), include (yes/no), series_name. The other columns are documentation.
 """
 import os
 
@@ -87,6 +87,7 @@ def read_workbook(path, full=False):
         raise ValueError(f"{os.path.basename(path)} needs the sheets 'models' and 'concepts' (it has {list(sheets)})")
     c = low["concepts"].copy()
     c.columns = [str(x).strip() for x in c.columns]
+    c = legacy_columns(c)
     csign = {}
     if "concept_id" in c and "expected_sign" in c:
         csign = {str(k).strip(): v for k, v in zip(c["concept_id"], pd.to_numeric(c["expected_sign"], errors="coerce"))}
@@ -221,7 +222,7 @@ def write_workbook(path, models, concepts, settings=None, references=None):
         "expected_sign = +1 or -1: the sign the literature expects for this driver in this model; empty = the concept's sign. "
         "Drivers whose estimate has the other sign are flagged in the diagnostics ('wrong-sign drivers').",
         "core = yes on the rows of ONE model: the theory core used by the hybrids, the regime models, ARIMAX and the networks.",
-        "Sheet 'concepts': map each concept to your series in moodys_name; include = no leaves a concept out of every model; "
+        "Sheet 'concepts': map each concept to your series in series_name; include = no leaves a concept out of every model; "
         "expected_sign there is the default for the models and, with apply_signs_to_metadata, for the data-driven screen.",
         "long_run_form (log, log_real, level, real_rate) puts a concept in the error-correction model's long-run relation.",
         "Sheet 'settings': the error-correction model, the channels hybrid, the regime threshold and the sign rule.",
@@ -238,6 +239,13 @@ def write_workbook(path, models, concepts, settings=None, references=None):
                 ws.column_dimensions[col[0].column_letter].width = min(80, max(10, max(len(str(c.value or "")) for c in col) + 2))
 
 
+def legacy_columns(t):
+    """Accept workbooks made with older versions, where the series column was called 'moodys_name'."""
+    if "moodys_name" in t.columns and "series_name" not in t.columns:
+        t = t.rename(columns={"moodys_name": "series_name"})
+    return t
+
+
 def load(cfg):
     """The table with two helper columns: active (included and mapped) and mnemonic."""
     path = (cfg.get("literature") or {}).get("table")
@@ -249,8 +257,9 @@ def load(cfg):
     else:
         t = pd.read_csv(path)
     t.columns = [c.strip() for c in t.columns]
+    t = legacy_columns(t)
     t["concept_id"] = t["concept_id"].astype(str).str.strip()
-    t["mnemonic"] = t["moodys_name"].fillna("").astype(str).str.strip()
+    t["mnemonic"] = t["series_name"].fillna("").astype(str).str.strip()
     t["include_flag"] = t["include"].map(_yes)
     t["core_flag"] = t.get("core", pd.Series("no", index=t.index)).map(_yes)
     t["expected_sign"] = pd.to_numeric(t["expected_sign"], errors="coerce").fillna(0).astype(int)
@@ -259,10 +268,10 @@ def load(cfg):
 
 
 def resolve(token, table):
-    """concept_id -> Moody's name (None if switched off or not mapped); anything else is returned unchanged.
+    """concept_id -> series name (None if switched off or not mapped); anything else is returned unchanged.
 
     Args:
-        token: concept_id or a Moody's name. table: the literature table.
+        token: concept_id or a series name. table: the literature table.
     """
     if table is None or token not in table.index:
         return token
@@ -345,7 +354,7 @@ def status(table, ctx_hist_columns, used):
     """
     if table is None:
         return pd.DataFrame()
-    s = table[["concept_id", "concept", "effect_on_loan_growth", "evidence", "include", "moodys_name"]].copy()
+    s = table[["concept_id", "concept", "effect_on_loan_growth", "evidence", "include", "series_name"]].copy()
     s["found_in_data"] = table["mnemonic"].map(lambda m: bool(m) and m in ctx_hist_columns)
     s["status"] = [("switched off" if not r["include_flag"] else "not mapped" if not r["mnemonic"] else
                     "mapped, but not in the macro data" if r["mnemonic"] not in ctx_hist_columns else

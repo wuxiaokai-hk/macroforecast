@@ -35,10 +35,10 @@ data:
     date_column: date
     sheet: null
     scenarios:
-      Baseline: data/moodys_baseline.csv
-      S1 Upside: data/moodys_s1_upside.csv
-      S3 Downside: data/moodys_s3_downside.csv
-      S4 Severe: data/moodys_s4_severe.csv
+      Baseline: data/scenario_baseline.csv
+      S1 Upside: data/scenario_s1_upside.csv
+      S3 Downside: data/scenario_s3_downside.csv
+      S4 Severe: data/scenario_s4_severe.csv
     base_scenario: Baseline
   metadata:
     file: data/macro_metadata.csv

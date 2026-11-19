@@ -4475,7 +4475,7 @@ null
 "core",
 "long_run_form",
 "include",
-"moodys_name",
+"series_name",
 "notes",
 "mnemonic",
 "include_flag",
@@ -4708,7 +4708,7 @@ false
 null,
 "yes",
 null,
-"Not in Moody's: e.g. Bank of Canada Senior Loan Officer Survey; map if you add it to the macro file",
+"Not in the example macro file: e.g. Bank of Canada Senior Loan Officer Survey; map if you add it to the macro file",
 "",
 true,
 false,
@@ -4729,7 +4729,7 @@ false
 null,
 "no",
 null,
-"Internal bank series rather than Moody's; switched off by default (risk of circularity with the target)",
+"Internal bank series rather than macro-vendor data; switched off by default (risk of circularity with the target)",
 "",
 false,
 false,
@@ -13657,7 +13657,7 @@ false
 "result": {
 "type": "DataFrame",
 "size": "12 \u00d7 9",
-"detail": "columns: concept_id, concept, effect_on_loan_growth, evidence, include, moodys_name \u2026"
+"detail": "columns: concept_id, concept, effect_on_loan_growth, evidence, include, series_name \u2026"
 },
 "tables": [
 {
@@ -13668,7 +13668,7 @@ false
 "effect_on_loan_growth",
 "evidence",
 "include",
-"moodys_name",
+"series_name",
 "found_in_data",
 "status",
 "used_in"

@@ -625,7 +625,7 @@ The app requires one; `python tools/literature_template.py` writes a template fi
 | `references` | study | the full references |
 | `how to fill` | — | these instructions |
 
-**Expected signs:** each literature model's coefficients are checked against the signs in its `models` rows. The model detail page (⑤) shows an "Expected sign" and a "Sign as expected" column, and a wrong sign is listed in the diagnostics. In the concepts sheet, `moodys_name` cells that do not match your data are re-matched automatically by the set-up; the matches, the models (signs included) and the settings can all be changed in the app (②), and the app saves them into `config/<name>_literature.xlsx`. The pre-flight check validates every sheet: variables that exist, valid transforms and signs, a deflator and a regime threshold that resolve.
+**Expected signs:** each literature model's coefficients are checked against the signs in its `models` rows. The model detail page (⑤) shows an "Expected sign" and a "Sign as expected" column, and a wrong sign is listed in the diagnostics. In the concepts sheet, `series_name` cells that do not match your data are re-matched automatically by the set-up; the matches, the models (signs included) and the settings can all be changed in the app (②), and the app saves them into `config/<name>_literature.xlsx`. The pre-flight check validates every sheet: variables that exist, valid transforms and signs, a deflator and a regime threshold that resolve.
 
 ### The concepts sheet
 
@@ -640,13 +640,13 @@ One row per economic concept that the literature links to household and mortgage
 | `core` | Part of the four-channel theory core (house prices, income, mortgage rate, unemployment) |
 | `long_run_form` | Enters the error-correction long run (`log`, `log_real`, `real_rate`) |
 | `include` | `yes` / `no`: your filter |
-| `moodys_name` | **The name of the series in your macro file.** This is the only place names are matched. |
+| `series_name` | **The name of the series in your macro file.** This is the only place names are matched. |
 
 How the pipeline uses it:
-- **Models refer to concepts, not series codes.** For example, `house_prices|dlog|L1` in the models sheet is resolved through `moodys_name`. If your vendor or vintage uses different names, edit that one column.
+- **Models refer to concepts, not series codes.** For example, `house_prices|dlog|L1` in the models sheet is resolved through `series_name`. If your vendor or vintage uses different names, edit that one column.
 - **`include: no` removes a concept everywhere:** from every literature and hybrid model, the error-correction long run, the theory channels and the Chronos-2 covariates.
 - **With `apply_signs_to_metadata = yes` in the settings sheet (the default),** the table's signs also apply to the data-driven screen. A concept set to `include: no` gets sign 0, so the data cannot select it either.
-- **A concept with no `moodys_name`** (affordability and credit conditions in the example) is skipped with a message.
+- **A concept with no `series_name`** (affordability and credit conditions in the example) is skipped with a message.
 - **Each run writes `comparison/10_literature_variables.csv`,** showing for every concept whether it is in use, available, not mapped or switched off, and which models use it.
 
 ## Presentation deck (`report/forecast_deck.qmd`)
@@ -936,3 +936,7 @@ What this shows:
 With 12-quarter ranking, screen first chose Canadian mortgage-credit growth, Ontario income and residential building permits. Mortgage credit is close to the target itself; review whether credit aggregates should be allowed as drivers.
 
 At `target_n = 10`, the full-sample Elastic Net spent 9 of its 10 picks on city house-price series. Stability selection and grouping reduced these to one house-price driver plus income.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Free to use, change and share. Data downloaded from public sources stay under their providers' terms. Independent open-source project, not affiliated with or endorsed by any employer, regulator or data vendor.

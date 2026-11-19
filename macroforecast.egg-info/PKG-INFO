@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: macroforecast
+Version: 2.0.0
+Summary: Explainable forecasting of balances, volumes and rates from macro drivers: selection, model zoo, backtest, out-of-sample test
+Requires-Python: >=3.9
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scipy
+Requires-Dist: statsmodels
+Requires-Dist: scikit-learn
+Requires-Dist: matplotlib
+Requires-Dist: openpyxl
+Requires-Dist: pyyaml
+Requires-Dist: tabulate
+Provides-Extra: app
+Requires-Dist: streamlit>=1.23; extra == "app"
+Provides-Extra: deck
+Requires-Dist: python-pptx; extra == "deck"
+Requires-Dist: jupyter; extra == "deck"
+Provides-Extra: deep
+Requires-Dist: darts>=0.30; extra == "deep"

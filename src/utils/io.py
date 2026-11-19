@@ -87,7 +87,7 @@ def organic_growth(cfg, level):
 
 
 def load_macro(cfg):
-    """Load every Moody's scenario file.
+    """Load every scenario file.
 
     Args:
         cfg: configuration (data.macro).

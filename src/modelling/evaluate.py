@@ -360,7 +360,7 @@ def _driver_rows(ctx, model, P):
 
 
 def scenario_forecasts(ctx, model):
-    """Forecast every Moody's scenario with the model estimated on all history.
+    """Forecast every scenario with the model estimated on all history.
 
     Args:
         ctx: Context (ctx.macro holds the scenarios). model: any model.

@@ -462,20 +462,22 @@ def check(cfg):
             else:
                 sh = pd.read_excel(lit["table"], sheet_name=None)
                 t = next((v for k, v in sh.items() if k.strip().lower() == "concepts"), next(iter(sh.values())))
-            t["moodys_name"] = t["moodys_name"].fillna("").astype(str).str.strip()
+            if "moodys_name" in t.columns and "series_name" not in t.columns:   # older workbooks
+                t = t.rename(columns={"moodys_name": "series_name"})
+            t["series_name"] = t["series_name"].fillna("").astype(str).str.strip()
             inc = t["include"].astype(str).str.lower().isin(["yes", "y", "true", "1"])
             core = t.get("core", pd.Series("no", index=t.index)).astype(str).str.lower().isin(["yes", "y", "true", "1"])
             for _, r in t[inc].iterrows():
-                nm, cid = r["moodys_name"], r["concept_id"]
+                nm, cid = r["series_name"], r["concept_id"]
                 is_core = bool(core.loc[_])
                 if not nm and not is_core:
                     rep.add(OK, "literature", f"{cid}: not mapped (the models that use it go without it)")
                 elif not nm:
-                    rep.add(ERROR, "literature", f"concept '{cid}'{' (core)' if is_core else ''} has no moodys_name",
-                            "put your series name in the moodys_name column, or include = no")
+                    rep.add(ERROR, "literature", f"concept '{cid}'{' (core)' if is_core else ''} has no series_name",
+                            "put your series name in the series_name column, or include = no")
                 elif nm not in names:
                     rep.add(ERROR if is_core else WARN, "literature", f"concept '{cid}' -> '{nm}' is not in the macro data",
-                            "fix the name in moodys_name (it must match a macro column exactly)")
+                            "fix the name in series_name (it must match a macro column exactly)")
                 else:
                     rep.add(OK, "literature", f"{cid} -> {nm}" + (" (core)" if is_core else ""))
     return rep

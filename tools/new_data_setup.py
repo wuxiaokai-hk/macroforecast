@@ -1,7 +1,7 @@
 """Set up a new data set in one command: writes a ready-to-check config from your files.
 
     python tools/new_data_setup.py --name my_portfolio \\
-        --bank data/my_bank.xlsx --macro-dir data/my_moodys/ --metadata data/my_metadata.csv
+        --bank data/my_bank.xlsx --macro-dir data/my_scenarios/ --metadata data/my_metadata.csv
 
 What it does (and prints, so you can review it):
   1. reads the loan file: finds the date column, the balance column (or use --target) and monthly vs quarterly;
@@ -362,7 +362,7 @@ def match_concepts(meta, names, primary, log):
                 sc -= 1.0
             if sc > best[0]:
                 best = (sc, r["mnemonic"], r["description"])
-        out[cid] = (best[1], f"matched '{best[2]}'" if best[1] else "no match: fill in moodys_name")
+        out[cid] = (best[1], f"matched '{best[2]}'" if best[1] else "no match: fill in series_name")
     for cid, (m, note) in out.items():
         log(f"  {cid:<18s} -> {m or '(none)':<16s} {note}")
     return out
@@ -540,9 +540,9 @@ def propose(bank, macro_files, metadata=None, events=None, sheet=None, target=No
     wb = read_workbook(literature or os.path.join(HERE, "config", "literature_workbook.xlsx"), full=True)   # yours or the example's
     lit_models, lit, lit_settings, lit_refs = wb["models"], wb["concepts"], wb["settings"], wb["references"]
     log(f"  literature workbook: {len(lit_models)} model(s), {len(lit)} concept(s)")
-    given = lit["moodys_name"].astype(object).where(lit["moodys_name"].notna() & (lit["moodys_name"].astype(str).str.strip() != ""))
+    given = lit["series_name"].astype(object).where(lit["series_name"].notna() & (lit["series_name"].astype(str).str.strip() != ""))
     given = given.where(given.astype(str).isin(names | {c[0] for c in constructed}))     # keep names that exist in YOUR data
-    lit["moodys_name"] = [g if isinstance(g, str) else (concepts.get(c, (None,))[0] or extra.get(c))
+    lit["series_name"] = [g if isinstance(g, str) else (concepts.get(c, (None,))[0] or extra.get(c))
                           for g, c in zip(given, lit["concept_id"])]
     lit["setup_note"] = [("from your workbook" if isinstance(g, str) else concepts[c][1] if c in concepts else
                           ("constructed by the set-up" if extra.get(c) else "fill in if you have it"))
@@ -671,9 +671,9 @@ def main():
     cfg_path, lit_path = write_config(P, a.name, fast=a.fast)
     print(f"\n6. Wrote {rel(cfg_path)} and {rel(lit_path)}")
     core = P["lit"][P["lit"]["core"].astype(str).str.lower() == "yes"]
-    miss = list(core[core["moodys_name"].isna()]["concept_id"])
+    miss = list(core[core["series_name"].isna()]["concept_id"])
     if miss:
-        print(f"  core concepts without a match: {miss}: put your series names in {rel(lit_path)} (moodys_name)")
+        print(f"  core concepts without a match: {miss}: put your series names in {rel(lit_path)} (series_name)")
     from src.utils.config import load_config
     from src.utils.preflight import check
     rep = check(load_config(cfg_path))

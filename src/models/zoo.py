@@ -67,7 +67,7 @@ def _valid(ctx, features):
 
 
 def literature_models(cfg, ctx, log, used=None):
-    """Literature specifications with concepts resolved to Moody's names through the literature table.
+    """Literature specifications with concepts resolved to series names through the literature table.
 
     Args:
         used: dict filled with concept_id -> models that use it (for the table report).

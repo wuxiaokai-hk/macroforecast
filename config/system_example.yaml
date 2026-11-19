@@ -7,8 +7,8 @@
 # spread over a market rate SYS.<NAME>_SPREAD) with the sign the target should have; selection decides whether
 # they enter. Targets are ordered automatically so that every target comes after the ones it uses.
 run_name: system_example
-# macro:                     # scenario files; default: the example Moody's files in data/
-#   Baseline: data/moodys_baseline.csv
+# macro:                     # scenario files; default: the example scenario files in data/
+#   Baseline: data/scenario_baseline.csv
 system:
   data: data/system_data.csv
   date_column: date

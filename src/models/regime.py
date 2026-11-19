@@ -18,7 +18,7 @@ comparison isolates the effect of allowing regimes), with the COVID dummies as f
                                       is found, estimates only on the data after the latest break
 
 Forecasts are iterated like the ARDL: lagged growth is replaced by the model's own forecast; drivers (and the
-threshold variable) come from the panel, i.e. realised values in the backtest and the Moody's path in scenarios.
+threshold variable) come from the panel, i.e. realised values in the backtest and the scenario path in scenarios.
 """
 import warnings
 

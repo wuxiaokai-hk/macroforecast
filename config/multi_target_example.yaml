@@ -41,10 +41,10 @@ data:
     date_column: date
     sheet: null
     scenarios:
-      Baseline: data/moodys_baseline.csv
-      S1 Upside: data/moodys_s1_upside.csv
-      S3 Downside: data/moodys_s3_downside.csv
-      S4 Severe: data/moodys_s4_severe.csv
+      Baseline: data/scenario_baseline.csv
+      S1 Upside: data/scenario_s1_upside.csv
+      S3 Downside: data/scenario_s3_downside.csv
+      S4 Severe: data/scenario_s4_severe.csv
     base_scenario: Baseline         # the scenario whose history is used for estimation
 
   metadata:                         # one row per macro variable
@@ -117,7 +117,7 @@ approaches: [screen_first, en_first]   # run one or both
 # Models from the literature: EVERYTHING is in the workbook (sheets models, concepts, settings, references).
 #   models     one row per driver of each published model: variable (a concept or one of your series), transform,
 #              lag, expected sign, core
-#   concepts   each economic concept: expected sign, evidence, include yes/no, and YOUR series name (moodys_name)
+#   concepts   each economic concept: expected sign, evidence, include yes/no, and YOUR series name (series_name)
 #   settings   the error-correction model, the channels hybrid, the regime threshold, the sign rule
 #   references the studies behind them
 # Template: python tools/literature_template.py (or download it in the app).
