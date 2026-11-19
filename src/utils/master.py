@@ -21,10 +21,20 @@ Point the config at it in either way:
 or give the master as literature.workbook and/or data.metadata.file (each is then taken from the master).
 The target's rows are written as ordinary files to outputs/<run>/inputs/master/ (only when they changed), and
 the rest of the project reads those, so every model, the pre-flight check and the cache work unchanged.
+
+Your macro names in ONE place: the master's `macro_names` sheet (code, description, ..., your_name) lists every macro
+series the master uses, under the master's own code (e.g. the Moody's mnemonic FHPI.ION). Write the name of the same
+series in your macro files in `your_name` (blank = the same as the code). The map is applied to every target's
+metadata, to every literature concept (moodys_name), and to the config's deflator, constructed series and
+same-growth drivers, so data from any provider runs without editing anything else. `literature.names:` can point to
+a separate file with the columns code and your_name instead (it wins over the sheet).
 """
 import os
+import re
 
 import pandas as pd
+
+NAMES_SHEET = "macro_names"
 
 WB_SHEETS = {"models": "models", "concepts": "concepts", "settings": "settings", "how_to_fill": "how to fill"}
 
@@ -65,6 +75,55 @@ def targets(path):
     return pd.DataFrame(list(rows.values())).fillna(0)
 
 
+def name_map(master=None, names_file=None):
+    """{master code: your name} from the master's macro_names sheet and/or a names file (the file wins).
+    Rows with an empty your_name, or your_name equal to the code, are left out."""
+    out = {}
+    srcs = []
+    if master and is_master(master):
+        sh = _sheets(master)
+        if NAMES_SHEET in sh:
+            srcs.append(sh[NAMES_SHEET])
+    if names_file:
+        if not os.path.exists(names_file):
+            raise ValueError(f"literature.names: {names_file} not found")
+        srcs.append(pd.read_csv(names_file) if names_file.lower().endswith(".csv") else pd.read_excel(names_file))
+    for d in srcs:
+        d = _norm(d)
+        cols = {c.lower(): c for c in d.columns}
+        c_code, c_name = cols.get("code") or cols.get("mnemonic"), cols.get("your_name")
+        if not (c_code and c_name):
+            raise ValueError("the names map needs the columns code and your_name")
+        for a, b in zip(d[c_code], d[c_name]):
+            a, b = str(a).strip(), ("" if pd.isna(b) else str(b).strip())
+            if a and a.lower() != "nan" and b and b != a:
+                out[a] = b
+    return out
+
+
+def rename_expr(text, names):
+    """Replace master codes inside an expression or name (whole tokens only: letters, digits, _ and . around)."""
+    if not names or not isinstance(text, str):
+        return text
+    for a in sorted(names, key=len, reverse=True):
+        text = re.sub(r"(?<![A-Za-z0-9_.])" + re.escape(a) + r"(?![A-Za-z0-9_])", names[a], text)
+    return text
+
+
+def _rename_meta(m, names):
+    if names and "mnemonic" in m:
+        m = m.copy()
+        m["mnemonic"] = m["mnemonic"].map(lambda v: names.get(str(v).strip(), v))
+    return m
+
+
+def _rename_concepts(c, names):
+    if names and "moodys_name" in c:
+        c = c.copy()
+        c["moodys_name"] = c["moodys_name"].map(lambda v: names.get(str(v).strip(), v) if isinstance(v, str) else v)
+    return c
+
+
 def _match(names, target):
     """The master's spelling of target (case, spaces, hyphens and underscores ignored)."""
     key = lambda x: str(x).strip().lower().replace(" ", "_").replace("-", "_")
@@ -72,11 +131,12 @@ def _match(names, target):
     return m.get(key(target))
 
 
-def extract(path, target, folder):
+def extract(path, target, folder, names=None):
     """Write one target's workbook and metadata from the master.
 
     Args:
         path: the master .xlsx. target: target name. folder: where to write.
+        names: {master code: your name} (see name_map); default: the master's macro_names sheet.
 
     Returns:
         dict workbook=<xlsx or None>, metadata=<csv or None>, target=<the master's name for it>.
@@ -85,18 +145,19 @@ def extract(path, target, folder):
         ValueError naming the targets the master has when target is not one of them.
     """
     s = _sheets(path)
-    names = set()
+    tset = set()
     for n in ("models", "concepts", "metadata"):
         if n in s and "target" in _norm(s[n]):
-            names |= set(_norm(s[n])["target"].dropna().astype(str).str.strip())
+            tset |= set(_norm(s[n])["target"].dropna().astype(str).str.strip())
     if not target:
         raise ValueError(f"{os.path.basename(path)} is a master file: say which target with literature.target "
-                         f"(it has: {', '.join(sorted(names))})")
-    t = _match(names, target)
+                         f"(it has: {', '.join(sorted(tset))})")
+    t = _match(tset, target)
     if t is None:
         raise ValueError(f"target '{target}' is not in {os.path.basename(path)}; set literature.target to one of: "
-                         f"{', '.join(sorted(names))}")
+                         f"{', '.join(sorted(tset))}")
     os.makedirs(folder, exist_ok=True)
+    names = name_map(path) if names is None else names
 
     def rows(name):
         d = _norm(s[name])
@@ -106,6 +167,8 @@ def extract(path, target, folder):
     out = {"workbook": None, "metadata": None, "target": t}
     if "models" in s and "concepts" in s and len(rows("models")):
         wb = {WB_SHEETS[k]: rows(k) for k in WB_SHEETS if k in s and "target" in _norm(s[k])}
+        if "concepts" in wb:
+            wb["concepts"] = _rename_concepts(wb["concepts"], names)
         if "how to fill" in wb and "line" in wb["how to fill"]:
             wb["how to fill"] = wb["how to fill"][["line"]].rename(columns={"line": "How to fill this workbook"})
         if "references" in s:
@@ -120,6 +183,7 @@ def extract(path, target, folder):
     if "metadata" in s and "target" in _norm(s["metadata"]):
         m = rows("metadata")
         m = m[[c for c in m.columns if c in ("mnemonic", "expected_sign") or m[c].notna().any()]]   # other targets' columns
+        m = _rename_meta(m, names)
         if len(m):
             f = os.path.join(folder, f"macro_metadata_{t}.csv")
             text = m.to_csv(index=False)
@@ -175,18 +239,24 @@ def apply(cfg, folder):
     if master:
         lit["workbook"] = lit.get("workbook") or master
         md["file"] = md.get("file") or master
-    if not (is_master(lit.get("workbook")) or is_master(md.get("file"))):
+    src_master = next((p for p in (master, lit.get("workbook"), md.get("file")) if is_master(p)), None)
+    names = name_map(src_master, lit.get("names"))
+    if names:
+        rename_config(cfg, names)
+    if not src_master:
+        if names:                                    # plain workbook and metadata: renamed copies
+            _rename_plain(cfg, names, folder)
         return None
     target = lit.get("target")
     if not target:                         # not given: the target column's name, else the run name, if the master has it
         src = lit["workbook"] if is_master(lit.get("workbook")) else md["file"]
-        names = list(targets(src)["target"])
+        tnames = list(targets(src)["target"])
         tc = cfg["data"]["bank"].get("target_column")
         mapped = ((cfg.get("targets") or {}).get("map") or {}).get(tc)
-        target = next((x for x in (mapped, tc, cfg.get("run_name")) if x and _match(names, x)), mapped or tc)
+        target = next((x for x in (mapped, tc, cfg.get("run_name")) if x and _match(tnames, x)), mapped or tc)
     used = None
     if is_master(lit.get("workbook")):
-        x = extract(lit["workbook"], target, folder)
+        x = extract(lit["workbook"], target, folder, names)
         lit["workbook"], used = x["workbook"], x["target"]
         if lit["workbook"] is None:                  # metadata only: the theory-based models are off
             m = cfg.setdefault("models", {})
@@ -199,10 +269,50 @@ def apply(cfg, folder):
         m["same_growth"] = [v for v in (m.get("same_growth") or [])
                             if not isinstance(v, str) or v in ids or "." in v]
     if is_master(md.get("file")):
-        x = extract(md["file"], target, folder)
+        x = extract(md["file"], target, folder, names)
         if x["metadata"] is None:
             raise ValueError(f"{os.path.basename(md['file'])} has no metadata rows for target '{x['target']}': "
                              f"give its metadata file as data.metadata.file (the literature still comes from the master)")
         md["file"], used = x["metadata"], x["target"]
         md["sheet"] = None
     return used
+
+
+def rename_config(cfg, names):
+    """Master codes named in the config -> your names: deflator, constructed series, same-growth drivers, follow."""
+    fe = cfg.get("features") or {}
+    if fe.get("deflator"):
+        fe["deflator"] = names.get(fe["deflator"], fe["deflator"])
+    for c in (cfg["data"].get("constructed") or []):
+        if isinstance(c, dict) and c.get("expression"):
+            c["expression"] = rename_expr(c["expression"], names)
+    m = cfg.get("models") or {}
+    if m.get("same_growth"):
+        m["same_growth"] = [rename_expr(v, names) if isinstance(v, str) else v for v in m["same_growth"]]
+    tr = cfg.get("trace") or {}
+    if isinstance(tr.get("follow"), str):
+        tr["follow"] = rename_expr(tr["follow"], names)
+
+
+def _rename_plain(cfg, names, folder):
+    """A plain literature workbook and metadata file with the names map applied (written to folder)."""
+    os.makedirs(folder, exist_ok=True)
+    lit, md = cfg["literature"], cfg["data"]["metadata"]
+    if lit.get("workbook") and os.path.exists(lit["workbook"]):
+        wb = pd.read_excel(lit["workbook"], sheet_name=None)
+        if "concepts" in wb:
+            wb["concepts"] = _rename_concepts(wb["concepts"], names)
+        f = os.path.join(folder, "literature_workbook_renamed.xlsx")
+        _write_if_changed(f, wb)
+        lit["workbook"] = f
+    if md.get("file") and os.path.exists(md["file"]):
+        from .io import read_table
+        d = read_table(md["file"], md.get("sheet"))
+        col = (md.get("columns") or {}).get("mnemonic", "mnemonic")
+        if col in d:
+            d[col] = d[col].map(lambda v: names.get(str(v).strip(), v))
+            f = os.path.join(folder, "macro_metadata_renamed.csv")
+            text = d.to_csv(index=False)
+            if not (os.path.exists(f) and open(f, encoding="utf-8").read() == text):
+                open(f, "w", encoding="utf-8", newline="").write(text)
+            md["file"], md["sheet"] = f, None

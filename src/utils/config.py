@@ -36,7 +36,7 @@ DEFAULTS = {
                  "stability": {"enabled": True, "n_subsamples": 100, "fraction": 0.75, "block_length": 8,
                                "threshold": 0.6, "seed": 42},
                  "group_corr": 0.75, "primary_geography": None, "rep_tolerance": 0.75},
-    "literature": {"master": None, "target": None, "workbook": None, "table": None, "apply_signs_to_metadata": True, "models": [], "ecm": None,
+    "literature": {"master": None, "target": None, "names": None, "workbook": None, "table": None, "apply_signs_to_metadata": True, "models": [], "ecm": None,
                    "channels": "table"},
     "models": {"only": [], "same_growth": ["disposable_income", "house_prices"],
                "auto_ardl": {"enabled": True, "criterion": "bic", "max_p": 4, "max_q": 4,
@@ -175,7 +175,7 @@ def load_config(path):
     d["events"]["file"] = _path(d["events"]["file"])
     d["metadata"]["file"] = _path(d["metadata"]["file"])
     lit = cfg["literature"]
-    for k in ("master", "workbook"):
+    for k in ("master", "workbook", "names"):
         if lit.get(k):
             lit[k] = _path(lit[k])
     from .master import apply as apply_master     # one master file for many targets: take this target's rows

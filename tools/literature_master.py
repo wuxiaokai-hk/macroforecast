@@ -9,6 +9,11 @@
                                                                         # macro_metadata_<target>.csv in FOLDER
     python tools/literature_master.py merge config/literature_master.xlsx --folder FOLDER [--out NEW.xlsx]
         # add the targets in FOLDER to an existing master (a target already there is replaced); default: in place
+    python tools/literature_master.py names config/literature_master.xlsx --macro data/my/baseline.csv \
+        [--macro-metadata data/my/metadata.csv] [--accept 0.6] [--out NEW.xlsx]
+        # add or refresh the macro_names sheet: every macro series the master uses, whether your file has it,
+        # and a suggested match from your metadata's descriptions. Fill your_name there: the ONLY place to edit
+        # when your macro data come from another provider or use other names.
 
 The project reads the master directly (literature.master + literature.target, see src/utils/master.py); split is
 only needed to look at one target's files or to use them elsewhere. The layout is the same as literature_tool.py's
@@ -121,6 +126,87 @@ def merge(base, pairs, out):
     return out, sorted(names - set(replaced)), replaced
 
 
+def _tokens(x):
+    import re as _re
+    stop = {"the", "of", "and", "in", "for", "a", "index", "total", "rate", "sa", "saar", "nsa", "ratio", "level"}
+    return {w for w in _re.findall(r"[a-z0-9+&]+", str(x).lower()) if w not in stop and (len(w) > 1 or w.isdigit())}
+
+
+def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept=None):
+    """Add or refresh the macro_names sheet (keeps every your_name already filled in). Returns the sheet."""
+    sh = pd.read_excel(master, sheet_name=None)
+    md = sh["metadata"]
+    md = md[md["mnemonic"].notna()]
+    g = md.groupby("mnemonic")
+    rows = pd.DataFrame({"code": list(g.groups)})
+    first = md.drop_duplicates("mnemonic").set_index("mnemonic")
+    for c in ("description", "geography", "theme", "transform"):
+        if c in first:
+            rows[c] = rows["code"].map(first[c])
+    sign = md[pd.to_numeric(md["expected_sign"], errors="coerce").fillna(0) != 0].groupby("mnemonic")["target"].nunique()
+    rows["targets_with_a_sign"] = rows["code"].map(sign).fillna(0).astype(int)
+    con = sh.get("concepts")
+    lit = {}
+    if con is not None and "moodys_name" in con:
+        for r in con.dropna(subset=["moodys_name"]).itertuples():
+            lit.setdefault(str(r.moodys_name).strip(), set()).add(f"{r.target}:{r.concept_id}")
+        extra = sorted(set(lit) - set(rows["code"]))
+        if extra:                                   # named by a concept but not in any metadata
+            rows = pd.concat([rows, pd.DataFrame({"code": extra})], ignore_index=True)
+    rows["literature_uses"] = rows["code"].map(lambda c: len(lit.get(c, ()))).astype(int)
+    old = sh.get("macro_names")
+    keep = dict(zip(old["code"].astype(str), old["your_name"])) if old is not None and "your_name" in old else {}
+    rows["your_name"] = rows["code"].map(lambda c: keep.get(c, ""))
+    rows["your_name"] = rows["your_name"].fillna("")
+    if macro:
+        from src.utils.io import read_table
+        cols = [str(c) for c in read_table(macro, None).columns]
+        low = {c.lower(): c for c in cols}
+        name = rows.apply(lambda r: r["your_name"] or r["code"], axis=1)
+        rows["in_your_data"] = name.map(lambda n: "yes" if n in cols else ("case differs: " + low[n.lower()]
+                                                                           if n.lower() in low else "no"))
+        if macro_meta:
+            from src.utils.io import read_table as rt
+            mm = rt(macro_meta, None)
+            cc = {c.lower(): c for c in mm.columns}
+            mcol = cc.get("mnemonic") or cc.get("code") or cc.get("name") or mm.columns[0]
+            dcol = cc.get("description") or cc.get("label") or mm.columns[1]
+            cand = [(str(a), _tokens(b), str(b)) for a, b in zip(mm[mcol], mm[dcol])]
+            sug, score = [], []
+            for r in rows.itertuples():
+                if r.in_your_data == "yes" or not isinstance(r.description, str):
+                    sug.append(""), score.append(None)
+                    continue
+                t = _tokens(str(r.description) + " " + str(getattr(r, "geography", "")))
+                best = max(cand, key=lambda x: len(t & x[1]) / (len(t | x[1]) or 1), default=None)
+                sc = len(t & best[1]) / (len(t | best[1]) or 1) if best else 0
+                sug.append(f"{best[0]} ({best[2]})" if best and sc >= 0.3 else ""), score.append(round(sc, 2) if best else None)
+            rows["suggestion"], rows["suggestion_score"] = sug, score
+            if accept is not None:                      # fill your_name from good suggestions (review them!)
+                ok = (rows["your_name"] == "") & (rows["suggestion_score"].fillna(0) >= accept) & (rows["suggestion"] != "")
+                rows.loc[ok, "your_name"] = rows.loc[ok, "suggestion"].str.split(" ").str[0]
+                log(f"  your_name filled from {int(ok.sum())} suggestions with a score of at least {accept}: review them")
+                name = rows.apply(lambda r: r["your_name"] or r["code"], axis=1)
+                rows["in_your_data"] = name.map(lambda n: "yes" if n in cols else "no")
+    rows = rows.sort_values(["literature_uses", "targets_with_a_sign", "code"], ascending=[False, False, True])
+    lead = ["code", "your_name"] + [c for c in ("in_your_data", "suggestion", "suggestion_score") if c in rows]
+    rows = rows[lead + [c for c in rows.columns if c not in lead]]
+    sh["macro_names"] = rows
+    order = ["README", "macro_names"] + [k for k in sh if k not in ("README", "macro_names")]
+    with pd.ExcelWriter(out or master) as w:
+        for k in order:
+            if k in sh:
+                sh[k].to_excel(w, sheet_name=k, index=False)
+    if macro:
+        miss = rows[(rows["in_your_data"] != "yes")]
+        lm = miss[miss["literature_uses"] > 0]
+        log(f"macro_names: {len(rows)} series; {len(rows) - len(miss)} found in your data; "
+            f"{len(miss)} not found ({len(lm)} of them used by literature models)")
+    else:
+        log(f"macro_names: {len(rows)} series ({int((rows['literature_uses'] > 0).sum())} used by literature models)")
+    return rows
+
+
 def from_folder(folder):
     pairs = {}
     for f in glob.glob(os.path.join(folder, "**", "*_literature_workbook.xlsx"), recursive=True):
@@ -132,12 +218,16 @@ def from_folder(folder):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list", "split", "build", "merge"])
+    ap.add_argument("command", choices=["list", "split", "build", "merge", "names"])
     ap.add_argument("master")
     ap.add_argument("rest", nargs="*")
     ap.add_argument("--targets", default="")
     ap.add_argument("--folder", default=None)
-    ap.add_argument("--out", default=None, help="merge: write here instead of over the master")
+    ap.add_argument("--out", default=None, help="merge / names: write here instead of over the master")
+    ap.add_argument("--macro", default=None, help="names: one of your scenario files (its columns are your names)")
+    ap.add_argument("--macro-metadata", default=None, help="names: your metadata (descriptions) for suggestions")
+    ap.add_argument("--accept", type=float, default=None, metavar="SCORE",
+                    help="names: copy suggestions with at least this score (0-1, e.g. 0.6) into your_name")
     a = ap.parse_args()
     if a.command == "list":
         print(ms.targets(a.master).to_string(index=False))
@@ -148,6 +238,8 @@ def main():
         for t in names:
             x = ms.extract(a.master, t, a.rest[0])
             print(f"{x['target']}: {x['workbook'] or '(no workbook)'}  {x['metadata'] or '(no metadata)'}")
+    elif a.command == "names":
+        names_sheet(a.master, a.macro, a.macro_metadata, a.out, accept=a.accept)
     elif a.command == "merge":
         pairs = from_folder(a.folder) if a.folder else {}
         for p in a.rest:
@@ -156,6 +248,7 @@ def main():
             pairs[t] = (wb or None, md or None)
         out, added, rep = merge(a.master, pairs, a.out or a.master)
         print(f"wrote {out}: {len(added)} added ({', '.join(added)}), {len(rep)} replaced ({', '.join(rep) or 'none'})")
+        names_sheet(out)                                # new targets' series join the names map
     else:
         pairs = from_folder(a.folder) if a.folder else {}
         for p in a.rest:
