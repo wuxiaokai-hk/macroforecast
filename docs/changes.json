@@ -3714,72 +3714,72 @@
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
+ "tools.fetch_statcan.post": {
+  "hash": "d35855307412",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.cached": {
+  "hash": "e00137eadb6f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.metadata": {
+  "hash": "5393478b1f82",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan._words": {
+  "hash": "b26ca5637cf1",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.find_member": {
+  "hash": "96b51c9a6d35",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.coordinate": {
+  "hash": "256704b14d30",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.download": {
+  "hash": "61c298595dcd",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.quarterly": {
+  "hash": "79b497fd0a98",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.scenario_paths": {
+  "hash": "a64ed2ee598d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.build": {
+  "hash": "86d304d420af",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.write_config": {
+  "hash": "ac241d647a55",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.describe": {
+  "hash": "ec7293548bab",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.fetch_statcan.main": {
+  "hash": "cd56193d542f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
  "_log": [
-  {
-   "date": "2026-11-03",
-   "id": "src.models.deep.ARIMAX.detail_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.simple.SameGrowth",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.simple.SameGrowth.detail_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.zoo.same_growth_models",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.zoo.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.terms",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.terms_levels",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.write_calculator",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.report.summary_md",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.story.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.docs.render_html",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.preflight.check",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "tools.make_deck.build_deck",
-   "what": "changed"
-  },
   {
    "date": "2026-11-03",
    "id": "tools.new_data_setup.main",
@@ -5214,6 +5214,71 @@
    "date": "2026-11-18",
    "id": "tools.literature_master.main",
    "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.post",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.cached",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.metadata",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan._words",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.find_member",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.coordinate",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.download",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.quarterly",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.scenario_paths",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.write_config",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.describe",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.fetch_statcan.main",
+   "what": "added"
   }
  ]
 }

@@ -70,7 +70,28 @@ Whatever the source, the history in every scenario file must be the same actual 
 4. Run `python tools/new_data_setup.py` (or the app, `streamlit run app.py`): it reads the files, detects the columns, drafts the missing metadata fields, maps the literature concepts to your series, sets every date from the data and writes the config. `python tools/check_config.py` checks it before a run.
 5. Run (below). The process story (`tools/process_story.py`) writes up what happened for your audience.
 
-**The example data in `data/` is simulated** so the project runs out of the box and its results can be checked against the equations that generated them (`data/*_equations.md`, `tools/simulate_data.py`). It has the structure of real inputs but no real bank or vendor data; replace it with yours as above before drawing any conclusion.
+For a real data set to start from, `tools/fetch_statcan.py` (next section) does all of this for public Statistics Canada series.
+
+## Real example data from Statistics Canada (`python tools/fetch_statcan.py`)
+
+One command downloads a real example data set from Statistics Canada and writes everything a run needs:
+
+```
+python tools/fetch_statcan.py                                   # download, build the files, write config/statcan.yaml
+python run_targets.py --config config/statcan.yaml --list       # the targets it built
+python run_targets.py --config config/statcan.yaml --all --oos --story
+python tools/fetch_statcan.py --describe 14100287               # a table's dimensions and members
+```
+
+- **Targets:** household mortgage debt and consumer credit outstanding (table 38-10-0238, quarterly).
+- **Drivers:** real GDP (36-10-0104), household disposable income (36-10-0112), unemployment rate and employment for Canada and Ontario (14-10-0287), CPI (18-10-0004), new housing price index for Canada and Ontario (18-10-0205), retail sales (20-10-0008), the prime rate, the bank rate, the 5-year conventional mortgage rate and the 5-year Government of Canada yield (10-10-0122), and Ontario population (17-10-0009).
+- **How:** the tool uses Statistics Canada's free Web Data Service (no key). For each series it reads the table's dimensions, turns the member names in `config/statcan_series.yaml` into the series' coordinate and downloads it; monthly series become quarterly (average, or quarter end for stocks). Downloads are cached in `data/statcan/raw/`, so a re-run works offline (`--refresh` downloads again).
+- **Files written:** `data/statcan/targets.csv`, one scenario file per scenario in `data/statcan/scenarios/`, `data/statcan/macro_metadata.csv` (with expected signs), `data/statcan/sources.csv` (table, coordinate, vector and title of every series, with the download date) and `config/statcan.yaml` with every date set from the data and the literature concepts mapped to these series, through the same set-up as `tools/new_data_setup.py`.
+- **Scenarios:** Statistics Canada publishes history, not scenarios, so the scenario paths are illustrative and rule-based: the baseline continues each series' average growth of the last 20 quarters (rates stay flat), and Upside, Downside and Severe add shocks that build up over 4–5 quarters and half fade by the end (Severe: real GDP −5%, Ontario house prices −22%, unemployment +4 points, rates −1 to −2 points). Edit them in the spec, or replace the files with a provider's scenarios for real use.
+- **Changing the series:** add or edit entries in `config/statcan_series.yaml` (table number, member names per dimension, transform, expected sign). Member names can be exact or a list of words that must appear; a name that matches nothing stops the tool with the list of members of that dimension. `--describe` prints a table's dimensions and members.
+- Needs internet access to `www150.statcan.gc.ca` (behind a corporate proxy, set `HTTPS_PROXY`) and no extra packages. Statistics Canada data are used under the Statistics Canada Open Licence.
+
+**The small example files in `data/` that ship with the project are simulated**, so the project runs without internet and its results can be checked against the equations that generated them (`data/*_equations.md`, `tools/simulate_data.py`). For real data, run `tools/fetch_statcan.py` or bring your own as above.
 
 ## Run
 

@@ -31710,6 +31710,70 @@ null,
 "label": "",
 "source_hash": "002554d7a564"
 },
+"src.utils.target.change": {
+"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
+"started": "2026-11-18T21:58:33",
+"command": "run_oos.py --config config/example_config.yaml",
+"args": [
+{
+"name": "new",
+"type": "float64",
+"size": "",
+"detail": "90149.4"
+},
+{
+"name": "old",
+"type": "float64",
+"size": "",
+"detail": "88617.8"
+}
+],
+"result": {
+"type": "float64",
+"size": "",
+"detail": "0.0171356"
+},
+"tables": [],
+"calls": 1,
+"time": 0.0001,
+"label": "",
+"source_hash": "891d15c7dd94"
+},
+"src.utils.saved.save_origin_models": {
+"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
+"started": "2026-11-18T21:58:33",
+"command": "run_oos.py --config config/example_config.yaml",
+"args": [
+{
+"name": "folder",
+"type": "str",
+"size": "",
+"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example/oos/fitted_models'"
+},
+{
+"name": "store",
+"type": "dict",
+"size": "12 keys",
+"detail": "2013Q4, 2014Q4, 2015Q4, 2016Q4, 2017Q4, 2018Q4, 2019Q4, 2020Q4 \u2026"
+},
+{
+"name": "log",
+"type": "function",
+"size": "",
+"detail": "Tracer.install.<locals>.traced_log"
+}
+],
+"result": {
+"type": "NoneType",
+"size": "",
+"detail": "None"
+},
+"tables": [],
+"calls": 1,
+"time": 0.015,
+"label": "/home/claude/macroforecast/outputs/ontario_loans_example/oos",
+"source_hash": "80248292b5c4"
+},
 "src.utils.target.resolve": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
 "started": "2026-11-18T21:58:33",
@@ -31894,35 +31958,6 @@ null
 "label": "",
 "source_hash": "9c502fc9a99e"
 },
-"src.utils.target.change": {
-"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
-"started": "2026-11-18T21:58:33",
-"command": "run_oos.py --config config/example_config.yaml",
-"args": [
-{
-"name": "new",
-"type": "float64",
-"size": "",
-"detail": "90149.4"
-},
-{
-"name": "old",
-"type": "float64",
-"size": "",
-"detail": "88617.8"
-}
-],
-"result": {
-"type": "float64",
-"size": "",
-"detail": "0.0171356"
-},
-"tables": [],
-"calls": 1,
-"time": 0.0001,
-"label": "",
-"source_hash": "891d15c7dd94"
-},
 "src.utils.target.state": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
 "started": "2026-11-18T21:58:33",
@@ -31998,6 +32033,58 @@ null
 "label": "",
 "source_hash": "9f2254bc4b5c"
 },
+"src.utils.target.growth_display": {
+"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
+"started": "2026-11-18T21:58:33",
+"command": "run_oos.py --config config/example_config.yaml",
+"args": [
+{
+"name": "g",
+"type": "float64",
+"size": "",
+"detail": "0.00887806"
+}
+],
+"result": {
+"type": "float64",
+"size": "",
+"detail": "0.887806"
+},
+"tables": [],
+"calls": 8712,
+"time": 0.0234,
+"label": "",
+"source_hash": "a0d6373a2551"
+},
+"src.utils.target.level_after": {
+"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
+"started": "2026-11-18T21:58:33",
+"command": "run_oos.py --config config/example_config.yaml",
+"args": [
+{
+"name": "L0",
+"type": "float",
+"size": "",
+"detail": "87016.0"
+},
+{
+"name": "total_change",
+"type": "float64",
+"size": "",
+"detail": "0.00887806"
+}
+],
+"result": {
+"type": "float64",
+"size": "",
+"detail": "87792.0"
+},
+"tables": [],
+"calls": 8712,
+"time": 0.0093,
+"label": "",
+"source_hash": "c188ab4a66be"
+},
 "src.utils.target.from_display": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
 "started": "2026-11-18T21:58:33",
@@ -32050,150 +32137,133 @@ null
 "label": "",
 "source_hash": "1238cf0dd7d0"
 },
-"src.utils.target.level_after": {
+"src.utils.target.target_deflator": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
 "started": "2026-11-18T21:58:33",
 "command": "run_oos.py --config config/example_config.yaml",
 "args": [
 {
-"name": "L0",
-"type": "float",
-"size": "",
-"detail": "87016.0"
+"name": "mdf",
+"type": "DataFrame",
+"size": "124 \u00d7 403",
+"detail": "columns: FGDPR.ION, FGDP$.ION, FET.ION, FLBR.ION, FLF.ION, FPOPT.ION \u2026; index 2000Q1 \u2026 2030Q4"
 },
 {
-"name": "total_change",
-"type": "float64",
+"name": "deflator",
+"type": "str",
 "size": "",
-"detail": "0.00887806"
-}
-],
-"result": {
-"type": "float64",
-"size": "",
-"detail": "87792.0"
+"detail": "'FCPI.ION'"
 },
-"tables": [],
-"calls": 8712,
-"time": 0.0093,
-"label": "",
-"source_hash": "c188ab4a66be"
-},
-"src.utils.target.per_year": {
-"run": "outputs/ontario_loans_example/trace/20261118_215818",
-"started": "2026-11-18T21:58:18",
-"command": "run_pipeline.py --config config/example_config.yaml",
-"args": [
 {
-"name": "mean_change",
-"type": "Series",
-"size": "104",
-"detail": "name loan_balance; index 2000Q1 \u2026 2025Q4; mean 0.01058, min -0.006052, max 0.0754"
+"name": "index",
+"type": "PeriodIndex",
+"size": "124",
+"detail": "2000Q1 \u2026 2030Q4"
 }
 ],
 "result": {
 "type": "Series",
-"size": "104",
-"detail": "name loan_balance; index 2000Q1 \u2026 2025Q4; mean 4.231, min -2.421, max 30.16"
+"size": "124",
+"detail": "name FCPI.ION; index 2000Q1 \u2026 2030Q4; mean 4.924, min 4.605, max 5.287"
 },
 "tables": [
 {
 "label": "result",
 "columns": [
 "date",
-"loan_balance"
+"FCPI.ION"
 ],
 "rows": [
 [
 "2000Q1",
-null
+4.60517
 ],
 [
 "2000Q2",
-4.79971
+4.6079
 ],
 [
 "2000Q3",
-4.79994
+4.61371
 ],
 [
 "2000Q4",
-4.13394
+4.61581
 ],
 [
 "2001Q1",
-6.41397
+4.62238
 ],
 [
 "2001Q2",
-3.85299
+4.62598
 ],
 [
 "2001Q3",
-2.70582
+4.63026
 ],
 [
 "2001Q4",
-6.07575
+4.63863
 ],
 [
 "2002Q1",
-5.0006
+4.64351
 ],
 [
 "2002Q2",
-3.72252
+4.65297
 ],
 [
 "2002Q3",
-2.63799
+4.65881
 ],
 [
 "2002Q4",
-5.64267
+4.66598
 ],
 [
 "2003Q1",
-5.99744
+4.66985
 ],
 [
 "2003Q2",
-4.81883
+4.67477
 ],
 [
 "2003Q3",
-5.05892
+4.68137
 ],
 [
 "2003Q4",
-1.6253
+4.68488
 ],
 [
 "2004Q1",
-2.06632
+4.68931
 ],
 [
 "2004Q2",
-3.06026
+4.69427
 ],
 [
 "2004Q3",
-3.25788
+4.70638
 ],
 [
 "2004Q4",
-4.8059
+4.71483
 ]
 ],
-"n": 104,
+"n": 124,
 "n_cols": 1,
-"file": "outputs/ontario_loans_example/trace/20261118_215818/tables/0408_per_year_result.csv"
+"file": "outputs/ontario_loans_example/trace_oos/20261118_215833/tables/0688_target_deflator_result.csv"
 }
 ],
 "calls": 1,
 "time": 0.0003,
-"label": "",
-"source_hash": "4c2344619dff"
+"label": "FCPI.ION",
+"source_hash": "b6d7eb572702"
 },
 "src.reporting.report.rank_column": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
@@ -32223,102 +32293,6 @@ null
 "time": 0.0,
 "label": "",
 "source_hash": "d19e6f090385"
-},
-"src.utils.saved.save_all": {
-"run": "outputs/ontario_loans_example/trace/20261118_215818",
-"started": "2026-11-18T21:58:18",
-"command": "run_pipeline.py --config config/example_config.yaml",
-"args": [
-{
-"name": "out_dir",
-"type": "str",
-"size": "",
-"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example'"
-},
-{
-"name": "ev",
-"type": "dict",
-"size": "31 keys",
-"detail": "AR(1) benchmark, Mean growth benchmark, Screen first, Elastic Net first, Same growth as Personal disposable income, Same growth as Personal disposable income + average gap, Same growth as House price index, Same growth as House price index + average gap \u2026"
-},
-{
-"name": "ctx",
-"type": "Context",
-"size": "",
-"detail": ""
-},
-{
-"name": "log",
-"type": "function",
-"size": "",
-"detail": "Tracer.install.<locals>.traced_log"
-}
-],
-"result": {
-"type": "str",
-"size": "",
-"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example/fitted'"
-},
-"tables": [],
-"calls": 1,
-"time": 0.1623,
-"label": "/home/claude/macroforecast/outputs/ontario_loans_example",
-"source_hash": "f01bb0ee29cf"
-},
-"src.utils.target.form": {
-"run": "outputs/ontario_loans_example/trace/20261118_215818",
-"started": "2026-11-18T21:58:18",
-"command": "run_pipeline.py --config config/example_config.yaml",
-"args": [],
-"result": {
-"type": "str",
-"size": "",
-"detail": "'dlog'"
-},
-"tables": [],
-"calls": 1,
-"time": 0.0,
-"label": "",
-"source_hash": "504638ea2326"
-},
-"src.utils.target.units": {
-"run": "outputs/ontario_loans_example/trace/20261118_215818",
-"started": "2026-11-18T21:58:18",
-"command": "run_pipeline.py --config config/example_config.yaml",
-"args": [],
-"result": {
-"type": "str",
-"size": "",
-"detail": "'%'"
-},
-"tables": [],
-"calls": 1,
-"time": 0.0001,
-"label": "",
-"source_hash": "f85c684b317d"
-},
-"src.utils.saved._slug": {
-"run": "outputs/ontario_loans_example/trace/20261118_215818",
-"started": "2026-11-18T21:58:18",
-"command": "run_pipeline.py --config config/example_config.yaml",
-"args": [
-{
-"name": "name",
-"type": "str",
-"size": "",
-"detail": "'AR(1) benchmark'"
-}
-],
-"result": {
-"type": "str",
-"size": "",
-"detail": "'AR_1_benchmark'"
-},
-"tables": [],
-"calls": 62,
-"time": 0.0011,
-"label": "AR(1) benchmark",
-"source_hash": "a5805df6b4d9"
 },
 "src.reporting.formula._window_def": {
 "run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
@@ -32453,173 +32427,144 @@ null
 "label": "dlog",
 "source_hash": "7eec2fe65d51"
 },
-"src.utils.target.target_deflator": {
-"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
-"started": "2026-11-18T21:58:33",
-"command": "run_oos.py --config config/example_config.yaml",
+"src.utils.target.per_year": {
+"run": "outputs/ontario_loans_example/trace/20261118_215818",
+"started": "2026-11-18T21:58:18",
+"command": "run_pipeline.py --config config/example_config.yaml",
 "args": [
 {
-"name": "mdf",
-"type": "DataFrame",
-"size": "124 \u00d7 403",
-"detail": "columns: FGDPR.ION, FGDP$.ION, FET.ION, FLBR.ION, FLF.ION, FPOPT.ION \u2026; index 2000Q1 \u2026 2030Q4"
-},
-{
-"name": "deflator",
-"type": "str",
-"size": "",
-"detail": "'FCPI.ION'"
-},
-{
-"name": "index",
-"type": "PeriodIndex",
-"size": "124",
-"detail": "2000Q1 \u2026 2030Q4"
+"name": "mean_change",
+"type": "Series",
+"size": "104",
+"detail": "name loan_balance; index 2000Q1 \u2026 2025Q4; mean 0.01058, min -0.006052, max 0.0754"
 }
 ],
 "result": {
 "type": "Series",
-"size": "124",
-"detail": "name FCPI.ION; index 2000Q1 \u2026 2030Q4; mean 4.924, min 4.605, max 5.287"
+"size": "104",
+"detail": "name loan_balance; index 2000Q1 \u2026 2025Q4; mean 4.231, min -2.421, max 30.16"
 },
 "tables": [
 {
 "label": "result",
 "columns": [
 "date",
-"FCPI.ION"
+"loan_balance"
 ],
 "rows": [
 [
 "2000Q1",
-4.60517
+null
 ],
 [
 "2000Q2",
-4.6079
+4.79971
 ],
 [
 "2000Q3",
-4.61371
+4.79994
 ],
 [
 "2000Q4",
-4.61581
+4.13394
 ],
 [
 "2001Q1",
-4.62238
+6.41397
 ],
 [
 "2001Q2",
-4.62598
+3.85299
 ],
 [
 "2001Q3",
-4.63026
+2.70582
 ],
 [
 "2001Q4",
-4.63863
+6.07575
 ],
 [
 "2002Q1",
-4.64351
+5.0006
 ],
 [
 "2002Q2",
-4.65297
+3.72252
 ],
 [
 "2002Q3",
-4.65881
+2.63799
 ],
 [
 "2002Q4",
-4.66598
+5.64267
 ],
 [
 "2003Q1",
-4.66985
+5.99744
 ],
 [
 "2003Q2",
-4.67477
+4.81883
 ],
 [
 "2003Q3",
-4.68137
+5.05892
 ],
 [
 "2003Q4",
-4.68488
+1.6253
 ],
 [
 "2004Q1",
-4.68931
+2.06632
 ],
 [
 "2004Q2",
-4.69427
+3.06026
 ],
 [
 "2004Q3",
-4.70638
+3.25788
 ],
 [
 "2004Q4",
-4.71483
+4.8059
 ]
 ],
-"n": 124,
+"n": 104,
 "n_cols": 1,
-"file": "outputs/ontario_loans_example/trace_oos/20261118_215833/tables/0688_target_deflator_result.csv"
+"file": "outputs/ontario_loans_example/trace/20261118_215818/tables/0408_per_year_result.csv"
 }
 ],
 "calls": 1,
 "time": 0.0003,
-"label": "FCPI.ION",
-"source_hash": "b6d7eb572702"
-},
-"src.utils.target.growth_display": {
-"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
-"started": "2026-11-18T21:58:33",
-"command": "run_oos.py --config config/example_config.yaml",
-"args": [
-{
-"name": "g",
-"type": "float64",
-"size": "",
-"detail": "0.00887806"
-}
-],
-"result": {
-"type": "float64",
-"size": "",
-"detail": "0.887806"
-},
-"tables": [],
-"calls": 8712,
-"time": 0.0234,
 "label": "",
-"source_hash": "a0d6373a2551"
+"source_hash": "4c2344619dff"
 },
-"src.utils.saved.save_origin_models": {
-"run": "outputs/ontario_loans_example/trace_oos/20261118_215833",
-"started": "2026-11-18T21:58:33",
-"command": "run_oos.py --config config/example_config.yaml",
+"src.utils.saved.save_all": {
+"run": "outputs/ontario_loans_example/trace/20261118_215818",
+"started": "2026-11-18T21:58:18",
+"command": "run_pipeline.py --config config/example_config.yaml",
 "args": [
 {
-"name": "folder",
+"name": "out_dir",
 "type": "str",
 "size": "",
-"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example/oos/fitted_models'"
+"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example'"
 },
 {
-"name": "store",
+"name": "ev",
 "type": "dict",
-"size": "12 keys",
-"detail": "2013Q4, 2014Q4, 2015Q4, 2016Q4, 2017Q4, 2018Q4, 2019Q4, 2020Q4 \u2026"
+"size": "31 keys",
+"detail": "AR(1) benchmark, Mean growth benchmark, Screen first, Elastic Net first, Same growth as Personal disposable income, Same growth as Personal disposable income + average gap, Same growth as House price index, Same growth as House price index + average gap \u2026"
+},
+{
+"name": "ctx",
+"type": "Context",
+"size": "",
+"detail": ""
 },
 {
 "name": "log",
@@ -32629,15 +32574,70 @@ null
 }
 ],
 "result": {
-"type": "NoneType",
+"type": "str",
 "size": "",
-"detail": "None"
+"detail": "'/home/claude/macroforecast/outputs/ontario_loans_example/fitted'"
 },
 "tables": [],
 "calls": 1,
-"time": 0.015,
-"label": "/home/claude/macroforecast/outputs/ontario_loans_example/oos",
-"source_hash": "80248292b5c4"
+"time": 0.1623,
+"label": "/home/claude/macroforecast/outputs/ontario_loans_example",
+"source_hash": "f01bb0ee29cf"
+},
+"src.utils.target.form": {
+"run": "outputs/ontario_loans_example/trace/20261118_215818",
+"started": "2026-11-18T21:58:18",
+"command": "run_pipeline.py --config config/example_config.yaml",
+"args": [],
+"result": {
+"type": "str",
+"size": "",
+"detail": "'dlog'"
+},
+"tables": [],
+"calls": 1,
+"time": 0.0,
+"label": "",
+"source_hash": "504638ea2326"
+},
+"src.utils.target.units": {
+"run": "outputs/ontario_loans_example/trace/20261118_215818",
+"started": "2026-11-18T21:58:18",
+"command": "run_pipeline.py --config config/example_config.yaml",
+"args": [],
+"result": {
+"type": "str",
+"size": "",
+"detail": "'%'"
+},
+"tables": [],
+"calls": 1,
+"time": 0.0001,
+"label": "",
+"source_hash": "f85c684b317d"
+},
+"src.utils.saved._slug": {
+"run": "outputs/ontario_loans_example/trace/20261118_215818",
+"started": "2026-11-18T21:58:18",
+"command": "run_pipeline.py --config config/example_config.yaml",
+"args": [
+{
+"name": "name",
+"type": "str",
+"size": "",
+"detail": "'AR(1) benchmark'"
+}
+],
+"result": {
+"type": "str",
+"size": "",
+"detail": "'AR_1_benchmark'"
+},
+"tables": [],
+"calls": 62,
+"time": 0.0011,
+"label": "AR(1) benchmark",
+"source_hash": "a5805df6b4d9"
 },
 "src.modelling.evaluate.fitted_values": {
 "run": "outputs/ontario_loans_example/trace/20261118_204122",

@@ -10,3 +10,8 @@ cache/
 .env
 outputs/
 .streamlit/secrets.toml
+
+# downloaded by tools/fetch_statcan.py (re-create with: python tools/fetch_statcan.py)
+data/statcan/
+config/statcan.yaml
+config/statcan_literature.xlsx

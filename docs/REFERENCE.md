@@ -55,6 +55,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/utils/trace.py](#srcutilstracepy)
 - [src/validation/oos.py](#srcvalidationoospy)
 - [tools/check_config.py](#toolscheckconfigpy)
+- [tools/fetch_statcan.py](#toolsfetchstatcanpy)
 - [tools/literature_master.py](#toolsliteraturemasterpy)
 - [tools/literature_template.py](#toolsliteraturetemplatepy)
 - [tools/make_deck.py](#toolsmakedeckpy)
@@ -6435,7 +6436,7 @@ read(*p)
 |---|---|---|
 | `*p` |  |  |
 
-**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `install_hook`, `write_config`, `build`, `main`
+**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
 <sub>src/reporting/process_story.py:121</sub>
 
@@ -12464,6 +12465,241 @@ Command line entry.
 <sub>tools/check_config.py:19</sub>
 
 
+## tools/fetch_statcan.py
+
+Real example data from Statistics Canada: download, build the files the project reads, write the config.
+
+### `post`
+
+```python
+post(method, body, tries=4)
+```
+
+POST to the Web Data Service; returns the parsed JSON (retries on network errors and rate limits).
+
+| argument | default | meaning |
+|---|---|---|
+| `method` |  |  |
+| `body` |  |  |
+| `tries` | `4` |  |
+
+**Called by:** `download`, `metadata`
+
+<sub>tools/fetch_statcan.py:45</sub>
+
+### `cached`
+
+```python
+cached(path, refresh, fetch)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `refresh` |  |  |
+| `fetch` |  |  |
+
+**Called by:** `download`, `metadata`
+
+<sub>tools/fetch_statcan.py:63</sub>
+
+### `metadata`
+
+```python
+metadata(pid, raw, refresh=False)
+```
+
+A table's metadata: title, frequency and dimensions with their members.
+
+| argument | default | meaning |
+|---|---|---|
+| `pid` |  |  |
+| `raw` |  |  |
+| `refresh` | `False` |  |
+
+**Calls:** `cached`, `post`
+
+**Called by:** `build`, `describe`
+
+<sub>tools/fetch_statcan.py:72</sub>
+
+### `_words`
+
+```python
+_words(x)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `x` |  |  |
+
+**Called by:** `coordinate`, `find_member`
+
+<sub>tools/fetch_statcan.py:82</sub>
+
+### `find_member`
+
+```python
+find_member(dim, want)
+```
+
+The member of a dimension named by `want` (exact name, else every word of a string or list contained).
+
+| argument | default | meaning |
+|---|---|---|
+| `dim` |  |  |
+| `want` |  |  |
+
+**Calls:** `_words`
+
+**Called by:** `coordinate`
+
+<sub>tools/fetch_statcan.py:86</sub>
+
+### `coordinate`
+
+```python
+coordinate(meta, members)
+```
+
+Coordinate string ('1.2.0...') from member names per dimension; notes on the choices made.
+
+| argument | default | meaning |
+|---|---|---|
+| `meta` |  | variable metadata indexed by mnemonic. |
+| `members` |  |  |
+
+**Calls:** `_words`, `find_member`
+
+**Called by:** `build`
+
+<sub>tools/fetch_statcan.py:109</sub>
+
+### `download`
+
+```python
+download(pid, coord, raw, refresh=False, n=800)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `pid` |  |  |
+| `coord` |  |  |
+| `raw` |  |  |
+| `refresh` | `False` |  |
+| `n` | `800` |  |
+
+**Calls:** `cached`, `post`
+
+**Called by:** `build`
+
+<sub>tools/fetch_statcan.py:127</sub>
+
+### `quarterly`
+
+```python
+quarterly(s, agg)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+| `agg` |  |  |
+
+**Called by:** `build`
+
+<sub>tools/fetch_statcan.py:143</sub>
+
+### `scenario_paths`
+
+```python
+scenario_paths(H, spec, codes, transforms, hist_end, horizon)
+```
+
+Each scenario: history, then the baseline path plus the scenario's shock (see the spec).
+
+| argument | default | meaning |
+|---|---|---|
+| `H` |  | forecast horizon in quarters. |
+| `spec` |  |  |
+| `codes` |  |  |
+| `transforms` |  |  |
+| `hist_end` |  |  |
+| `horizon` |  |  |
+
+**Called by:** `build`
+
+<sub>tools/fetch_statcan.py:152</sub>
+
+### `build`
+
+```python
+build(spec_file, refresh=False, log=print)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `spec_file` |  |  |
+| `refresh` | `False` |  |
+| `log` | `print` | function used to print progress messages. |
+
+**Calls:** `coordinate`, `download`, `metadata`, `quarterly`, `scenario_paths`, `write_config`
+
+**Called by:** `main`
+
+<sub>tools/fetch_statcan.py:179</sub>
+
+### `write_config`
+
+```python
+write_config(spec, name, folder, paths, hist_end, log=print)
+```
+
+config/<name>.yaml through the set-up tool (tools/new_data_setup.py): dates from the data, the literature concepts mapped to these series, the example's comments kept; plus a targets block for run_targets.py.
+
+| argument | default | meaning |
+|---|---|---|
+| `spec` |  |  |
+| `name` |  | display name. |
+| `folder` |  | output folder. |
+| `paths` |  |  |
+| `hist_end` |  |  |
+| `log` | `print` | function used to print progress messages. |
+
+**Calls:** `Story.read`, `propose`, `yq`
+
+**Called by:** `build`
+
+<sub>tools/fetch_statcan.py:230</sub>
+
+### `describe`
+
+```python
+describe(pid, raw)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `pid` |  |  |
+| `raw` |  |  |
+
+**Calls:** `metadata`
+
+**Called by:** `main`
+
+<sub>tools/fetch_statcan.py:257</sub>
+
+### `main`
+
+```python
+main()
+```
+
+**Calls:** `build`, `describe`
+
+<sub>tools/fetch_statcan.py:269</sub>
+
+
 ## tools/literature_master.py
 
 Build, list or split a literature master file (every target's literature workbook and metadata in one .xlsx).
@@ -13028,7 +13264,7 @@ A value as YAML text (strings quoted when needed).
 
 **Calls:** `search`
 
-**Called by:** `write_config`
+**Called by:** `write_config`, `write_config`
 
 <sub>tools/new_data_setup.py:456</sub>
 
@@ -13076,7 +13312,7 @@ Read the files and propose every data-dependent setting (used by this command an
 
 **Calls:** `read_workbook`, `read_table`, `build_metadata`, `find_by`, `match_concepts`, `read_bank`, `read_macro`, `rel`
 
-**Called by:** `main`
+**Called by:** `write_config`, `main`
 
 <sub>tools/new_data_setup.py:488</sub>
 

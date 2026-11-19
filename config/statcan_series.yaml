@@ -1,0 +1,96 @@
+# Real example data from Statistics Canada, for tools/fetch_statcan.py.
+#
+#   python tools/fetch_statcan.py                         # download, build the files, write config/statcan.yaml
+#   python tools/fetch_statcan.py --describe 36100104     # dimensions and members of a table (to edit this file)
+#
+# Each series names a table (its product ID: the table number without dashes and without the last two digits,
+# e.g. table 36-10-0104-01 -> 36100104) and one member per dimension, by name. A member can be written exactly
+# as Statistics Canada names it, or as a list of words that must all appear in the name (case ignored). A dimension
+# that is left out takes its first member (usually the total). When a name does not match, the tool stops and lists
+# the members of that dimension, so the fix is a one-line edit here.
+#
+# Monthly series become quarterly: `agg: mean` (rates, indexes, flows) or `agg: last` (stocks at quarter end).
+
+name: statcan                      # files go to data/statcan/, the config to config/statcan.yaml
+start: 1995Q1                      # first quarter kept
+horizon: 12                        # quarters of scenario path after the last actual quarter
+
+targets:                           # what to forecast (one column each in data/statcan/targets.csv)
+  - code: household_mortgage_credit
+    table: 38100238                # Household sector credit market summary table, seasonally adjusted, quarterly
+    members:
+      Categories: [mortgage]
+    description: Household mortgage debt outstanding, Canada
+  - code: household_consumer_credit
+    table: 38100238
+    members:
+      Categories: [consumer credit]
+    description: Household consumer credit outstanding, Canada
+
+macro:                             # candidate drivers (one column each in every scenario file)
+  - {code: GDP_REAL.CA, table: 36100104, agg: mean, transform: dlog, sign: 1, theme: Output, geography: Canada,
+     description: "Real GDP, chained dollars, Canada",
+     members: {Geography: Canada, Prices: [chained], Seasonal adjustment: [seasonally adjusted at annual rates],
+               Estimates: [gross domestic product at market prices]}}
+  - {code: HH_DISP_INC.CA, table: 36100112, agg: mean, transform: dlog, sign: 1, theme: Income, geography: Canada,
+     description: "Household disposable income, Canada",
+     members: {Geography: Canada, Seasonal adjustment: [seasonally adjusted at annual rates],
+               Estimates: [household disposable income]}}
+  - {code: UNEMP_RATE.CA, table: 14100287, agg: mean, transform: diff, sign: -1, theme: Labour, geography: Canada,
+     description: "Unemployment rate, Canada (%)",
+     members: {Geography: Canada, Labour force characteristics: Unemployment rate, Gender: [total],
+               Age group: 15 years and over, Statistics: Estimate, Data type: Seasonally adjusted}}
+  - {code: UNEMP_RATE.ON, table: 14100287, agg: mean, transform: diff, sign: -1, theme: Labour, geography: Ontario,
+     description: "Unemployment rate, Ontario (%)",
+     members: {Geography: Ontario, Labour force characteristics: Unemployment rate, Gender: [total],
+               Age group: 15 years and over, Statistics: Estimate, Data type: Seasonally adjusted}}
+  - {code: EMPLOY.CA, table: 14100287, agg: mean, transform: dlog, sign: 1, theme: Labour, geography: Canada,
+     description: "Employment, Canada (thousands)",
+     members: {Geography: Canada, Labour force characteristics: Employment, Gender: [total],
+               Age group: 15 years and over, Statistics: Estimate, Data type: Seasonally adjusted}}
+  - {code: CPI.CA, table: 18100004, agg: mean, transform: dlog, sign: 0, theme: Prices, geography: Canada,
+     description: "Consumer price index, all-items, Canada",
+     members: {Geography: Canada, Products and product groups: All-items}}
+  - {code: NHPI.CA, table: 18100205, agg: mean, transform: dlog, sign: 1, theme: Housing, geography: Canada,
+     description: "New housing price index (house prices), Canada",
+     members: {Geography: Canada, New housing price indexes: [total]}}
+  - {code: NHPI.ON, table: 18100205, agg: mean, transform: dlog, sign: 1, theme: Housing, geography: Ontario,
+     description: "New housing price index (house prices), Ontario",
+     members: {Geography: Ontario, New housing price indexes: [total]}}
+  - {code: RETAIL.CA, table: 20100008, agg: mean, transform: dlog, sign: 1, theme: Consumption, geography: Canada,
+     description: "Retail trade sales, Canada",
+     members: {Geography: Canada, North American Industry Classification System (NAICS): [retail trade],
+               Adjustments: Seasonally adjusted}}
+  - {code: RATE_PRIME.CA, table: 10100122, agg: mean, transform: diff, sign: -1, theme: Interest rates, geography: Canada,
+     description: "Prime rate, chartered banks (%)",
+     members: {Rates: [prime]}}
+  - {code: RATE_MORT5Y.CA, table: 10100122, agg: mean, transform: diff, sign: -1, theme: Interest rates, geography: Canada,
+     description: "5-year conventional mortgage rate (%)",
+     members: {Rates: [conventional mortgage, 5 year]}}
+  - {code: RATE_BANK.CA, table: 10100122, agg: mean, transform: diff, sign: -1, theme: Interest rates, geography: Canada,
+     description: "Bank rate, policy rate (%)",
+     members: {Rates: [bank rate]}}
+  - {code: RATE_GOC5Y.CA, table: 10100122, agg: mean, transform: diff, sign: -1, theme: Interest rates, geography: Canada,
+     description: "Government of Canada 5-year bond yield (%)",
+     members: {Rates: [government of canada, 5 year]}}
+  - {code: POP.ON, table: 17100009, agg: last, transform: dlog, sign: 1, theme: Demographics, geography: Ontario,
+     description: "Population, Ontario",
+     members: {Geography: Ontario}}
+
+# Illustrative scenarios, built from rules (Statistics Canada publishes history, not scenarios).
+# Baseline: series in growth (dlog) continue at their average growth of the last 20 quarters; rates stay at their
+# last value. Each other scenario adds a shock that builds up over `peak` quarters and fades by half by the end of
+# the horizon: in % of the level for growth series, in percentage points for rates.
+# Replace these files with a provider's or your own scenarios for real use.
+scenarios:
+  Baseline: {}
+  Upside:   {peak: 4, shocks: {GDP_REAL.CA: 1.5, HH_DISP_INC.CA: 1.0, EMPLOY.CA: 1.0, UNEMP_RATE.CA: -0.7,
+                               UNEMP_RATE.ON: -0.7, NHPI.CA: 4, NHPI.ON: 4, RETAIL.CA: 2}}
+  Downside: {peak: 4, shocks: {GDP_REAL.CA: -2.5, HH_DISP_INC.CA: -1.5, EMPLOY.CA: -2, UNEMP_RATE.CA: 2,
+                               UNEMP_RATE.ON: 2.2, NHPI.CA: -8, NHPI.ON: -10, RETAIL.CA: -4, RATE_BANK.CA: -1,
+                               RATE_PRIME.CA: -1, RATE_GOC5Y.CA: -0.6, RATE_MORT5Y.CA: -0.5}}
+  Severe:   {peak: 5, shocks: {GDP_REAL.CA: -5, HH_DISP_INC.CA: -3, EMPLOY.CA: -4, UNEMP_RATE.CA: 4,
+                               UNEMP_RATE.ON: 4.5, NHPI.CA: -18, NHPI.ON: -22, RETAIL.CA: -8, RATE_BANK.CA: -2,
+                               RATE_PRIME.CA: -2, RATE_GOC5Y.CA: -1.2, RATE_MORT5Y.CA: -1}}
+
+dummy_quarters: [2020Q1, 2020Q2, 2020Q3, 2020Q4, 2021Q1, 2021Q2]
