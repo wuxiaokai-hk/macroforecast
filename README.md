@@ -1,13 +1,76 @@
-# macroforecast: explainable forecasting from macro drivers
+# macroforecast: explainable forecasts of bank financial performance from macro drivers
 
-Forecasts a quarterly series (a loan or deposit balance, investment, an interest rate) from macro drivers. It selects a small set of drivers (at most 3 by default), using two approaches side by side, then backtests, diagnoses and forecasts each one under every scenario.
+A complete, reusable method for forecasting any quarterly financial measure of a bank, a credit union or the banking sector from the economy, under scenarios, with models you can explain driver by driver. Bring your own target series and public macro data; the method does the rest:
 
-- **Approach A, screen first:** test every candidate one at a time, cluster near-duplicates, keep one per cluster, then search.
-- **Approach B, Elastic Net first:** run an Elastic Net on all candidates (with optional stability selection), group correlated picks, keep one per group, then search.
+1. **Prepares the target:** organic quarterly growth (or change, for rates and ratios), one-off events removed.
+2. **Builds candidates:** every macro series in economically sensible forms (growth, annual change, acceleration, gap from trend, ...) and lags, each with the sign economic theory expects.
+3. **Chooses a few drivers** (at most 3 by default) in two independent ways, screening one at a time and an Elastic Net with stability selection, followed by the same final search: significant, right-signed, not collinear, and ranked by forecast accuracy, not fit.
+4. **Competes:** the chosen models against benchmarks, published specifications from the literature, theory-data hybrids, regime-switching, time-series and machine-learning models, about 30 models in all.
+5. **Tests honestly:** a rolling backtest 1–12 quarters ahead, an out-of-sample test that re-chooses the drivers at every origin, and a holdout of the latest quarters.
+6. **Forecasts every scenario** and explains each forecast quarter as a sum of named pieces, with a deck, a step-by-step process story, an Excel calculator and the full tables.
 
-Both approaches finish with the same final step, so their results are directly comparable.
+It also handles **many banks at once** (panel models that pool across banks), **several related targets as one system** (loans, deposits and their rates, with SUR, VECM and BVARX), and **many targets from one file**.
 
-Their models then compete with benchmarks, models from published studies, hybrids of theory and data, machine-learning models and AI foundation models: about 20 models, all tested the same way 4, 8 and 12 quarters ahead (see **Competing models** below). A Quarto file builds the presentation deck from the results (`report/`).
+## What you can forecast
+
+Anything observed quarterly (or monthly) for which economic drivers make sense. Balances and volumes are modelled as log growth; rates, ratios and shares as quarterly changes (`target.transform: diff`, suggested automatically).
+
+| Area | Examples | Form |
+|---|---|---|
+| Lending | residential mortgages, HELOCs, personal, credit card, commercial, CRE, agricultural loans; undrawn commitments | growth |
+| Funding and liquidity | demand and term deposits, wholesale funding, liquid assets, securities | growth |
+| Pricing | mortgage, loan, deposit and GIC rates; spreads; net interest margin | change |
+| Income and expense | interest income and expense, fee income, wealth and insurance income, salaries | growth |
+| Credit quality | delinquency rates, Stage 2 share, provision rate, net write-off rate, allowance coverage | change |
+| Capital | RWA, CET1 / Tier 1 / Tier 2 capital, capital ratios | growth or change |
+
+A literature master (`config/literature_master_example.xlsx`, or your own built with `tools/literature_master.py`) holds, for each target, the economic concepts the research identifies with their evidence and expected effect, the published model specifications, and the expected sign of every macro series, so a new target starts from theory, not from a blank page.
+
+## What you need
+
+| Input | What it is | Typical source |
+|---|---|---|
+| **Target series** | date + one or more columns (one row per bank and quarter for several banks) | your institution's general ledger or regulatory returns; public regulatory data (below) |
+| **Macro history and scenarios** | one file per scenario: the history of each macro series followed by the scenario path, same columns in every file | official statistics for the history; a scenario provider, a supervisor's published scenarios or your own (below) |
+| **Metadata** | one row per macro series: code, description, geography, theme, natural transform, expected sign | written once for your macro data; `tools/new_data_setup.py` drafts it |
+| **Literature workbook or master** (recommended) | the published models and economic concepts for the target, mapped to your series | `config/literature_master_example.xlsx`, or your own master |
+| **One-off events** (optional) | acquisitions, portfolio sales, reclassifications to take out of the growth | your institution |
+
+## Where to find the data
+
+The method needs no proprietary data. These public sources cover the targets and the drivers; check each source's terms of use before redistributing what you download.
+
+**Targets: bank and banking-sector financials**
+
+- **Canada, by institution:** OSFI's financial data on the Open Government portal (FINDAT) has the regulatory returns banks file, among them the M4 consolidated balance sheet, the P3 income statement and BCAR capital adequacy; monthly data are published on the 15th of each month and quarterly data in late May, August, November and March ([OSFI](https://www.osfi-bsif.gc.ca/en/data-forms/open-government-osfi-financial-data/working-open-government-data)). The balance sheet return is published by institution and, as a total for all banks, in the Bank of Canada's Banking and Financial Statistics ([OSFI, M4](https://osfi-bsif.gc.ca/en/node/1153)).
+- **Canada, banking sector:** the Bank of Canada's Banking and Financial Statistics tables (chartered bank assets and liabilities, regional distribution of loans and deposits, credit aggregates); many are also Statistics Canada tables, e.g. *Chartered banks, assets and liabilities, month-end* ([Open Government](https://open.canada.ca/data/en/dataset/53a00090-9ad7-4915-bf99-5e63489596ac)). Federally regulated credit unions are excluded from these chartered-bank tables ([Bank of Canada](https://www.bankofcanada.ca/?p=194601)).
+- **Credit unions (Canada):** your provincial regulator's published system data, or your own returns.
+- **United States:** quarterly Call Reports from the FFIEC Central Data Repository (bulk files for all filers about 45 days after each quarter end) and the FDIC BankFind Suite and its API ([FDIC bank data guide](https://www.fdic.gov/bank-data-guide/data-downloads); [FFIEC CDR](https://cdr.ffiec.gov/Public/HelpFiles/WelcomeAdditionalInfo.htm)); NCUA 5300 call reports for credit unions.
+- **Your own institution:** the general ledger, the data warehouse or the returns you file are the best target data, because they match exactly what you report.
+
+**Drivers: macro and financial history**
+
+- **Statistics Canada** tables, by download (CSV) or through the Web Data Service API ([WDS](https://statcan.gc.ca/eng/developers/wds)). Useful starting points: GDP by expenditure, quarterly (36-10-0104); household current and capital accounts, including disposable income (36-10-0112); household credit market debt, mortgage and consumer credit (38-10-0238); Labour Force Survey by province (14-10-0287); CPI (18-10-0004); plus housing, retail, building permits and population tables, at national, provincial and CMA level.
+- **Bank of Canada:** the policy rate, prime, Government of Canada yields, exchange rates and thousands of other series through the free Valet API (CSV, JSON or XML), including the staff economic projections ([Bank of Canada](https://www.bankofcanada.ca/rates/staff-economic-projections/)).
+- **United States and international:** FRED (Federal Reserve Bank of St. Louis), the BEA and BLS.
+
+**Scenarios: where the macro paths come from**
+
+- **Supervisory scenarios:** the Federal Reserve publishes its stress-test scenarios each year as CSV files, a baseline and a severely adverse scenario for domestic and international variables ([Federal Reserve, 2026 stress tests](https://www.federalreserve.gov/supervisionreg/dfa-stress-tests-2026.htm)); the 2026 scenarios run from the first quarter of 2026 to the first quarter of 2029 with 28 variables ([OMB filing](https://omb.report/icr/202603-1557-002/doc/original/166956500.pdf)). Use them directly for US targets, or as the shape of a stress for others.
+- **Commercial providers** (Moody's Analytics, Oxford Economics, S&P Global and others) sell consistent baseline and alternative scenarios for thousands of national and regional series, under licence. The example files in `data/` are laid out like such a vendor file (one column per series, Moody's-style codes).
+- **Your own:** the baseline from your economics team or the Bank of Canada's projections, and alternatives built by shifting the key paths (rates up 200 bp, unemployment +3 points, house prices −20%). Each scenario file is the same history followed by its own path.
+
+Whatever the source, the history in every scenario file must be the same actual data, and every series the metadata marks as a possible driver must have a path in every scenario.
+
+## From downloads to the files the project reads
+
+1. **Target:** a CSV or Excel file with a date column (`2020Q1` or `2020-03-31`) and one column per target series. Monthly data are turned into quarter ends. Several banks: add a bank column.
+2. **Scenarios:** one file per scenario with a date column and one column per macro series (use short codes; the metadata describes them). History and scenario path in the same column, one after the other.
+3. **Metadata:** one row per series with its code, description, geography, theme, natural transform (`dlog` for levels, `diff` for rates) and expected sign (+1, −1, or 0 to keep it out of the selection).
+4. Run `python tools/new_data_setup.py` (or the app, `streamlit run app.py`): it reads the files, detects the columns, drafts the missing metadata fields, maps the literature concepts to your series, sets every date from the data and writes the config. `python tools/check_config.py` checks it before a run.
+5. Run (below). The process story (`tools/process_story.py`) writes up what happened for your audience.
+
+**The example data in `data/` is simulated** so the project runs out of the box and its results can be checked against the equations that generated them (`data/*_equations.md`, `tools/simulate_data.py`). It has the structure of real inputs but no real bank or vendor data; replace it with yours as above before drawing any conclusion.
 
 ## Run
 
@@ -73,7 +136,7 @@ Each target needs metadata whose expected signs fit it. A higher policy rate low
 What the defaults do:
 
 - **Sample dates** not set in `hyperparameters` are taken from the data. `hist_end` is the last quarter with data. `estimation_start` is the first quarter with both target and macro data, plus room for lags. `backtest_start` is 8 years before the end.
-- **Scenario files** default to the example Moody's files in `data/`; pass `macro={"Baseline": f1, "S4 Severe": f2}` for your own.
+- **Scenario files** default to the example (simulated) files in `data/`; pass `macro={"Baseline": f1, "S4 Severe": f2}` for your own.
 - **No literature workbook** (`literature=None`) switches off the literature, hybrid and same-growth models; the data-driven approaches still run.
 - **Same-growth models** keep only the concepts the workbook has, and **constructed series** of the example config are dropped when your macro files lack their inputs.
 - **Config record:** each run writes the full config it used to `<path>/run_config.yaml`. `python run_pipeline.py --config <path>/run_config.yaml` repeats it exactly.
@@ -253,7 +316,7 @@ It finds the date and balance columns, takes the scenario names from the file na
 
 `python tools/check_config.py --config config/<name>.yaml` checks names, files and dates in a few seconds and prints a fix for each problem. The same check runs at the start of `run_pipeline.py` and `run_oos.py` and stops on errors (`--skip-check` overrides it).
 
-The guide "Running the Loan Model on a New Dataset" covers the details: the file formats, every setting that depends on the data, the date rules and the check's messages.
+"Where to find the data" and "From downloads to the files the project reads" above cover the sources and file formats.
 
 ## One master file for all targets (`literature.master`)
 
@@ -310,7 +373,7 @@ Copy `config/example_config.yaml`, rename it, and edit it. Everything that depen
 |---|---|
 | Bank file, sheet, date column, balance column, monthly or quarterly | `data.bank` |
 | Inorganic events file and its columns (optional) | `data.events` |
-| One Moody's file per scenario, any names, plus the date column | `data.macro.scenarios`, `data.macro.date_column` |
+| One file per scenario (any provider), any names, plus the date column | `data.macro.scenarios`, `data.macro.date_column` |
 | Metadata file and **your** column names for mnemonic, description, geography, theme, transform, expected sign | `data.metadata.columns` |
 | Extra variables built from macro columns (spreads, real rates) | `data.constructed` |
 | Dates: last actual quarter, estimation start, backtest start, dummy quarters | `sample` |
@@ -456,7 +519,7 @@ After the two approaches have chosen their drivers, `src/models/zoo.py` builds e
 - `comparison/11_regimes.csv` and `regimes.png` show the regime indicator over history.
 - The Markov model is estimated with growth in percent and standardised inputs, because the likelihood search needs this with about 100 quarters. Each regime having its own volatility is off by default: with this little data, one regime tends to collapse onto a few outliers. Turn it on with `settings: {markov: {switching_variance: true}}`.
 - If the likelihood search fails, the model falls back to one regime and the driver table says so.
-- On the simulated data, which was generated without regimes, the tests find weak evidence for them, as they should. Real Ontario data, with the 2017 mortgage stress test and the 2022 rate shock, is where they can show their value.
+- On the simulated data, which was generated without regimes, the tests find weak evidence for them, as they should. Real data, with policy changes such as the 2017 Canadian mortgage stress test and the 2022 rate shock, is where they can show their value.
 
 **Deep-learning models need `pip install darts`** (it installs PyTorch, about 1 GB, more on Linux with GPU libraries). Without it they are skipped with a message. They are deliberately small, because there are only about 100 quarters to learn from: 1 hidden layer of 16–32 units, 8 quarters of input, 4 quarters predicted per step (the 12-quarter path is built by repeating that), 80 training epochs, refitted once a year. Settings are in `models.deep.settings`, with per-model overrides (TFT uses 2 seeds and 50 epochs because it is the slowest). Approximate run time on 4 CPU cores for the rolling backtest plus scenarios: N-HiTS 50 s, TiDE 80 s, TFT 4 min.
 
@@ -559,7 +622,7 @@ One row per economic concept that the literature links to household and mortgage
 | `moodys_name` | **The name of the series in your macro file.** This is the only place names are matched. |
 
 How the pipeline uses it:
-- **Models refer to concepts, not Moody's names.** For example, `house_prices|dlog|L1` in the models sheet is resolved through `moodys_name`. If your vendor or vintage uses different names, edit that one column.
+- **Models refer to concepts, not series codes.** For example, `house_prices|dlog|L1` in the models sheet is resolved through `moodys_name`. If your vendor or vintage uses different names, edit that one column.
 - **`include: no` removes a concept everywhere:** from every literature and hybrid model, the error-correction long run, the theory channels and the Chronos-2 covariates.
 - **With `apply_signs_to_metadata = yes` in the settings sheet (the default),** the table's signs also apply to the data-driven screen. A concept set to `include: no` gets sign 0, so the data cannot select it either.
 - **A concept with no `moodys_name`** (affordability and credit conditions in the example) is skipped with a message.
@@ -827,7 +890,7 @@ outputs/<run_name>/      common/, screen_first/, en_first/, comparison/, summary
 - Forecasts under every scenario.
 - An AR(1) benchmark, run alongside for comparison.
 
-## Example results (simulated data)
+## Example results (simulated data, for checking the method only)
 
 Average balance error (MAPE), dummy quarters excluded. "Rolling backtest" uses drivers chosen with all the data. "Out of sample" re-selects everything at each of 12 origins.
 
