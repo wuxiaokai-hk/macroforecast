@@ -2500,7 +2500,7 @@ Part of the model interface (see src/models/zoo.py): ARDL panel plus the log lev
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
 
-**Called by:** `worked`, `write_calculator`, `holdout`
+**Called by:** `holdout`
 
 <sub>src/models/ecm.py:73</sub>
 
@@ -2581,7 +2581,7 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, upd
 
 **Returns:** array of forecasts.
 
-**Called by:** `worked`, `holdout`
+**Called by:** `holdout`
 
 <sub>src/models/ecm.py:142</sub>
 
@@ -6175,7 +6175,7 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Returns:** DataFrame: scenario, date, each driver's value and contribution, growth (log, % q/q, % annualised), balance.
 
-**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `ECM.forecast`, `ECM.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
+**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
 
 **Called by:** `write`
 
@@ -6263,7 +6263,7 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Config:** `features`
 
-**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `ECM.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
+**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
 
 **Called by:** `write`
 
