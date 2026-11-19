@@ -37,7 +37,7 @@ from ..panel.estimate import KINDS, PanelModel
 from ..panel.run import summarise
 from ..panel.select import BankFeatures, select
 from ..utils import target as tg
-from .run import order, resolve_master, settings, sysname
+from .run import apply_names, order, resolve_master, settings, sysname
 
 SYS_TRS = {"diff": ["diff", "diff2", "diff4"], "dlog": ["dlog", "yoy", "dlog2"]}
 
@@ -352,6 +352,7 @@ def run(config_path, out_root=None, log=print):
                                                    for k, v in base_cfg["data"]["macro"]["scenarios"].items()}
     run_name = raw.get("run_name", "panel_system")
     out_dir = os.path.join(_abs(out_root) if out_root else os.path.join(PROJECT_ROOT, "outputs"), run_name)
+    apply_names(scfg, base_cfg, path_of, os.path.join(out_dir, "inputs", "master"))
     sd = os.path.join(out_dir, "system_panel")
     os.makedirs(sd, exist_ok=True)
     data_file = path_of(scfg["data"])

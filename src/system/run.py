@@ -83,6 +83,9 @@ def resolve_master(scfg, t, path_of, folder):
     The target's rows are those of t['master_target'] (default: the target's name)."""
     from ..utils import master as ms
     m = path_of(scfg.get("master"))
+    for k in ("metadata", "literature"):
+        if ms.is_master(t.get(k)) or (m and not t.get(k)):
+            t["_master"] = t.get(k) if ms.is_master(t.get(k)) else m
     if m:
         t["metadata"] = t.get("metadata") or m
         if "literature" not in t or t["literature"] is None:
@@ -94,6 +97,26 @@ def resolve_master(scfg, t, path_of, folder):
         t["literature"] = ms.extract(t["literature"], name, folder)["workbook"]   # None: no workbook for it
     if not t.get("metadata"):
         raise ValueError(f"system target '{t['name']}' has no metadata (give metadata:, or system.master)")
+
+
+def apply_names(scfg, base_cfg, path_of, folder):
+    """Your macro names (the master's macro_names sheet, or system.names) applied to the system config (uses'
+    spread_over, relations' against, ...) and the base config (deflator, constructed series), and passed on to
+    every target's run. Returns the map."""
+    from ..utils import master as ms
+    src = path_of(scfg.get("master")) or next((t.get("_master") for t in scfg["targets"] if t.get("_master")), None)
+    names = ms.name_map(src, path_of(scfg.get("names")))
+    if not names:
+        return names
+    for k in ("targets", "vecm", "ratios", "identities"):
+        if k in scfg:
+            scfg[k] = ms.rename_tree(scfg[k], names)
+    ms.rename_config(base_cfg, names)
+    hp = scfg.get("hyperparameters") or {}
+    if isinstance(hp, dict):
+        hp["literature.names"] = ms.write_names(names, folder)
+        scfg["hyperparameters"] = hp
+    return names
 
 
 # ------------------------------------------------------------------------------------------------- 1-2 chain
@@ -658,6 +681,7 @@ def run(config_path, out_root=None, log=print):
                                                    for k, v in base_cfg["data"]["macro"]["scenarios"].items()}
     run_name = raw.get("run_name", "system")
     out_dir = os.path.join(_abs(out_root) if out_root else os.path.join(proj, "outputs"), run_name)
+    apply_names(scfg, base_cfg, path_of, os.path.join(out_dir, "inputs", "master"))
     sd = os.path.join(out_dir, "system")
     os.makedirs(sd, exist_ok=True)
     df = read_table(path_of(scfg["data"]))

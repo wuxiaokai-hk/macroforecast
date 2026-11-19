@@ -2905,9 +2905,9 @@
   "changed": "2026-11-04"
  },
  "src.system.run.run": {
-  "hash": "078c6e68349a",
+  "hash": "4a0f01691f3c",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-19"
  },
  "src.system.run.reconcile_all": {
   "hash": "731f49d2a3ab",
@@ -3160,9 +3160,9 @@
   "changed": "2026-11-12"
  },
  "src.system.panel.run": {
-  "hash": "695fa9c9f879",
+  "hash": "0b4590f8a99f",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-19"
  },
  "src.system.panel._chart": {
   "hash": "8a79fef5213a",
@@ -3175,9 +3175,9 @@
   "changed": "2026-11-12"
  },
  "src.system.run.resolve_master": {
-  "hash": "713e6a3b8061",
+  "hash": "6434eb0eeda6",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-19"
  },
  "src.utils.master._sheets": {
   "hash": "99e5d63df073",
@@ -3185,9 +3185,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master._norm": {
-  "hash": "e13b6f2f908e",
+  "hash": "c8854a0f0454",
   "added": "2026-11-12",
-  "changed": "2026-11-18"
+  "changed": "2026-11-19"
  },
  "src.utils.master.is_master": {
   "hash": "f4bb0a349950",
@@ -3205,9 +3205,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.extract": {
-  "hash": "493265d65c92",
+  "hash": "96b295359c9f",
   "added": "2026-11-12",
-  "changed": "2026-11-18"
+  "changed": "2026-11-19"
  },
  "src.utils.master._write_if_changed": {
   "hash": "21c6910fc024",
@@ -3810,9 +3810,9 @@
   "changed": "2026-11-18"
  },
  "src.utils.master._rename_plain": {
-  "hash": "0369b61e6002",
+  "hash": "adfbb8542ed2",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-19"
  },
  "tools.literature_master._tokens": {
   "hash": "e05233dd9d94",
@@ -3820,71 +3820,36 @@
   "changed": "2026-11-18"
  },
  "tools.literature_master.names_sheet": {
-  "hash": "0e01c103137a",
+  "hash": "62acf2fd61fe",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-19"
+ },
+ "src.system.run.apply_names": {
+  "hash": "807915c205f0",
+  "added": "2026-11-19",
+  "changed": "2026-11-19"
+ },
+ "src.utils.master.rename_tree": {
+  "hash": "839054e3e5c3",
+  "added": "2026-11-19",
+  "changed": "2026-11-19"
+ },
+ "src.utils.master.write_names": {
+  "hash": "71c262d150ba",
+  "added": "2026-11-19",
+  "changed": "2026-11-19"
+ },
+ "tools.literature_master.add_views": {
+  "hash": "55676cfefabd",
+  "added": "2026-11-19",
+  "changed": "2026-11-19"
+ },
+ "src.utils.master._rename_settings": {
+  "hash": "921d1c056f01",
+  "added": "2026-11-19",
+  "changed": "2026-11-19"
  },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.settings",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.build_models",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run._hist",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run._covid",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.forecast_rows",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.summarise",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.backtest",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.scenarios",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.fitted_values",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.run_oos",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run._charts",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.run",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.panel.run._summary",
@@ -5323,6 +5288,66 @@
   {
    "date": "2026-11-18",
    "id": "tools.literature_master.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.system.panel.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.system.run.resolve_master",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.system.run.apply_names",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.system.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master._norm",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master.rename_tree",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master.write_names",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "tools.literature_master.names_sheet",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "tools.literature_master.add_views",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master._rename_settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master.extract",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-19",
+   "id": "src.utils.master._rename_plain",
    "what": "changed"
   }
  ]

@@ -199,6 +199,7 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
         for k in order:
             if k in sh:
                 sh[k].to_excel(w, sheet_name=k, index=False)
+    add_views(out or master)
     if macro:
         miss = rows[(rows["in_your_data"] != "yes")]
         lm = miss[miss["literature_uses"] > 0]
@@ -207,6 +208,49 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
     else:
         log(f"macro_names: {len(rows)} series ({int((rows['literature_uses'] > 0).sum())} used by literature models)")
     return rows
+
+
+def add_views(path):
+    """Next to every master code (concepts.series_name, metadata.mnemonic, sign_matrix.mnemonic), a formula column
+    'view: your name' that looks the code up in macro_names: Excel shows your names everywhere, live, while the
+    only place to edit stays macro_names. The code ignores these columns."""
+    from openpyxl import load_workbook
+    from openpyxl.styles import Font, PatternFill
+    from openpyxl.utils import get_column_letter
+    wb = load_workbook(path)
+    if "macro_names" not in wb.sheetnames:
+        return
+    mn = wb["macro_names"]
+    hdr = [c.value for c in mn[1]]
+    ci, ni = hdr.index("code") + 1, hdr.index("your_name") + 1
+    rng_c = f"macro_names!${get_column_letter(ci)}:${get_column_letter(ci)}"
+    rng_n = f"macro_names!${get_column_letter(ni)}:${get_column_letter(ni)}"
+    grey = PatternFill("solid", fgColor="EEF3F6")
+    for sheet, col in (("concepts", ("series_name", "moodys_name")), ("metadata", ("mnemonic",)),
+                       ("sign_matrix", ("mnemonic",))):
+        if sheet not in wb.sheetnames:
+            continue
+        ws = wb[sheet]
+        h = [c.value for c in ws[1]]
+        if "view: your name" in h:                     # refresh: drop the old view column
+            ws.delete_cols(h.index("view: your name") + 1)
+            h = [c.value for c in ws[1]]
+        src = next((c for c in col if c in h), None)
+        if not src:
+            continue
+        si = h.index(src) + 1
+        ws.insert_cols(si + 1)
+        L = get_column_letter(si)
+        cell = ws.cell(row=1, column=si + 1, value="view: your name")
+        cell.font, cell.fill = Font(bold=True, italic=True, color="1F6F8B"), grey
+        for r in range(2, ws.max_row + 1):
+            if ws.cell(row=r, column=si).value in (None, ""):
+                continue
+            f = (f'=IF({L}{r}="","",IFERROR(IF(INDEX({rng_n},MATCH({L}{r},{rng_c},0))="",{L}{r},'
+                 f'INDEX({rng_n},MATCH({L}{r},{rng_c},0))),{L}{r}))')
+            c = ws.cell(row=r, column=si + 1, value=f)
+            c.font, c.fill = Font(italic=True, color="1F6F8B"), grey
+    wb.save(path)
 
 
 def from_folder(folder):

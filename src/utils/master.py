@@ -39,16 +39,31 @@ NAMES_SHEET = "macro_names"
 WB_SHEETS = {"models": "models", "concepts": "concepts", "settings": "settings", "how_to_fill": "how to fill"}
 
 
+_CACHE = {}
+
+
 def _sheets(path):
+    """Every sheet of an Excel file (cached by path and modification time: the master is read once per run)."""
     try:
-        return {str(k).strip().lower(): v for k, v in pd.read_excel(path, sheet_name=None).items()}
-    except Exception:
+        key = (os.path.abspath(path), os.path.getmtime(path))
+    except OSError:
         return {}
+    if key not in _CACHE:
+        try:
+            _CACHE.clear()
+            _CACHE[key] = {str(k).strip().lower(): v for k, v in pd.read_excel(path, sheet_name=None).items()}
+        except Exception:
+            return {}
+    return {k: v.copy() for k, v in _CACHE[key].items()}
+
+
+VIEW = "view: your name"          # formula columns that show the macro_names map (read only, ignored by the code)
 
 
 def _norm(df):
     df = df.copy()
     df.columns = [str(c).strip() for c in df.columns]
+    df = df[[c for c in df.columns if not c.lower().startswith("view:")]]
     if "moodys_name" in df.columns and "series_name" not in df.columns:   # older workbooks
         df = df.rename(columns={"moodys_name": "series_name"})
     return df
@@ -125,6 +140,14 @@ def _rename_concepts(c, names):
     return c
 
 
+def _rename_settings(st, names):
+    """Series codes written in the settings sheet's values (e.g. ecm_deflator: FCPI.ION)."""
+    if names and "value" in st:
+        st = st.copy()
+        st["value"] = st["value"].map(lambda v: rename_expr(v, names) if isinstance(v, str) else v)
+    return st
+
+
 def _match(names, target):
     """The master's spelling of target (case, spaces, hyphens and underscores ignored)."""
     key = lambda x: str(x).strip().lower().replace(" ", "_").replace("-", "_")
@@ -170,6 +193,8 @@ def extract(path, target, folder, names=None):
         wb = {WB_SHEETS[k]: rows(k) for k in WB_SHEETS if k in s and "target" in _norm(s[k])}
         if "concepts" in wb:
             wb["concepts"] = _rename_concepts(wb["concepts"], names)
+        if "settings" in wb:
+            wb["settings"] = _rename_settings(wb["settings"], names)
         if "how to fill" in wb and "line" in wb["how to fill"]:
             wb["how to fill"] = wb["how to fill"][["line"]].rename(columns={"line": "How to fill this workbook"})
         if "references" in s:
@@ -303,6 +328,8 @@ def _rename_plain(cfg, names, folder):
         wb = pd.read_excel(lit["workbook"], sheet_name=None)
         if "concepts" in wb:
             wb["concepts"] = _rename_concepts(wb["concepts"], names)
+        if "settings" in wb:
+            wb["settings"] = _rename_settings(wb["settings"], names)
         f = os.path.join(folder, "literature_workbook_renamed.xlsx")
         _write_if_changed(f, wb)
         lit["workbook"] = f
@@ -317,3 +344,25 @@ def _rename_plain(cfg, names, folder):
             if not (os.path.exists(f) and open(f, encoding="utf-8").read() == text):
                 open(f, "w", encoding="utf-8", newline="").write(text)
             md["file"], md["sheet"] = f, None
+
+
+def rename_tree(obj, names, skip=("file", "data", "metadata", "literature", "events", "master", "names", "folder", "output_dir")):
+    """Master codes -> your names everywhere in a nested config (strings equal to a code, or expressions
+    containing one); path-like keys are left alone."""
+    if not names:
+        return obj
+    if isinstance(obj, dict):
+        return {k: (v if k in skip else rename_tree(v, names, skip)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [rename_tree(v, names, skip) for v in obj]
+    if isinstance(obj, str):
+        return names.get(obj.strip(), None) or rename_expr(obj, names)
+    return obj
+
+
+def write_names(names, folder):
+    """The names map as a CSV (code, your_name), for runs that start from extracted files."""
+    os.makedirs(folder, exist_ok=True)
+    f = os.path.join(folder, "macro_names.csv")
+    pd.DataFrame({"code": list(names), "your_name": list(names.values())}).to_csv(f, index=False)
+    return f

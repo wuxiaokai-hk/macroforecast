@@ -8696,7 +8696,7 @@ The panel system from a config with system.panel_column (see config/panel_system
 
 **Config:** `data`, `data.macro.scenarios`, `panel_column`, `ratios`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `sample.report_horizons`, `targets`
 
-**Calls:** `backtest_origins`, `refit_flags`, `BankFeatures.array`, `_chart`, `_err_rows`, `_summary`, `build_node`, `chain_forecast`, `links`, `covid_checker`, `order`, `resolve_master`, `settings`, `set_form`
+**Calls:** `backtest_origins`, `refit_flags`, `BankFeatures.array`, `_chart`, `_err_rows`, `_summary`, `build_node`, `chain_forecast`, `links`, `apply_names`, `covid_checker`, `order`, `resolve_master`, `settings`, `set_form`
 
 **Called by:** `run`
 
@@ -8717,7 +8717,7 @@ _chart(sd, P, nodes, order_)
 
 **Called by:** `run`
 
-<sub>src/system/panel.py:464</sub>
+<sub>src/system/panel.py:465</sub>
 
 ### `_summary`
 
@@ -8737,7 +8737,7 @@ _summary(sd, run_name, chain, LB, L, R, col)
 
 **Called by:** `run`
 
-<sub>src/system/panel.py:490</sub>
+<sub>src/system/panel.py:491</sub>
 
 
 ## src/system/run.py
@@ -8811,6 +8811,29 @@ One master file for every target (system.master, or a target's metadata / litera
 
 <sub>src/system/run.py:80</sub>
 
+### `apply_names`
+
+```python
+apply_names(scfg, base_cfg, path_of, folder)
+```
+
+Your macro names (the master's macro_names sheet, or system.names) applied to the system config (uses' spread_over, relations' against, ...) and the base config (deflator, constructed series), and passed on to every target's run. Returns the map.
+
+| argument | default | meaning |
+|---|---|---|
+| `scfg` |  |  |
+| `base_cfg` |  |  |
+| `path_of` |  |  |
+| `folder` |  | output folder. |
+
+**Config:** `hyperparameters`, `master`, `names`, `targets`
+
+**Calls:** `name_map`, `rename_config`, `rename_tree`, `write_names`
+
+**Called by:** `run`, `run`
+
+<sub>src/system/run.py:102</sub>
+
 ### `_augment`
 
 ```python
@@ -8835,7 +8858,7 @@ Macro scenario files and metadata for one target: the base ones plus the earlier
 
 **Called by:** `run_chain`
 
-<sub>src/system/run.py:100</sub>
+<sub>src/system/run.py:123</sub>
 
 ### `run_chain`
 
@@ -8859,7 +8882,7 @@ Every target through the single-target project, in order. Returns {name: info}.
 
 **Called by:** `run`
 
-<sub>src/system/run.py:142</sub>
+<sub>src/system/run.py:165</sub>
 
 ### `series_level`
 
@@ -8873,7 +8896,7 @@ series_level(s)
 
 **Called by:** `run_chain`
 
-<sub>src/system/run.py:181</sub>
+<sub>src/system/run.py:204</sub>
 
 ### `Member`
 
@@ -8890,7 +8913,7 @@ One target inside the joint backtest: its Context, chosen model and the targets 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:188</sub>
+<sub>src/system/run.py:211</sub>
 
 ### `Member.__init__`
 
@@ -8905,7 +8928,7 @@ __init__(t, info)
 
 **Calls:** `load_config`, `Context`, `load_models`, `set_form`
 
-<sub>src/system/run.py:191</sub>
+<sub>src/system/run.py:214</sub>
 
 ### `Member.panel_with`
 
@@ -8923,7 +8946,7 @@ The model's panel with the earlier targets replaced by their forecasts after the
 
 **Called by:** `joint_forecast`
 
-<sub>src/system/run.py:210</sub>
+<sub>src/system/run.py:233</sub>
 
 ### `joint_forecast`
 
@@ -8946,7 +8969,7 @@ Forecast the chain from one origin. Returns {name: (forecast changes, actual cha
 
 **Called by:** `joint_backtest`, `joint_oos`
 
-<sub>src/system/run.py:224</sub>
+<sub>src/system/run.py:247</sub>
 
 ### `_panel_with`
 
@@ -8964,7 +8987,7 @@ _panel_with(m, mod, upstream)
 
 **Called by:** `joint_forecast`
 
-<sub>src/system/run.py:255</sub>
+<sub>src/system/run.py:278</sub>
 
 ### `_rows`
 
@@ -8984,7 +9007,7 @@ _rows(res, origin, method, test, covid)
 
 **Called by:** `_bvarx_rows`, `joint_backtest`, `joint_oos`
 
-<sub>src/system/run.py:266</sub>
+<sub>src/system/run.py:289</sub>
 
 ### `covid_checker`
 
@@ -9000,7 +9023,7 @@ covid_checker(cfg)
 
 **Called by:** `run`, `bvarx_backtest`, `joint_backtest`, `joint_oos`, `run`
 
-<sub>src/system/run.py:282</sub>
+<sub>src/system/run.py:305</sub>
 
 ### `joint_backtest`
 
@@ -9023,7 +9046,7 @@ Rolling joint backtest at the first target's origins and re-estimation schedule.
 
 **Called by:** `run`
 
-<sub>src/system/run.py:293</sub>
+<sub>src/system/run.py:316</sub>
 
 ### `members_by`
 
@@ -9037,7 +9060,7 @@ members_by(members)
 
 **Called by:** `joint_backtest`, `joint_oos`, `reconcile_all`
 
-<sub>src/system/run.py:313</sub>
+<sub>src/system/run.py:336</sub>
 
 ### `joint_oos`
 
@@ -9060,7 +9083,7 @@ Out-of-sample: at each origin every target's drivers are re-selected with data u
 
 **Called by:** `run`
 
-<sub>src/system/run.py:317</sub>
+<sub>src/system/run.py:340</sub>
 
 ### `BVARX`
 
@@ -9081,7 +9104,7 @@ Equation i: y_i,t = c_i + sum_j a_ij y_j,t-1 + b_i' x_t + e_i,t. Prior: a_ij ~ N
 
 **Called by:** `bvarx_backtest`
 
-<sub>src/system/run.py:356</sub>
+<sub>src/system/run.py:379</sub>
 
 ### `BVARX.__init__`
 
@@ -9096,7 +9119,7 @@ __init__(names, forms, exog, lam=0.2)
 | `exog` |  |  |
 | `lam` | `0.2` |  |
 
-<sub>src/system/run.py:364</sub>
+<sub>src/system/run.py:387</sub>
 
 ### `BVARX.fit`
 
@@ -9114,7 +9137,7 @@ Y: DataFrame of changes (columns = targets), X: DataFrame of exogenous features;
 
 **Calls:** `BankFeatures.array`
 
-<sub>src/system/run.py:368</sub>
+<sub>src/system/run.py:391</sub>
 
 ### `BVARX.forecast`
 
@@ -9131,7 +9154,7 @@ y0: last actual changes (n), Xf: exogenous values for the forecast quarters (H x
 
 **Calls:** `BankFeatures.array`
 
-<sub>src/system/run.py:388</sub>
+<sub>src/system/run.py:411</sub>
 
 ### `BVARX.table`
 
@@ -9139,7 +9162,7 @@ y0: last actual changes (n), Xf: exogenous values for the forecast quarters (H x
 table()
 ```
 
-<sub>src/system/run.py:396</sub>
+<sub>src/system/run.py:419</sub>
 
 ### `bvarx_inputs`
 
@@ -9159,7 +9182,7 @@ Changes of every target and the exogenous macro drivers (non-system) of the chai
 
 **Called by:** `bvarx_backtest`, `run`
 
-<sub>src/system/run.py:406</sub>
+<sub>src/system/run.py:429</sub>
 
 ### `bvarx_backtest`
 
@@ -9180,7 +9203,7 @@ bvarx_backtest(members, lam, H, keep=None)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:424</sub>
+<sub>src/system/run.py:447</sub>
 
 ### `_bvarx_rows`
 
@@ -9203,7 +9226,7 @@ _bvarx_rows(bv, members, Y, X, o, H, covid, test)
 
 **Called by:** `bvarx_backtest`
 
-<sub>src/system/run.py:444</sub>
+<sub>src/system/run.py:467</sub>
 
 ### `reconcile_levels`
 
@@ -9224,7 +9247,7 @@ WLS (MinT with a diagonal error covariance) for total = sum(parts) at one horizo
 
 **Called by:** `reconcile_all`
 
-<sub>src/system/run.py:464</sub>
+<sub>src/system/run.py:487</sub>
 
 ### `leaderboard`
 
@@ -9239,7 +9262,7 @@ leaderboard(E, hz)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:484</sub>
+<sub>src/system/run.py:507</sub>
 
 ### `scenario_paths`
 
@@ -9264,7 +9287,7 @@ Every target under every scenario: the chain (each target's best model with the 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:506</sub>
+<sub>src/system/run.py:529</sub>
 
 ### `ratio_table`
 
@@ -9283,7 +9306,7 @@ Ratios such as loan-to-deposit, history and every scenario, with the historical 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:534</sub>
+<sub>src/system/run.py:557</sub>
 
 ### `_fan_chart`
 
@@ -9301,7 +9324,7 @@ SUR fan charts: 5-95% and 25-75% bands of every target, baseline and the most se
 
 **Called by:** `run`
 
-<sub>src/system/run.py:557</sub>
+<sub>src/system/run.py:580</sub>
 
 ### `links_table`
 
@@ -9319,7 +9342,7 @@ How each target responds to the earlier targets in its chosen model (from its dr
 
 **Called by:** `run`
 
-<sub>src/system/run.py:585</sub>
+<sub>src/system/run.py:608</sub>
 
 ### `_chart`
 
@@ -9335,7 +9358,7 @@ _chart(out, paths, members)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:601</sub>
+<sub>src/system/run.py:624</sub>
 
 ### `run`
 
@@ -9353,9 +9376,9 @@ The whole system analysis from a system config (see config/system_example.yaml).
 
 **Config:** `bvarx`, `data`, `data.macro.scenarios`, `date_column`, `identities`, `oos`, `ratios`, `reconcile`, `sample.estimation_start`, `sample.horizon`, `sample.report_horizons`, `sur`, `targets`, `vecm`
 
-**Calls:** `SURChain.correlation`, `cointegration_tests`, `sur_backtest`, `sur_scenarios`, `vecm_backtest`, `vecm_scenarios`, `run`, `Member`, `_chart`, `_fan_chart`, `_summary`, `bvarx_backtest`, `bvarx_inputs`, `covid_checker`, `joint_backtest`, `joint_oos`, `leaderboard`, `links_table`, `ratio_table`, `reconcile_all`, `resolve_master`, `run_chain`, `scenario_paths`, `settings`, `read_table`, `to_quarters`
+**Calls:** `SURChain.correlation`, `cointegration_tests`, `sur_backtest`, `sur_scenarios`, `vecm_backtest`, `vecm_scenarios`, `run`, `Member`, `_chart`, `_fan_chart`, `_summary`, `apply_names`, `bvarx_backtest`, `bvarx_inputs`, `covid_checker`, `joint_backtest`, `joint_oos`, `leaderboard`, `links_table`, `ratio_table`, `reconcile_all`, `resolve_master`, `run_chain`, `scenario_paths`, `settings`, `read_table`, `to_quarters`
 
-<sub>src/system/run.py:627</sub>
+<sub>src/system/run.py:650</sub>
 
 ### `reconcile_all`
 
@@ -9384,7 +9407,7 @@ For each identity (total = sum of parts): forecast the total on its own (single-
 
 **Called by:** `run`
 
-<sub>src/system/run.py:760</sub>
+<sub>src/system/run.py:784</sub>
 
 ### `_summary`
 
@@ -9401,7 +9424,7 @@ _summary(sd, run_name, tables, LB)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:842</sub>
+<sub>src/system/run.py:866</sub>
 
 
 ## src/utils/cache.py
@@ -10613,7 +10636,7 @@ _norm(df)
 
 **Called by:** `extract`, `name_map`, `targets`
 
-<sub>src/utils/master.py:49</sub>
+<sub>src/utils/master.py:52</sub>
 
 ### `is_master`
 
@@ -10631,7 +10654,7 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Called by:** `resolve_master`, `apply`, `name_map`, `resolve`, `catalog`
 
-<sub>src/utils/master.py:57</sub>
+<sub>src/utils/master.py:61</sub>
 
 ### `targets`
 
@@ -10649,7 +10672,7 @@ The targets in a master file, with what each one has.
 
 **Called by:** `apply`, `catalog`, `main`
 
-<sub>src/utils/master.py:65</sub>
+<sub>src/utils/master.py:69</sub>
 
 ### `name_map`
 
@@ -10666,9 +10689,9 @@ name_map(master=None, names_file=None)
 
 **Calls:** `_norm`, `_sheets`, `is_master`
 
-**Called by:** `apply`, `extract`
+**Called by:** `apply_names`, `apply`, `extract`
 
-<sub>src/utils/master.py:78</sub>
+<sub>src/utils/master.py:82</sub>
 
 ### `rename_expr`
 
@@ -10683,9 +10706,9 @@ Replace master codes inside an expression or name (whole tokens only: letters, d
 | `text` |  |  |
 | `names` |  |  |
 
-**Called by:** `rename_config`
+**Called by:** `_rename_settings`, `rename_config`, `rename_tree`
 
-<sub>src/utils/master.py:104</sub>
+<sub>src/utils/master.py:108</sub>
 
 ### `_rename_meta`
 
@@ -10700,7 +10723,7 @@ _rename_meta(m, names)
 
 **Called by:** `extract`
 
-<sub>src/utils/master.py:113</sub>
+<sub>src/utils/master.py:117</sub>
 
 ### `_rename_concepts`
 
@@ -10715,7 +10738,26 @@ _rename_concepts(c, names)
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:120</sub>
+<sub>src/utils/master.py:124</sub>
+
+### `_rename_settings`
+
+```python
+_rename_settings(st, names)
+```
+
+Series codes written in the settings sheet's values (e.g. ecm_deflator: FCPI.ION).
+
+| argument | default | meaning |
+|---|---|---|
+| `st` |  |  |
+| `names` |  |  |
+
+**Calls:** `rename_expr`
+
+**Called by:** `_rename_plain`, `extract`
+
+<sub>src/utils/master.py:132</sub>
 
 ### `_match`
 
@@ -10732,7 +10774,7 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 
 **Called by:** `apply`, `extract`, `catalog`
 
-<sub>src/utils/master.py:128</sub>
+<sub>src/utils/master.py:140</sub>
 
 ### `extract`
 
@@ -10751,11 +10793,11 @@ Write one target's workbook and metadata from the master.
 
 **Returns:** dict workbook=<xlsx or None>, metadata=<csv or None>, target=<the master's name for it>.
 
-**Calls:** `Story.read`, `_match`, `_norm`, `_rename_concepts`, `_rename_meta`, `_sheets`, `_write_if_changed`, `name_map`
+**Calls:** `Story.read`, `_match`, `_norm`, `_rename_concepts`, `_rename_meta`, `_rename_settings`, `_sheets`, `_write_if_changed`, `name_map`
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
-<sub>src/utils/master.py:135</sub>
+<sub>src/utils/master.py:147</sub>
 
 ### `_write_if_changed`
 
@@ -10772,7 +10814,7 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:198</sub>
+<sub>src/utils/master.py:212</sub>
 
 ### `resolve`
 
@@ -10793,7 +10835,7 @@ path if it is an ordinary file; the target's extracted file if path is a master.
 
 **Called by:** `resolve_master`
 
-<sub>src/utils/master.py:214</sub>
+<sub>src/utils/master.py:228</sub>
 
 ### `apply`
 
@@ -10816,7 +10858,7 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Called by:** `load_config`
 
-<sub>src/utils/master.py:228</sub>
+<sub>src/utils/master.py:242</sub>
 
 ### `rename_config`
 
@@ -10835,9 +10877,9 @@ Master codes named in the config -> your names: deflator, constructed series, sa
 
 **Calls:** `rename_expr`
 
-**Called by:** `apply`
+**Called by:** `apply_names`, `apply`
 
-<sub>src/utils/master.py:282</sub>
+<sub>src/utils/master.py:296</sub>
 
 ### `_rename_plain`
 
@@ -10855,11 +10897,48 @@ A plain literature workbook and metadata file with the names map applied (writte
 
 **Config:** `data.metadata`, `literature.columns`, `literature.file`, `literature.sheet`
 
-**Calls:** `Story.read`, `read_table`, `_rename_concepts`, `_write_if_changed`
+**Calls:** `Story.read`, `read_table`, `_rename_concepts`, `_rename_settings`, `_write_if_changed`
 
 **Called by:** `apply`
 
-<sub>src/utils/master.py:298</sub>
+<sub>src/utils/master.py:312</sub>
+
+### `rename_tree`
+
+```python
+rename_tree(obj, names, skip=('file', 'data', 'metadata', 'literature', 'events', 'master', 'names', 'folder', 'output_dir'))
+```
+
+Master codes -> your names everywhere in a nested config (strings equal to a code, or expressions containing one); path-like keys are left alone.
+
+| argument | default | meaning |
+|---|---|---|
+| `obj` |  |  |
+| `names` |  |  |
+| `skip` | `('file', 'data', 'metadata', 'literature', 'events', 'master', 'names', 'folder', 'output_dir')` |  |
+
+**Calls:** `rename_expr`
+
+**Called by:** `apply_names`
+
+<sub>src/utils/master.py:338</sub>
+
+### `write_names`
+
+```python
+write_names(names, folder)
+```
+
+The names map as a CSV (code, your_name), for runs that start from extracted files.
+
+| argument | default | meaning |
+|---|---|---|
+| `names` |  |  |
+| `folder` |  | output folder. |
+
+**Called by:** `apply_names`
+
+<sub>src/utils/master.py:352</sub>
 
 
 ## src/utils/multi.py
@@ -12756,11 +12835,27 @@ Add or refresh the macro_names sheet (keeps every your_name already filled in). 
 | `log` | `print` | function used to print progress messages. |
 | `accept` | `None` |  |
 
-**Calls:** `read_table`, `_tokens`
+**Calls:** `read_table`, `_tokens`, `add_views`
 
 **Called by:** `main`
 
 <sub>tools/literature_master.py:135</sub>
+
+### `add_views`
+
+```python
+add_views(path)
+```
+
+Next to every master code (concepts.series_name, metadata.mnemonic, sign_matrix.mnemonic), a formula column 'view: your name' that looks the code up in macro_names: Excel shows your names everywhere, live, while the only place to edit stays macro_names. The code ignores these columns.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+
+**Called by:** `names_sheet`
+
+<sub>tools/literature_master.py:213</sub>
 
 ### `from_folder`
 
@@ -12774,7 +12869,7 @@ from_folder(folder)
 
 **Called by:** `main`
 
-<sub>tools/literature_master.py:212</sub>
+<sub>tools/literature_master.py:256</sub>
 
 ### `main`
 
@@ -12784,7 +12879,7 @@ main()
 
 **Calls:** `extract`, `targets`, `build`, `from_folder`, `merge`, `names_sheet`
 
-<sub>tools/literature_master.py:221</sub>
+<sub>tools/literature_master.py:265</sub>
 
 
 ## tools/literature_template.py
