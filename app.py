@@ -906,6 +906,19 @@ if mode == "New data set":
                 ov["panel.per_bank_full"] = "true" if p2.checkbox(
                     "Also the full single-series run for every bank", False, key="pn_full",
                     help="Every model family for each bank on its own (outputs/<run>/banks/<bank>/); slower") else "false"
+                gone = []
+                if isinstance(P.get("banks"), pd.DataFrame) and {"bank", "last"} <= set(P["banks"].columns):
+                    _e = pd.PeriodIndex(P["banks"]["last"].astype(str), freq="Q")
+                    gone = [f"{b} (last {q})" for b, q in zip(P["banks"]["bank"], _e) if (_e.max() - q).n >= 2]
+                drop = st.checkbox("Leave out banks that stopped reporting (exited, failed, acquired)", False, key="pn_drop",
+                                   help="Banks whose data end at least 2 quarters before the latest quarter. Keeping "
+                                        "them uses their history (often their downturns) in the estimation; leaving "
+                                        "them out estimates on surviving banks only.")
+                ov["panel.drop_exited"] = "true" if drop else "false"
+                if gone:
+                    st.caption(("Left out: " if drop else "Would be left out: ") + ", ".join(gone))
+                elif drop:
+                    st.caption("No bank stopped reporting: nothing is left out.")
             st.subheader("Transforms tried for each candidate")
             st.caption("Levels and indexes (metadata transform = dlog) are tried in the level forms; rates (diff) in the rate forms. "
                        "Every form must pass the ADF test, and each is tried at lags 0 to the maximum.")

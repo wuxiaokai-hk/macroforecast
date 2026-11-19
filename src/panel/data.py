@@ -54,7 +54,36 @@ def load_long(cfg):
             out[name] = s
     if not out:
         raise ValueError("no bank with at least two quarters of data")
+    pc_ = cfg.get("panel") or {}
+    if pc_.get("drop_exited"):
+        gone = exited(out, int(pc_.get("exited_after_missing", 2)))
+        for name in gone:
+            out.pop(name)
+        DROPPED.clear()
+        DROPPED.update(gone)
+        if gone:
+            print(f"Panel: {len(gone)} bank(s) left out because they stopped reporting (panel.drop_exited): "
+                  + ", ".join(f"{k} (last {v})" for k, v in gone.items()))
+        if not out:
+            raise ValueError("panel.drop_exited left no bank")
     return out
+
+
+DROPPED = {}        # banks left out by panel.drop_exited in the last load: {bank: last quarter}
+
+
+def exited(levels, missing=2):
+    """Banks that stopped reporting: their last quarter is at least `missing` quarters before the panel's last.
+
+    Args:
+        levels: {bank: Series of levels}. missing: quarters without data at the end that count as an exit
+            (2 by default, so a single late report does not drop a bank).
+
+    Returns:
+        {bank: its last quarter (str)}.
+    """
+    last = max(s.index[-1] for s in levels.values())
+    return {b: str(s.index[-1]) for b, s in levels.items() if (last - s.index[-1]).n >= missing}
 
 
 def bank_events(cfg, bank):

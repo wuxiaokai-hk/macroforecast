@@ -33,7 +33,7 @@ from .select import select
 
 PANEL_DEFAULTS = {"min_obs": 20, "dk_lags": 4, "n_search_candidates": 20,
                   "models": ["separate", "pooled", "partial", "topdown"], "driver_sets": ["panel", "core"],
-                  "banks": [], "per_bank_full": False}
+                  "banks": [], "per_bank_full": False, "drop_exited": False, "exited_after_missing": 2}
 
 
 def settings(cfg):
@@ -374,7 +374,9 @@ def run(cfg, out_dir, oos=True, log=print):
     _charts(out, res.get("oos_overall", O) if len(res.get("oos_overall", [])) else O, scen, pn, res["best_by_bank"], col)
     _summary(out, cfg, pn, res, col)
     with open(os.path.join(fdir, "manifest.json"), "w", encoding="utf-8") as f:
-        json.dump({"banks": pn.banks, "target_form": tg.form(), "panel_drivers": sel["features"], "core": core,
+        from .data import DROPPED
+        json.dump({"banks": pn.banks, "left_out_exited": dict(DROPPED), "target_form": tg.form(),
+                   "panel_drivers": sel["features"], "core": core,
                    "models": [m.name for m in models], "best_by_bank": res["best_by_bank"],
                    "backtest_origins": sorted(at), "oos": bool(oos)}, f, indent=1)
     log(f"Panel results in {out}")
@@ -386,6 +388,9 @@ def _summary(out, cfg, pn, res, col):
     O = res.get("oos_overall", res["overall"])
     L = [f"# Panel run: {cfg['run_name']}", "",
          f"{len(pn.banks)} banks: {', '.join(pn.banks)}. Target form: {tg.describe()}.", "",
+         *(["Left out because they stopped reporting (panel.drop_exited): "
+            + ", ".join(f"{k} (last {v})" for k, v in __import__('src.panel.data', fromlist=['DROPPED']).DROPPED.items()), ""]
+           if (cfg.get("panel") or {}).get("drop_exited") else []),
          f"Panel drivers (chosen on all banks): {', '.join(res['panel_drivers']) or 'none'}",
          f"Literature core: {', '.join(res['core']) or 'none'}", "",
          f"## Models ({basis}; average error over 1-{col.split('_')[2]} quarters, mean across banks)", "",
