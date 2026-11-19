@@ -272,6 +272,36 @@ literature:
 - The target's rows are written as ordinary files to `outputs/<run>/inputs/master/` (rewritten only when they change, so the cache still works) and everything else reads those. A target with metadata but no literature rows runs without the literature models. A target not in the master stops with the list of targets it has.
 - `python tools/literature_master.py list|split|build` shows the targets, writes one target's files, or builds a master from per-target files. `config/literature_master_example.xlsx` holds the project's five example targets.
 
+## Many targets in one data file (`python run_targets.py`)
+
+A target file can hold many series side by side (`date, cre_loans, heloc_balances, stage2_share, ...`). With a literature master, every column gets its own literature models, expected signs and metadata, so any of them can be chosen and run:
+
+```
+python run_targets.py --config config/multi_target_example.yaml --list                        # what can be forecast
+python run_targets.py --config config/multi_target_example.yaml --targets mortgage_balance,deposit_rate
+python run_targets.py --config config/multi_target_example.yaml --all --oos --story            # every ready column
+```
+
+- `--list` shows each column, the master target it matches (same name, case and `_`/`-`/space ignored, or `targets.map`), how many literature and metadata rows it has, its history, the suggested form and whether it is ready.
+- The form is suggested per column: quarterly change (`diff`) for rates, ratios, shares, margins, delinquency and anything zero or negative; log growth otherwise. `targets.forms` overrides it.
+- Each chosen column runs as its own run, `outputs/<run_name>_<column>/`, with all the usual results (and the out-of-sample test with `--oos`, the process story with `--story`). The per-target configs are kept in `outputs/<run_name>_targets/configs/`, so any target can be re-run alone with `run_pipeline.py --config ...`.
+- `outputs/<run_name>_targets/summary.md` lists, for every target, the best model, the best model with a formula and their errors.
+- A column with no master target runs with the config's own `data.metadata.file` and no literature models; without either it is not ready.
+- In one run, `literature.target` now defaults to the target column's name when the master has it (then the run name).
+- App ①: a file with several series offers a "Target to forecast" choice, and the master's target follows it; ③ suggests the form.
+- New targets are added to a master with `python tools/literature_master.py merge config/literature_master.xlsx --folder FOLDER` (per-target `<target>_literature_workbook.xlsx` and `macro_metadata_<target>.csv`; a target already in the master is replaced).
+
+Optional config block (`config/multi_target_example.yaml` uses `data/system_data.csv`, five simulated series, and `config/literature_master_example.xlsx`):
+
+```yaml
+targets:
+  map: {mortgage_balance: mortgage, commercial_balance: commercial_loans}   # column -> master target
+  forms: {stage2_share: diff}
+  labels: {cre_loans: CRE loans}
+  units: {deposit_rate: '%'}
+  run: [mortgage_balance, deposit_rate]          # default choice when neither --targets nor --all is given
+```
+
 ## Using your own files: only the config changes
 
 Copy `config/example_config.yaml`, rename it, and edit it. Everything that depends on a data set lives there:

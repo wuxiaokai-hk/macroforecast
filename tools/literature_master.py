@@ -7,6 +7,8 @@
         deposits=,data/macro_metadata_deposits.csv          # no workbook: leave the first part empty
     python tools/literature_master.py build OUT.xlsx --folder FOLDER   # <target>_literature_workbook.xlsx and
                                                                         # macro_metadata_<target>.csv in FOLDER
+    python tools/literature_master.py merge config/literature_master.xlsx --folder FOLDER [--out NEW.xlsx]
+        # add the targets in FOLDER to an existing master (a target already there is replaced); default: in place
 
 The project reads the master directly (literature.master + literature.target, see src/utils/master.py); split is
 only needed to look at one target's files or to use them elsewhere. The layout is the same as literature_tool.py's
@@ -76,6 +78,49 @@ def build(out, pairs):
     return out
 
 
+def merge(base, pairs, out):
+    """Add per-target files to an existing master; a target already in it is replaced. Returns (out, added, replaced)."""
+    import tempfile
+    tmp = os.path.join(tempfile.mkdtemp(), "new.xlsx")
+    build(tmp, pairs)
+    old = pd.read_excel(base, sheet_name=None)
+    new = pd.read_excel(tmp, sheet_name=None)
+    names = set(pairs)
+    key = lambda x: str(x).strip().lower().replace(" ", "_").replace("-", "_")
+    replaced = sorted(t for t in names if any(key(t) in set(old[k]["target"].map(key))
+                                             for k in ("models", "metadata", "concepts") if k in old and "target" in old[k]))
+    sheets = {}
+    for k in list(old) + [k for k in new if k not in old]:
+        if k in ("sign_matrix",):
+            continue
+        o, n = old.get(k), new.get(k)
+        if k == "references":
+            r = pd.concat([x for x in (o, n) if x is not None], ignore_index=True).fillna("")
+            r["used_by"] = r["used_by"].astype(str)
+            keep = [c for c in ("short", "reference", "link") if c in r]
+            r = r.groupby(keep, sort=False, as_index=False)["used_by"].agg(
+                lambda v: ", ".join(sorted({t.strip() for x in v for t in x.split(",") if t.strip()})))
+            sheets[k] = r
+        elif o is not None and "target" in o:
+            o = o[~o["target"].map(key).isin({key(t) for t in names})]
+            sheets[k] = pd.concat([o, n], ignore_index=True) if n is not None else o
+        else:
+            sheets[k] = o if o is not None else n
+    if "metadata" in sheets:
+        d = sheets["metadata"]
+        sm = d.pivot_table(index="mnemonic", columns="target", values="expected_sign", aggfunc="first")
+        desc = d.drop_duplicates("mnemonic").set_index("mnemonic")["description"]
+        sm.insert(0, "description", desc.reindex(sm.index))
+        sheets["sign_matrix"] = sm.reset_index()
+    order = [k for k in ("README", "targets", "concepts", "models", "settings", "references", "metadata", "sign_matrix",
+                         "how_to_fill") if k in sheets] + [k for k in sheets if k not in (
+        "README", "targets", "concepts", "models", "settings", "references", "metadata", "sign_matrix", "how_to_fill")]
+    with pd.ExcelWriter(out) as w:
+        for k in order:
+            sheets[k].to_excel(w, sheet_name=k, index=False)
+    return out, sorted(names - set(replaced)), replaced
+
+
 def from_folder(folder):
     pairs = {}
     for f in glob.glob(os.path.join(folder, "**", "*_literature_workbook.xlsx"), recursive=True):
@@ -87,11 +132,12 @@ def from_folder(folder):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list", "split", "build"])
+    ap.add_argument("command", choices=["list", "split", "build", "merge"])
     ap.add_argument("master")
     ap.add_argument("rest", nargs="*")
     ap.add_argument("--targets", default="")
     ap.add_argument("--folder", default=None)
+    ap.add_argument("--out", default=None, help="merge: write here instead of over the master")
     a = ap.parse_args()
     if a.command == "list":
         print(ms.targets(a.master).to_string(index=False))
@@ -102,6 +148,14 @@ def main():
         for t in names:
             x = ms.extract(a.master, t, a.rest[0])
             print(f"{x['target']}: {x['workbook'] or '(no workbook)'}  {x['metadata'] or '(no metadata)'}")
+    elif a.command == "merge":
+        pairs = from_folder(a.folder) if a.folder else {}
+        for p in a.rest:
+            t, files = p.split("=", 1)
+            wb, md = (files.split(",") + [""])[:2]
+            pairs[t] = (wb or None, md or None)
+        out, added, rep = merge(a.master, pairs, a.out or a.master)
+        print(f"wrote {out}: {len(added)} added ({', '.join(added)}), {len(rep)} replaced ({', '.join(rep) or 'none'})")
     else:
         pairs = from_folder(a.folder) if a.folder else {}
         for p in a.rest:

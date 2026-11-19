@@ -175,7 +175,13 @@ def apply(cfg, folder):
         md["file"] = md.get("file") or master
     if not (is_master(lit.get("workbook")) or is_master(md.get("file"))):
         return None
-    target = lit.get("target") or cfg.get("run_name")
+    target = lit.get("target")
+    if not target:                         # not given: the target column's name, else the run name, if the master has it
+        src = lit["workbook"] if is_master(lit.get("workbook")) else md["file"]
+        names = list(targets(src)["target"])
+        tc = cfg["data"]["bank"].get("target_column")
+        mapped = ((cfg.get("targets") or {}).get("map") or {}).get(tc)
+        target = next((x for x in (mapped, tc, cfg.get("run_name")) if x and _match(names, x)), mapped or tc)
     used = None
     if is_master(lit.get("workbook")):
         x = extract(lit["workbook"], target, folder)

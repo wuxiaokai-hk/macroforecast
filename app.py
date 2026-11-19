@@ -154,6 +154,10 @@ def show_report(rep):
         st.dataframe(pd.DataFrame(rep.items), hide_index=True, use_container_width=True)
 
 
+def multi_key(x):
+    return str(x).strip().lower().replace(" ", "_").replace("-", "_")
+
+
 def run_script(script, cfg_path, extra=()):
     """Run run_pipeline.py or run_oos.py and stream its log into the page.
 
@@ -592,13 +596,32 @@ if mode == "New data set":
                                            "Sheet 'concepts': each economic concept and your series for it. "
                                            "Or a master file (literature_master.xlsx) holding every target's "
                                            "workbook and metadata, with a 'target' column.")
+            target = None
+            if up_bank is not None:                       # a file with several targets: choose one
+                try:
+                    from src.utils.io import read_table as _rt
+                    _bp = save_upload(up_bank, os.path.join(HERE, "data", name))
+                    _bd = _rt(_bp, None)
+                    _num = [c for c in _bd.columns if pd.to_numeric(_bd[c], errors="coerce").notna().mean() > 0.5
+                            and not str(c).lower().startswith(("date", "quarter", "period"))]
+                    if len(_num) > 1:
+                        _pick = st.selectbox(f"Target to forecast ({len(_num)} series in the file)", ["(detect)"] + _num,
+                                             key="target_pick",
+                                             help="The file holds several series side by side. To run many of them "
+                                                  "one after another, use run_targets.py (see the README).")
+                        target = None if _pick == "(detect)" else _pick
+                except Exception:
+                    pass
             master_t = None
             if up_lit is not None:
                 from src.utils import master as ms
                 _lp = save_upload(up_lit, os.path.join(HERE, "data", name))
                 if ms.is_master(_lp):
                     _T = ms.targets(_lp)
-                    master_t = st.selectbox("Target in the master file", list(_T["target"]), key="master_t",
+                    _names = list(_T["target"])
+                    _m = ms._match(_names, target) if target else None
+                    master_t = st.selectbox("Target in the master file", _names, key="master_t",
+                                            index=_names.index(_m) if _m else 0,
                                             help="Its literature rows and its metadata are used. A metadata file "
                                                  "uploaded on the left takes precedence over the master's.")
                     st.caption(f"Master file: {len(_T)} targets. {master_t}: "
@@ -607,7 +630,8 @@ if mode == "New data set":
             st.download_button("Download a template workbook (filled with the example's models)", lit_template(),
                                file_name="literature_workbook.xlsx", key="dl_tpl")
             sheet = st.text_input("Excel sheet name (if not the first sheet)", value="", key="sheet") or None
-            target = st.text_input("Balance column (leave empty to detect)", value="", key="target") or None
+            if target is None and not st.session_state.get("target_pick"):
+                target = st.text_input("Balance column (leave empty to detect)", value="", key="target") or None
             panel_in = st.text_input("Bank column, if the file holds several banks (leave empty to detect)", value="",
                                      key="panel_col", help="One row per bank and quarter: date, bank name, balance. "
                                                            "Detected when every date repeats once per value of a text column.") or None
@@ -628,6 +652,7 @@ if mode == "New data set":
                 litwb = x["workbook"]
                 meta = meta or x["metadata"]
                 log.append(f"Master file: target {x['target']} -> {x['workbook'] or 'no workbook'}, {x['metadata'] or 'no metadata'}")
+                S["master_target_used"] = x["target"]
                 if not litwb:
                     log.append("This target has no literature rows in the master: the example's literature models "
                                "are proposed; switch the Literature and Hybrid families off in ③ if they do not apply.")
@@ -661,6 +686,9 @@ if mode == "New data set":
             num = [c for c in cols if c != P["bank"]["date_column"]]
             P["bank"]["target_column"] = c2.selectbox("Balance to forecast (dependent variable)", num,
                                                       index=num.index(P["bank"]["target_column"]) if P["bank"]["target_column"] in num else 0)
+            if S.get("master_target_used") and multi_key(P["bank"]["target_column"]) != multi_key(S["master_target_used"]):
+                st.warning(f"The literature and metadata are those of '{S['master_target_used']}' from the master file. "
+                           "To forecast another column with its own literature, choose it in ① and read the files again.")
             P["bank"]["frequency"] = c3.selectbox("Frequency", ["Q", "M"], index=["Q", "M"].index(P["bank"]["frequency"]),
                                                   format_func=lambda x: {"Q": "Quarterly", "M": "Monthly (quarter-end used)"}[x])
             popts = ["(one series)"] + [c for c in cols if c not in (P["bank"]["date_column"], P["bank"]["target_column"])]
@@ -836,8 +864,13 @@ if mode == "New data set":
             ov = S["ov"]
             ov["sample.reestimate_every"] = str(c3.selectbox("Re-estimate every", [1, 2, 4], index=2, format_func=lambda x: f"{x} quarter(s)"))
             t1, t2, t3 = st.columns(3)
+            from src.utils.multi import suggest_form
+            try:
+                _sug = suggest_form(P["bank"]["target_column"], P["series"])
+            except Exception:
+                _sug = "auto"
             ov["target.transform"] = t1.selectbox(
-                "How the target is modelled", ["auto", "dlog", "diff"], index=0,
+                "How the target is modelled", ["auto", "dlog", "diff"], index=2 if _sug == "diff" else 0,
                 format_func=lambda k: {"auto": "auto (log growth if always positive)", "dlog": "log growth (balances, volumes)",
                                        "diff": "quarterly change (interest rates, spreads)"}[k],
                 help="diff: errors are in the target's units (percentage points for a rate) instead of percent")

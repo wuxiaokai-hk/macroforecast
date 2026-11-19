@@ -48,6 +48,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/utils/env.py](#srcutilsenvpy)
 - [src/utils/io.py](#srcutilsiopy)
 - [src/utils/master.py](#srcutilsmasterpy)
+- [src/utils/multi.py](#srcutilsmultipy)
 - [src/utils/preflight.py](#srcutilspreflightpy)
 - [src/utils/saved.py](#srcutilssavedpy)
 - [src/utils/target.py](#srcutilstargetpy)
@@ -2499,7 +2500,7 @@ Part of the model interface (see src/models/zoo.py): ARDL panel plus the log lev
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
 
-**Called by:** `holdout`
+**Called by:** `worked`, `write_calculator`, `holdout`
 
 <sub>src/models/ecm.py:73</sub>
 
@@ -2580,7 +2581,7 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, upd
 
 **Returns:** array of forecasts.
 
-**Called by:** `holdout`
+**Called by:** `worked`, `holdout`
 
 <sub>src/models/ecm.py:142</sub>
 
@@ -6174,7 +6175,7 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Returns:** DataFrame: scenario, date, each driver's value and contribution, growth (log, % q/q, % annualised), balance.
 
-**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
+**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `ECM.forecast`, `ECM.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
 
 **Called by:** `write`
 
@@ -6262,7 +6263,7 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Config:** `features`
 
-**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
+**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `ECM.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
 
 **Called by:** `write`
 
@@ -6314,7 +6315,7 @@ Plain name and meaning of a transform code (moving windows included).
 
 **Called by:** `Story.label`, `Story.s_bestform`, `Story.s_stationarity`, `Story.s_transforms`, `Story.short`
 
-<sub>src/reporting/process_story.py:58</sub>
+<sub>src/reporting/process_story.py:57</sub>
 
 ### `_style`
 
@@ -6324,7 +6325,7 @@ _style()
 
 **Called by:** `Story.__init__`
 
-<sub>src/reporting/process_story.py:72</sub>
+<sub>src/reporting/process_story.py:71</sub>
 
 ### `pct`
 
@@ -6339,7 +6340,7 @@ pct(v, d=2)
 
 **Called by:** `Story.err`
 
-<sub>src/reporting/process_story.py:82</sub>
+<sub>src/reporting/process_story.py:81</sub>
 
 ### `num`
 
@@ -6354,7 +6355,7 @@ num(v, d=0)
 
 **Called by:** `equation_text`, `Story.err`, `Story.s_overview`
 
-<sub>src/reporting/process_story.py:86</sub>
+<sub>src/reporting/process_story.py:85</sub>
 
 ### `plural`
 
@@ -6370,7 +6371,7 @@ plural(n, word, many=None)
 
 **Called by:** `Story.s_events`, `Story.s_literature`, `Story.s_question`, `Story.s_search_pick`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:92</sub>
+<sub>src/reporting/process_story.py:91</sub>
 
 ### `parse`
 
@@ -6386,7 +6387,7 @@ parse(f)
 
 **Called by:** `Story.label`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.short`, `_code_only`, `code_hash`, `scan`
 
-<sub>src/reporting/process_story.py:96</sub>
+<sub>src/reporting/process_story.py:95</sub>
 
 ### `Story`
 
@@ -6406,7 +6407,7 @@ Reads a run and builds its sections.
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:107</sub>
+<sub>src/reporting/process_story.py:106</sub>
 
 ### `Story.__init__`
 
@@ -6422,7 +6423,7 @@ __init__(cfg, out, charts)
 
 **Calls:** `_style`
 
-<sub>src/reporting/process_story.py:114</sub>
+<sub>src/reporting/process_story.py:113</sub>
 
 ### `Story.read`
 
@@ -6436,7 +6437,7 @@ read(*p)
 
 **Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `install_hook`, `write_config`, `build`, `main`
 
-<sub>src/reporting/process_story.py:122</sub>
+<sub>src/reporting/process_story.py:121</sub>
 
 ### `Story.add`
 
@@ -6461,7 +6462,7 @@ add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), c
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
 
-<sub>src/reporting/process_story.py:126</sub>
+<sub>src/reporting/process_story.py:125</sub>
 
 ### `Story.fig`
 
@@ -6477,7 +6478,7 @@ fig(name, w=9, h=4.4)
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
 
-<sub>src/reporting/process_story.py:133</sub>
+<sub>src/reporting/process_story.py:132</sub>
 
 ### `Story.save`
 
@@ -6492,7 +6493,7 @@ save(f, path)
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:137</sub>
+<sub>src/reporting/process_story.py:136</sub>
 
 ### `Story.label`
 
@@ -6510,7 +6511,7 @@ Plain label of a feature: 'House price index, Ontario: quarterly growth, 1 quart
 
 **Called by:** `Story.s_rec_model`, `Story.s_recommend`, `Story.s_screen`
 
-<sub>src/reporting/process_story.py:143</sub>
+<sub>src/reporting/process_story.py:142</sub>
 
 ### `Story.short`
 
@@ -6527,7 +6528,7 @@ short(f, n=46)
 
 **Called by:** `Story._term`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
 
-<sub>src/reporting/process_story.py:152</sub>
+<sub>src/reporting/process_story.py:151</sub>
 
 ### `Story.load`
 
@@ -6541,7 +6542,7 @@ load()
 
 **Called by:** `Story.build`
 
-<sub>src/reporting/process_story.py:162</sub>
+<sub>src/reporting/process_story.py:161</sub>
 
 ### `Story._n_vars`
 
@@ -6567,7 +6568,7 @@ err(v)
 
 **Calls:** `num`, `pct`
 
-**Called by:** `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
+**Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
 
 <sub>src/reporting/process_story.py:232</sub>
 
@@ -6637,7 +6638,7 @@ s_events()
 
 **Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
 
-<sub>src/reporting/process_story.py:361</sub>
+<sub>src/reporting/process_story.py:363</sub>
 
 ### `Story.s_macro`
 
@@ -6649,7 +6650,7 @@ s_macro()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:398</sub>
+<sub>src/reporting/process_story.py:400</sub>
 
 ### `Story.s_signs`
 
@@ -6659,7 +6660,7 @@ s_signs()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:428</sub>
+<sub>src/reporting/process_story.py:430</sub>
 
 ### `Story.s_literature`
 
@@ -6669,7 +6670,7 @@ s_literature()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:460</sub>
+<sub>src/reporting/process_story.py:461</sub>
 
 ### `Story.s_transforms`
 
@@ -6679,7 +6680,7 @@ s_transforms()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:484</sub>
+<sub>src/reporting/process_story.py:485</sub>
 
 ### `Story.s_stationarity`
 
@@ -6689,7 +6690,7 @@ s_stationarity()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
 
-<sub>src/reporting/process_story.py:502</sub>
+<sub>src/reporting/process_story.py:503</sub>
 
 ### `Story.s_lags`
 
@@ -6699,7 +6700,7 @@ s_lags()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:528</sub>
+<sub>src/reporting/process_story.py:529</sub>
 
 ### `Story.s_funnel`
 
@@ -6709,7 +6710,7 @@ s_funnel()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:544</sub>
+<sub>src/reporting/process_story.py:545</sub>
 
 ### `Story._rule`
 
@@ -6724,7 +6725,7 @@ _rule(T, key)
 
 **Called by:** `Story.s_funnel`, `Story.s_search_pick`
 
-<sub>src/reporting/process_story.py:583</sub>
+<sub>src/reporting/process_story.py:584</sub>
 
 ### `Story.s_screen`
 
@@ -6734,7 +6735,7 @@ s_screen()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:590</sub>
+<sub>src/reporting/process_story.py:591</sub>
 
 ### `Story.s_bestform`
 
@@ -6744,7 +6745,7 @@ s_bestform()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:624</sub>
+<sub>src/reporting/process_story.py:625</sub>
 
 ### `Story.s_clusters`
 
@@ -6756,7 +6757,7 @@ s_clusters()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:644</sub>
+<sub>src/reporting/process_story.py:645</sub>
 
 ### `Story.s_shortlist`
 
@@ -6766,7 +6767,7 @@ s_shortlist()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:667</sub>
+<sub>src/reporting/process_story.py:668</sub>
 
 ### `Story.s_en`
 
@@ -6778,7 +6779,7 @@ s_en()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:682</sub>
+<sub>src/reporting/process_story.py:683</sub>
 
 ### `Story.s_stability`
 
@@ -6790,7 +6791,7 @@ s_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:705</sub>
+<sub>src/reporting/process_story.py:706</sub>
 
 ### `Story.s_search_rules`
 
@@ -6802,7 +6803,7 @@ s_search_rules()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
 
-<sub>src/reporting/process_story.py:735</sub>
+<sub>src/reporting/process_story.py:736</sub>
 
 ### `Story.s_search_rank`
 
@@ -6814,7 +6815,7 @@ s_search_rank()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:776</sub>
+<sub>src/reporting/process_story.py:777</sub>
 
 ### `Story.s_search_pick`
 
@@ -6826,7 +6827,7 @@ s_search_pick()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
 
-<sub>src/reporting/process_story.py:811</sub>
+<sub>src/reporting/process_story.py:812</sub>
 
 ### `Story.s_families`
 
@@ -6836,7 +6837,7 @@ s_families()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:842</sub>
+<sub>src/reporting/process_story.py:843</sub>
 
 ### `Story.s_backtest_design`
 
@@ -6848,7 +6849,7 @@ s_backtest_design()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:867</sub>
+<sub>src/reporting/process_story.py:868</sub>
 
 ### `Story.s_one_origin`
 
@@ -6858,7 +6859,7 @@ s_one_origin()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:905</sub>
+<sub>src/reporting/process_story.py:906</sub>
 
 ### `Story.s_all_origins`
 
@@ -6866,9 +6867,9 @@ s_one_origin()
 s_all_origins()
 ```
 
-**Calls:** `Story.add`, `Story.fig`, `Story.save`
+**Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:947</sub>
+<sub>src/reporting/process_story.py:949</sub>
 
 ### `Story.s_leaderboard`
 
@@ -6878,7 +6879,7 @@ s_leaderboard()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:978</sub>
+<sub>src/reporting/process_story.py:980</sub>
 
 ### `Story.s_by_horizon`
 
@@ -6888,7 +6889,7 @@ s_by_horizon()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1010</sub>
+<sub>src/reporting/process_story.py:1012</sub>
 
 ### `Story.s_oos_design`
 
@@ -6900,7 +6901,7 @@ s_oos_design()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1044</sub>
+<sub>src/reporting/process_story.py:1050</sub>
 
 ### `Story.s_oos_gap`
 
@@ -6910,7 +6911,7 @@ s_oos_gap()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1066</sub>
+<sub>src/reporting/process_story.py:1072</sub>
 
 ### `Story.s_driver_stability`
 
@@ -6920,7 +6921,7 @@ s_driver_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1099</sub>
+<sub>src/reporting/process_story.py:1105</sub>
 
 ### `Story.s_holdout`
 
@@ -6932,7 +6933,7 @@ s_holdout()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1131</sub>
+<sub>src/reporting/process_story.py:1137</sub>
 
 ### `Story.s_rec_model`
 
@@ -6942,7 +6943,7 @@ s_rec_model()
 
 **Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1150</sub>
+<sub>src/reporting/process_story.py:1156</sub>
 
 ### `Story._term`
 
@@ -6958,7 +6959,7 @@ _term(t)
 
 **Called by:** `Story.s_rec_model`
 
-<sub>src/reporting/process_story.py:1181</sub>
+<sub>src/reporting/process_story.py:1187</sub>
 
 ### `Story.s_rec_effects`
 
@@ -6968,7 +6969,7 @@ s_rec_effects()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1190</sub>
+<sub>src/reporting/process_story.py:1196</sub>
 
 ### `Story.s_rec_fit`
 
@@ -6978,7 +6979,7 @@ s_rec_fit()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
 
-<sub>src/reporting/process_story.py:1211</sub>
+<sub>src/reporting/process_story.py:1217</sub>
 
 ### `Story.s_coef_paths`
 
@@ -6988,7 +6989,7 @@ s_coef_paths()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1235</sub>
+<sub>src/reporting/process_story.py:1241</sub>
 
 ### `Story.s_diagnostics`
 
@@ -6998,7 +6999,7 @@ s_diagnostics()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1265</sub>
+<sub>src/reporting/process_story.py:1271</sub>
 
 ### `Story.s_scen_inputs`
 
@@ -7008,7 +7009,7 @@ s_scen_inputs()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
 
-<sub>src/reporting/process_story.py:1294</sub>
+<sub>src/reporting/process_story.py:1303</sub>
 
 ### `Story.s_scen_forecast`
 
@@ -7018,7 +7019,7 @@ s_scen_forecast()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1319</sub>
+<sub>src/reporting/process_story.py:1328</sub>
 
 ### `Story.s_contrib`
 
@@ -7032,7 +7033,7 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 
 **Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1353</sub>
+<sub>src/reporting/process_story.py:1363</sub>
 
 ### `Story.s_scen_check`
 
@@ -7042,7 +7043,7 @@ s_scen_check()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1415</sub>
+<sub>src/reporting/process_story.py:1425</sub>
 
 ### `Story.s_limits`
 
@@ -7052,7 +7053,7 @@ s_limits()
 
 **Calls:** `Story.add`, `Story.err`
 
-<sub>src/reporting/process_story.py:1441</sub>
+<sub>src/reporting/process_story.py:1451</sub>
 
 ### `Story.s_recommend`
 
@@ -7062,7 +7063,7 @@ s_recommend()
 
 **Calls:** `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1460</sub>
+<sub>src/reporting/process_story.py:1470</sub>
 
 ### `Story.s_glossary`
 
@@ -7072,7 +7073,7 @@ s_glossary()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1474</sub>
+<sub>src/reporting/process_story.py:1484</sub>
 
 ### `Story.s_settings`
 
@@ -7082,7 +7083,7 @@ s_settings()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1494</sub>
+<sub>src/reporting/process_story.py:1504</sub>
 
 ### `_wrap`
 
@@ -7097,7 +7098,7 @@ _wrap(s, n)
 
 **Called by:** `Story.s_overview`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1511</sub>
+<sub>src/reporting/process_story.py:1521</sub>
 
 ### `_wrapl`
 
@@ -7114,7 +7115,7 @@ _wrapl(s, n)
 
 **Called by:** `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
 
-<sub>src/reporting/process_story.py:1522</sub>
+<sub>src/reporting/process_story.py:1532</sub>
 
 
 ## src/reporting/report.py
@@ -10525,7 +10526,7 @@ Read a CSV or Excel file.
 
 **Returns:** DataFrame.
 
-**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_read`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `columns`, `_read`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:17</sub>
 
@@ -10541,7 +10542,7 @@ to_quarters(values)
 |---|---|---|
 | `values` |  | dates or quarter labels. |
 
-**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `organic_growth`, `_dates`, `_q`, `bank_summary`, `find_date_column`, `find_panel_column`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `organic_growth`, `columns`, `_dates`, `_q`, `bank_summary`, `find_date_column`, `find_panel_column`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:32</sub>
 
@@ -10755,7 +10756,7 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Calls:** `_sheets`
 
-**Called by:** `resolve_master`, `apply`, `resolve`
+**Called by:** `resolve_master`, `apply`, `resolve`, `catalog`
 
 <sub>src/utils/master.py:45</sub>
 
@@ -10773,7 +10774,7 @@ The targets in a master file, with what each one has.
 
 **Calls:** `_norm`, `_sheets`
 
-**Called by:** `main`
+**Called by:** `apply`, `catalog`, `main`
 
 <sub>src/utils/master.py:53</sub>
 
@@ -10790,7 +10791,7 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 | `names` |  |  |
 | `target` |  |  |
 
-**Called by:** `extract`
+**Called by:** `apply`, `extract`, `catalog`
 
 <sub>src/utils/master.py:66</sub>
 
@@ -10869,13 +10870,126 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Returns:** the target name used, or None when no master is involved.
 
-**Config:** `data.file`, `data.sheet`, `run_name`
+**Config:** `data.bank`, `data.file`, `data.sheet`, `run_name`, `targets`
 
-**Calls:** `extract`, `is_master`
+**Calls:** `_match`, `extract`, `is_master`, `targets`
 
 **Called by:** `load_config`
 
 <sub>src/utils/master.py:161</sub>
+
+
+## src/utils/multi.py
+
+Several targets in one data file: which columns can be forecast, and the config for each one.
+
+### `_key`
+
+```python
+_key(x)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `x` |  |  |
+
+**Called by:** `catalog`, `suggest_form`, `target_config`
+
+<sub>src/utils/multi.py:27</sub>
+
+### `columns`
+
+```python
+columns(cfg)
+```
+
+The numeric columns of the target file (the date and bank columns left out).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration (data.bank). |
+
+**Returns:** DataFrame indexed by quarter, one column per series.
+
+**Config:** `data.bank.date_column`, `data.bank.file`, `data.bank.panel_column`, `data.bank.sheet`
+
+**Calls:** `read_table`, `to_quarters`
+
+**Called by:** `catalog`
+
+<sub>src/utils/multi.py:31</sub>
+
+### `suggest_form`
+
+```python
+suggest_form(name, series, forms=None)
+```
+
+'diff' or 'dlog' for a target.
+
+| argument | default | meaning |
+|---|---|---|
+| `name` |  | column name. |
+| `series` |  | its values. |
+| `forms` | `None` | {name: form} from the config (wins). |
+
+**Calls:** `_key`
+
+**Called by:** `catalog`
+
+<sub>src/utils/multi.py:50</sub>
+
+### `catalog`
+
+```python
+catalog(cfg, master=None)
+```
+
+Every column of the target file with its match in the master, history and suggested form.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration. |
+| `master` | `None` | literature master file (default literature.master). |
+
+**Returns:** DataFrame: column, master_target, literature (models in the master), metadata (rows), first, last, quarters, form, ready.
+
+**Config:** `data`, `forms`, `literature`, `map`, `targets`
+
+**Calls:** `_match`, `is_master`, `targets`, `_key`, `columns`, `suggest_form`
+
+<sub>src/utils/multi.py:65</sub>
+
+### `target_config`
+
+```python
+target_config(base, row, run_prefix=None)
+```
+
+The config for one target, as a dict (written as YAML by the caller).
+
+| argument | default | meaning |
+|---|---|---|
+| `base` |  | the raw config dict (as in the YAML file). |
+| `row` |  | a catalog row. |
+| `run_prefix` | `None` | run name prefix. |
+
+**Calls:** `_key`
+
+<sub>src/utils/multi.py:98</sub>
+
+### `outdir`
+
+```python
+outdir(base_cfg_loaded, run_name)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `base_cfg_loaded` |  |  |
+| `run_name` |  |  |
+
+<sub>src/utils/multi.py:131</sub>
 
 
 ## src/utils/preflight.py
@@ -12367,9 +12481,29 @@ pairs: {target: (workbook or None, metadata or None)}. Writes the master.
 | `out` |  |  |
 | `pairs` |  |  |
 
+**Called by:** `main`, `merge`
+
+<sub>tools/literature_master.py:31</sub>
+
+### `merge`
+
+```python
+merge(base, pairs, out)
+```
+
+Add per-target files to an existing master; a target already in it is replaced. Returns (out, added, replaced).
+
+| argument | default | meaning |
+|---|---|---|
+| `base` |  |  |
+| `pairs` |  |  |
+| `out` |  |  |
+
+**Calls:** `build`
+
 **Called by:** `main`
 
-<sub>tools/literature_master.py:29</sub>
+<sub>tools/literature_master.py:81</sub>
 
 ### `from_folder`
 
@@ -12383,7 +12517,7 @@ from_folder(folder)
 
 **Called by:** `main`
 
-<sub>tools/literature_master.py:79</sub>
+<sub>tools/literature_master.py:124</sub>
 
 ### `main`
 
@@ -12391,9 +12525,9 @@ from_folder(folder)
 main()
 ```
 
-**Calls:** `extract`, `targets`, `build`, `from_folder`
+**Calls:** `extract`, `targets`, `build`, `from_folder`, `merge`
 
-<sub>tools/literature_master.py:88</sub>
+<sub>tools/literature_master.py:133</sub>
 
 
 ## tools/literature_template.py

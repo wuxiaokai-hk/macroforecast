@@ -22,7 +22,7 @@ macroforecast = "macroforecast.cli:main"
 # Install from the project folder with:  pip install -e .
 # (editable: the package keeps using this folder's data/, config/ and outputs/)
 [tool.setuptools]
-py-modules = ["run_pipeline", "run_oos", "run_panel", "run_system"]
+py-modules = ["run_pipeline", "run_oos", "run_panel", "run_system", "run_targets"]
 
 [tool.setuptools.packages.find]
 include = ["macroforecast*", "src*"]
