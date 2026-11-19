@@ -147,9 +147,11 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
     rows["targets_with_a_sign"] = rows["code"].map(sign).fillna(0).astype(int)
     con = sh.get("concepts")
     lit = {}
-    if con is not None and "moodys_name" in con:
-        for r in con.dropna(subset=["moodys_name"]).itertuples():
-            lit.setdefault(str(r.moodys_name).strip(), set()).add(f"{r.target}:{r.concept_id}")
+    scol = next((c for c in ("series_name", "moodys_name") if con is not None and c in con), None)
+    if scol:
+        for t, cid, v in zip(con["target"], con["concept_id"], con[scol]):
+            if isinstance(v, str) and v.strip():
+                lit.setdefault(v.strip(), set()).add(f"{t}:{cid}")
         extra = sorted(set(lit) - set(rows["code"]))
         if extra:                                   # named by a concept but not in any metadata
             rows = pd.concat([rows, pd.DataFrame({"code": extra})], ignore_index=True)

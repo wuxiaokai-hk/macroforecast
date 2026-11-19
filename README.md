@@ -358,14 +358,14 @@ literature:
 
 ### Your macro names: one place (`macro_names` sheet)
 
-The master names macro series by its own codes (the Moody's mnemonics, e.g. `FHPI.ION`), in every target's metadata and in every literature concept. When your scenario files come from another provider, or use other names, there is **one place to edit**: the master's `macro_names` sheet.
+The master names macro series by its own codes (e.g. `FHPI.ION`, vendor-style mnemonics), in every target's metadata and in every literature concept. When your scenario files come from another provider, or use other names, there is **one place to edit**: the master's `macro_names` sheet.
 
 | code | your_name | in_your_data | suggestion | description | literature_uses | ... |
 |---|---|---|---|---|---|---|
 | FHPI.ION | ON_HOUSE_PRICES | yes | | House price index, Ontario | 14 | |
 
 - One row per macro series the master uses (400 in the uploaded master), sorted by how many literature models use it. Write your column name in `your_name`; blank means your files use the code itself.
-- The map is applied everywhere a series is named: each target's metadata (so expected signs, themes and transforms carry over), each literature concept's `moodys_name`, and the config's deflator, constructed series (spreads, real rates), same-growth drivers and `trace.follow`. Nothing else needs editing.
+- The map is applied everywhere a series is named: each target's metadata (so expected signs, themes and transforms carry over), each literature concept's `series_name`, and the config's deflator, constructed series (spreads, real rates), same-growth drivers and `trace.follow`. Nothing else needs editing.
 - Help to fill it: `python tools/literature_master.py names config/literature_master.xlsx --macro data/my/baseline.csv --macro-metadata data/my/metadata.csv` adds `in_your_data` (is each name in your file?) and a `suggestion` matched from your metadata's descriptions with its score; `--accept 0.6` copies the suggestions with at least that score into `your_name` for you to review. Re-running keeps what you wrote. `merge` refreshes the sheet when targets are added.
 - A series you do not have can stay unmapped: the pre-flight check lists it, and the literature concepts that use it are skipped with a message.
 - Instead of the sheet, `literature.names: my_names.csv` (columns `code`, `your_name`) can hold the map, e.g. one file per provider; it wins over the sheet. It also works without a master, on a single literature workbook and metadata file.

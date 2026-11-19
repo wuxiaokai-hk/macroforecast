@@ -750,9 +750,9 @@
   "changed": ""
  },
  "src.utils.config.load_config": {
-  "hash": "0c66fcb57a29",
+  "hash": "e88a0bddaabc",
   "added": "",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "src.utils.docs.source_files": {
   "hash": "95874720b287",
@@ -3205,9 +3205,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.extract": {
-  "hash": "0c4cf33ffc98",
+  "hash": "493265d65c92",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "src.utils.master._write_if_changed": {
   "hash": "21c6910fc024",
@@ -3220,7 +3220,7 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.apply": {
-  "hash": "b2c384da63e1",
+  "hash": "458e79536377",
   "added": "2026-11-12",
   "changed": "2026-11-18"
  },
@@ -3235,7 +3235,7 @@
   "changed": "2026-11-12"
  },
  "tools.literature_master.main": {
-  "hash": "76bb0ae35841",
+  "hash": "f61f122a2e1f",
   "added": "2026-11-12",
   "changed": "2026-11-18"
  },
@@ -3784,67 +3784,47 @@
   "added": "2026-11-18",
   "changed": "2026-11-18"
  },
+ "src.utils.master.name_map": {
+  "hash": "47d0fe8b23f0",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.utils.master.rename_expr": {
+  "hash": "c3229c0e4d56",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.utils.master._rename_meta": {
+  "hash": "6e3bfa9ba65f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.utils.master._rename_concepts": {
+  "hash": "623f07704e06",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.utils.master.rename_config": {
+  "hash": "56967819c812",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.utils.master._rename_plain": {
+  "hash": "0369b61e6002",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.literature_master._tokens": {
+  "hash": "e05233dd9d94",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.literature_master.names_sheet": {
+  "hash": "0e01c103137a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.ols",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.driscoll_kraay",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel.fit",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel._own",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel._pooled",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel._shrink",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel._topdown",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel.forecast",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel.fitted",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.estimate.PanelModel.coefficient_rows",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.panel.run.settings",
@@ -5283,6 +5263,66 @@
   {
    "date": "2026-11-18",
    "id": "tools.new_data_setup.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.config.load_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.name_map",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.rename_expr",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master._rename_meta",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master._rename_concepts",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.extract",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.apply",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.rename_config",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master._rename_plain",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.literature_master._tokens",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.literature_master.names_sheet",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.literature_master.main",
    "what": "changed"
   }
  ]

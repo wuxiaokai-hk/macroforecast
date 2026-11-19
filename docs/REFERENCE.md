@@ -6310,7 +6310,7 @@ read(*p)
 |---|---|---|
 | `*p` |  |  |
 
-**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
+**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
 <sub>src/reporting/process_story.py:121</sub>
 
@@ -10399,7 +10399,7 @@ Read a CSV or Excel file.
 
 **Returns:** DataFrame.
 
-**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `columns`, `_read`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_rename_plain`, `columns`, `_read`, `names_sheet`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:17</sub>
 
@@ -10597,9 +10597,9 @@ _sheets(path)
 |---|---|---|
 | `path` |  | file to write or read. |
 
-**Called by:** `extract`, `is_master`, `targets`
+**Called by:** `extract`, `is_master`, `name_map`, `targets`
 
-<sub>src/utils/master.py:32</sub>
+<sub>src/utils/master.py:42</sub>
 
 ### `_norm`
 
@@ -10611,9 +10611,9 @@ _norm(df)
 |---|---|---|
 | `df` |  |  |
 
-**Called by:** `extract`, `targets`
+**Called by:** `extract`, `name_map`, `targets`
 
-<sub>src/utils/master.py:39</sub>
+<sub>src/utils/master.py:49</sub>
 
 ### `is_master`
 
@@ -10629,9 +10629,9 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Calls:** `_sheets`
 
-**Called by:** `resolve_master`, `apply`, `resolve`, `catalog`
+**Called by:** `resolve_master`, `apply`, `name_map`, `resolve`, `catalog`
 
-<sub>src/utils/master.py:47</sub>
+<sub>src/utils/master.py:57</sub>
 
 ### `targets`
 
@@ -10649,7 +10649,73 @@ The targets in a master file, with what each one has.
 
 **Called by:** `apply`, `catalog`, `main`
 
-<sub>src/utils/master.py:55</sub>
+<sub>src/utils/master.py:65</sub>
+
+### `name_map`
+
+```python
+name_map(master=None, names_file=None)
+```
+
+{master code: your name} from the master's macro_names sheet and/or a names file (the file wins). Rows with an empty your_name, or your_name equal to the code, are left out.
+
+| argument | default | meaning |
+|---|---|---|
+| `master` | `None` |  |
+| `names_file` | `None` |  |
+
+**Calls:** `_norm`, `_sheets`, `is_master`
+
+**Called by:** `apply`, `extract`
+
+<sub>src/utils/master.py:78</sub>
+
+### `rename_expr`
+
+```python
+rename_expr(text, names)
+```
+
+Replace master codes inside an expression or name (whole tokens only: letters, digits, _ and . around).
+
+| argument | default | meaning |
+|---|---|---|
+| `text` |  |  |
+| `names` |  |  |
+
+**Called by:** `rename_config`
+
+<sub>src/utils/master.py:104</sub>
+
+### `_rename_meta`
+
+```python
+_rename_meta(m, names)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `m` |  |  |
+| `names` |  |  |
+
+**Called by:** `extract`
+
+<sub>src/utils/master.py:113</sub>
+
+### `_rename_concepts`
+
+```python
+_rename_concepts(c, names)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `c` |  |  |
+| `names` |  |  |
+
+**Called by:** `_rename_plain`, `extract`
+
+<sub>src/utils/master.py:120</sub>
 
 ### `_match`
 
@@ -10666,12 +10732,12 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 
 **Called by:** `apply`, `extract`, `catalog`
 
-<sub>src/utils/master.py:68</sub>
+<sub>src/utils/master.py:128</sub>
 
 ### `extract`
 
 ```python
-extract(path, target, folder)
+extract(path, target, folder, names=None)
 ```
 
 Write one target's workbook and metadata from the master.
@@ -10681,14 +10747,15 @@ Write one target's workbook and metadata from the master.
 | `path` |  | the master .xlsx. |
 | `target` |  | target name. |
 | `folder` |  | where to write. |
+| `names` | `None` | {master code: your name} (see name_map); default: the master's macro_names sheet. |
 
 **Returns:** dict workbook=<xlsx or None>, metadata=<csv or None>, target=<the master's name for it>.
 
-**Calls:** `Story.read`, `_match`, `_norm`, `_sheets`, `_write_if_changed`
+**Calls:** `Story.read`, `_match`, `_norm`, `_rename_concepts`, `_rename_meta`, `_sheets`, `_write_if_changed`, `name_map`
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
-<sub>src/utils/master.py:75</sub>
+<sub>src/utils/master.py:135</sub>
 
 ### `_write_if_changed`
 
@@ -10703,9 +10770,9 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 | `f` |  |  |
 | `sheets` |  |  |
 
-**Called by:** `extract`
+**Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:133</sub>
+<sub>src/utils/master.py:198</sub>
 
 ### `resolve`
 
@@ -10726,7 +10793,7 @@ path if it is an ordinary file; the target's extracted file if path is a master.
 
 **Called by:** `resolve_master`
 
-<sub>src/utils/master.py:149</sub>
+<sub>src/utils/master.py:214</sub>
 
 ### `apply`
 
@@ -10745,11 +10812,54 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Config:** `data.bank`, `data.file`, `data.sheet`, `run_name`, `targets`
 
-**Calls:** `_match`, `extract`, `is_master`, `targets`
+**Calls:** `_match`, `_rename_plain`, `extract`, `is_master`, `name_map`, `rename_config`, `targets`
 
 **Called by:** `load_config`
 
-<sub>src/utils/master.py:163</sub>
+<sub>src/utils/master.py:228</sub>
+
+### `rename_config`
+
+```python
+rename_config(cfg, names)
+```
+
+Master codes named in the config -> your names: deflator, constructed series, same-growth drivers, follow.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `names` |  |  |
+
+**Config:** `data`, `features`, `models`, `trace`
+
+**Calls:** `rename_expr`
+
+**Called by:** `apply`
+
+<sub>src/utils/master.py:282</sub>
+
+### `_rename_plain`
+
+```python
+_rename_plain(cfg, names, folder)
+```
+
+A plain literature workbook and metadata file with the names map applied (written to folder).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `names` |  |  |
+| `folder` |  | output folder. |
+
+**Config:** `data.metadata`, `literature.columns`, `literature.file`, `literature.sheet`
+
+**Calls:** `Story.read`, `read_table`, `_rename_concepts`, `_write_if_changed`
+
+**Called by:** `apply`
+
+<sub>src/utils/master.py:298</sub>
 
 
 ## src/utils/multi.py
@@ -12593,7 +12703,7 @@ pairs: {target: (workbook or None, metadata or None)}. Writes the master.
 
 **Called by:** `main`, `merge`
 
-<sub>tools/literature_master.py:31</sub>
+<sub>tools/literature_master.py:36</sub>
 
 ### `merge`
 
@@ -12613,7 +12723,44 @@ Add per-target files to an existing master; a target already in it is replaced. 
 
 **Called by:** `main`
 
-<sub>tools/literature_master.py:81</sub>
+<sub>tools/literature_master.py:86</sub>
+
+### `_tokens`
+
+```python
+_tokens(x)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `x` |  |  |
+
+**Called by:** `names_sheet`
+
+<sub>tools/literature_master.py:129</sub>
+
+### `names_sheet`
+
+```python
+names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept=None)
+```
+
+Add or refresh the macro_names sheet (keeps every your_name already filled in). Returns the sheet.
+
+| argument | default | meaning |
+|---|---|---|
+| `master` |  |  |
+| `macro` | `None` |  |
+| `macro_meta` | `None` |  |
+| `out` | `None` |  |
+| `log` | `print` | function used to print progress messages. |
+| `accept` | `None` |  |
+
+**Calls:** `read_table`, `_tokens`
+
+**Called by:** `main`
+
+<sub>tools/literature_master.py:135</sub>
 
 ### `from_folder`
 
@@ -12627,7 +12774,7 @@ from_folder(folder)
 
 **Called by:** `main`
 
-<sub>tools/literature_master.py:124</sub>
+<sub>tools/literature_master.py:212</sub>
 
 ### `main`
 
@@ -12635,9 +12782,9 @@ from_folder(folder)
 main()
 ```
 
-**Calls:** `extract`, `targets`, `build`, `from_folder`, `merge`
+**Calls:** `extract`, `targets`, `build`, `from_folder`, `merge`, `names_sheet`
 
-<sub>tools/literature_master.py:133</sub>
+<sub>tools/literature_master.py:221</sub>
 
 
 ## tools/literature_template.py

@@ -25,7 +25,7 @@ the rest of the project reads those, so every model, the pre-flight check and th
 Your macro names in ONE place: the master's `macro_names` sheet (code, description, ..., your_name) lists every macro
 series the master uses, under the master's own code (e.g. the Moody's mnemonic FHPI.ION). Write the name of the same
 series in your macro files in `your_name` (blank = the same as the code). The map is applied to every target's
-metadata, to every literature concept (moodys_name), and to the config's deflator, constructed series and
+metadata, to every literature concept (series_name), and to the config's deflator, constructed series and
 same-growth drivers, so data from any provider runs without editing anything else. `literature.names:` can point to
 a separate file with the columns code and your_name instead (it wins over the sheet).
 """
@@ -118,9 +118,10 @@ def _rename_meta(m, names):
 
 
 def _rename_concepts(c, names):
-    if names and "moodys_name" in c:
+    col = "series_name" if "series_name" in c else "moodys_name" if "moodys_name" in c else None
+    if names and col:
         c = c.copy()
-        c["moodys_name"] = c["moodys_name"].map(lambda v: names.get(str(v).strip(), v) if isinstance(v, str) else v)
+        c[col] = c[col].map(lambda v: names.get(str(v).strip(), v) if isinstance(v, str) else v)
     return c
 
 
