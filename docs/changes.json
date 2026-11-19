@@ -3220,9 +3220,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.apply": {
-  "hash": "8f36b22f64ec",
+  "hash": "866a2b119c2a",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-18"
  },
  "tools.literature_master.build": {
   "hash": "00d1db5ee470",
@@ -3254,437 +3254,432 @@
   "added": "2026-11-12",
   "changed": "2026-11-12"
  },
+ "src.reporting.process_story.tr_words": {
+  "hash": "953020fe2025",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story._style": {
+  "hash": "4417b9b946f4",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.pct": {
+  "hash": "37ae5569c0df",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.num": {
+  "hash": "66553e1d6ded",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.plural": {
+  "hash": "f9f0710955b8",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.parse": {
+  "hash": "3f0bd362387a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story": {
+  "hash": "6a4cfa9df208",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.__init__": {
+  "hash": "c145cee124cb",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.read": {
+  "hash": "42c659872ccf",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.add": {
+  "hash": "56cd284b72ce",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.fig": {
+  "hash": "6beeeb97d8cc",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.save": {
+  "hash": "045c1a3788db",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.label": {
+  "hash": "414c13982fd7",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.short": {
+  "hash": "c7403a6ac6e6",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.load": {
+  "hash": "4bd9905d2af0",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story._n_vars": {
+  "hash": "17e5a66aab1b",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.err": {
+  "hash": "583dc70b4564",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.build": {
+  "hash": "5bd299d91434",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_title": {
+  "hash": "13ff62fcb0d8",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_question": {
+  "hash": "0679b672224f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_overview": {
+  "hash": "9f6e9c13f598",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_target": {
+  "hash": "866217799038",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_events": {
+  "hash": "0acd5ea445f9",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_macro": {
+  "hash": "a79b8dd8d112",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_signs": {
+  "hash": "c89587ea115f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_literature": {
+  "hash": "8f29e323f99f",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_transforms": {
+  "hash": "2811bacf1b1d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_stationarity": {
+  "hash": "b7fd4201c835",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_lags": {
+  "hash": "2d954117e747",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_funnel": {
+  "hash": "e6ac8be30e2e",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story._rule": {
+  "hash": "4f34feda171d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_screen": {
+  "hash": "9db463ae655b",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_bestform": {
+  "hash": "5d46828c509a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_clusters": {
+  "hash": "af1552b7ca5d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_shortlist": {
+  "hash": "a5bea0f059f2",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_en": {
+  "hash": "5218e27f95cb",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_stability": {
+  "hash": "7aa551e34b36",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_search_rules": {
+  "hash": "d13ec0ff91ac",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_search_rank": {
+  "hash": "9589c0a71fe3",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_search_pick": {
+  "hash": "2fd6670731a3",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_families": {
+  "hash": "5fa5f74d1947",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_backtest_design": {
+  "hash": "a1558ad404a6",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_one_origin": {
+  "hash": "9ce0581e850e",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_all_origins": {
+  "hash": "d4893037a71a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_leaderboard": {
+  "hash": "e2d39aa28286",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_by_horizon": {
+  "hash": "69bd9c1a98e9",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_oos_design": {
+  "hash": "c0790b66cbcc",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_oos_gap": {
+  "hash": "ba1891a5fbe0",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_driver_stability": {
+  "hash": "0f4380ba310d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_holdout": {
+  "hash": "6bbcd140bbf9",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_rec_model": {
+  "hash": "0b5a6697a8e1",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story._term": {
+  "hash": "fc8295fb6590",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_rec_effects": {
+  "hash": "f409adcab3a5",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_rec_fit": {
+  "hash": "4debc7e9ded2",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_coef_paths": {
+  "hash": "a2bb774d7294",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_diagnostics": {
+  "hash": "e9ee7de0e8ba",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_scen_inputs": {
+  "hash": "e838df84f634",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_scen_forecast": {
+  "hash": "dc43017f42bb",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_contrib": {
+  "hash": "6f8a1d44845d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_scen_check": {
+  "hash": "4fc48c7bd4ef",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_limits": {
+  "hash": "e14d45ad98cc",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_recommend": {
+  "hash": "64cf1d226429",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_glossary": {
+  "hash": "cb1b9b654e6b",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story.Story.s_settings": {
+  "hash": "c59957b8bce2",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story._wrap": {
+  "hash": "a3eccb2e379c",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.process_story._wrapl": {
+  "hash": "2346c99d41c9",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._img": {
+  "hash": "c2b2f0197292",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._s": {
+  "hash": "d9407e470810",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._slug": {
+  "hash": "d96ae9965a29",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._list": {
+  "hash": "f3607c2c981e",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._table": {
+  "hash": "8cae738980d8",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html._tiles": {
+  "hash": "8dcb0096c8f3",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_html.build": {
+  "hash": "c6954d48eb8a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.rgb": {
+  "hash": "18f8c84c623d",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.box": {
+  "hash": "7877a2357f72",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.text": {
+  "hash": "fe4408788a73",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx._fit": {
+  "hash": "eaeae964bfe3",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.table": {
+  "hash": "f0529d25d69a",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.notes": {
+  "hash": "0d5690260f00",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.chrome": {
+  "hash": "38f7f0c5042c",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.tiles": {
+  "hash": "f940b6726187",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.points": {
+  "hash": "51c03463fce6",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "src.reporting.story_pptx.build": {
+  "hash": "a14a965e4869",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.process_story.make": {
+  "hash": "644157622c38",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
+ "tools.process_story.main": {
+  "hash": "10cc7b9460b1",
+  "added": "2026-11-18",
+  "changed": "2026-11-18"
+ },
  "_log": [
-  {
-   "date": "2026-10-31",
-   "id": "src.utils.trace.Tracer",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "src.utils.trace.Tracer.write",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.make_deck.build_deck",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.make_docs.install_hook",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.trace_to_html.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.walkthrough.Recorder",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.walkthrough.Recorder.save",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "tools.walkthrough.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "report.style_deck.chart",
-   "what": "changed"
-  },
-  {
-   "date": "2026-10-31",
-   "id": "report.style_deck.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-02",
-   "id": "src.validation.oos.models_at",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.report.rank_column",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.report.best_per_family",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.report.scenario_models",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.story._rank",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.story.build_oos",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.set_form",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.form",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.is_log",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.resolve",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.growth",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.change",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.state",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.from_state",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.path",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.level_after",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.error",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.pct",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.annualised",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.growth_display",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.units",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.describe",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.backtest",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.test_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.driver_sensitivity",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.scenario_forecasts",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.search.fast_backtest",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.horizon._splice",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.horizon.scenarios",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.io.organic_growth",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.io.Context",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.io.Context.__init__",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.from_display",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.per_year",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.autoardl.LevelsARDL",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.autoardl.LevelsARDL.panel",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.ecm.ECM",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.models.ecm.ECM.panel",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.equation_text",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.worked",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.worked_levels",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.write_calculator",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.write",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.report.chart_regimes",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.story.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.story._model_steps",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.config.load_config",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.utils.target.target_deflator",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.validation.oos.forecast_errors",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.validation.oos.run_oos",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.validation.oos.holdout",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "run_pipeline.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "run_oos.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.configure",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.window",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.is_rate_tr",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.is_volatility",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.tr_desc",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.lookback",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.sign_of",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.feature_sign",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.transform",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.describe",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.features.transforms.candidate_forms",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.backtest",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate._expected_sign",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate._driver_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.evaluate",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.fitted_values",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.modelling.evaluate.coefficient_table",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.pipelines.en_first.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.definition",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula._window_def",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.terms",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula._excel_feature",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-03",
-   "id": "src.reporting.formula.write_calculator",
-   "what": "changed"
-  },
   {
    "date": "2026-11-03",
    "id": "src.reporting.story.build",
@@ -4754,6 +4749,436 @@
    "date": "2026-11-12",
    "id": "tools.new_data_setup.main",
    "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.utils.master.apply",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.tr_words",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story._style",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.pct",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.num",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.plural",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.parse",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.read",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.add",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.fig",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.save",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.label",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.short",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.load",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story._n_vars",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.err",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_title",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_question",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_overview",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_target",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_events",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_macro",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_signs",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_literature",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_transforms",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_stationarity",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_lags",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_funnel",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story._rule",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_screen",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_bestform",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_clusters",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_shortlist",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_en",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_stability",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_search_rules",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_search_rank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_search_pick",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_families",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_backtest_design",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_one_origin",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_all_origins",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_leaderboard",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_by_horizon",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_oos_design",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_oos_gap",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_driver_stability",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_holdout",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_rec_model",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story._term",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_rec_effects",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_rec_fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_coef_paths",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_diagnostics",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_scen_inputs",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_scen_forecast",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_contrib",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_scen_check",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_limits",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_recommend",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_glossary",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story.Story.s_settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story._wrap",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.process_story._wrapl",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._img",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._s",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._slug",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._list",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html._tiles",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_html.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.rgb",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.box",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.text",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx._fit",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.notes",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.chrome",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.tiles",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.points",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "src.reporting.story_pptx.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.process_story.make",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-18",
+   "id": "tools.process_story.main",
+   "what": "added"
   }
  ]
 }

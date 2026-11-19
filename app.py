@@ -1012,6 +1012,22 @@ with tabs[4]:
         _cfg5 = None
     if out and _cfg5 is not None and is_panel(_cfg5):
         panel_results(out, _cfg5)
+        st.subheader("Process story")
+        st.caption("What happened at every step of this run, for an audience: the data, each selection stage with its "
+                   "numbers, how the models were tested, the recommended model and the scenarios. A long HTML page and "
+                   "a PowerPoint deck (about 50 slides, full text in the speaker notes). No Quarto needed; a few seconds.")
+        story_dir = os.path.join(out, "process_story")
+        story_files = [os.path.join(story_dir, f) for f in ("process_story.html", "process_story.pptx")]
+        if st.button("Rebuild the process story" if os.path.exists(story_files[0]) else "Build the process story",
+                     key="build_story"):
+            if run_script(os.path.join("tools", "process_story.py"), cfg_path, ["--run-dir", out]) != 0:
+                st.error("The process story could not be built: see the log above (python-pptx and matplotlib are needed).")
+        s1, s2 = st.columns(2)
+        for col_, f_, mime_ in zip((s1, s2), story_files, ("text/html",
+                                   "application/vnd.openxmlformats-officedocument.presentationml.presentation")):
+            if os.path.exists(f_):
+                col_.download_button(f"⬇ {os.path.basename(f_)}", open(f_, "rb").read(), file_name=os.path.basename(f_),
+                                     mime=mime_, key=f"dl_{os.path.basename(f_)}")
         if S.get("last_log"):
             with st.expander("Log of the last run"):
                 st.code(S["last_log"][-20000:], language=None)
@@ -1129,6 +1145,22 @@ with tabs[4]:
         if os.path.exists(deck):
             st.download_button("⬇ Download the presentation (.pptx)", open(deck, "rb").read(), file_name=os.path.basename(deck),
                                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation", key="dl_deck")
+        st.subheader("Process story")
+        st.caption("What happened at every step of this run, for an audience: the data, each selection stage with its "
+                   "numbers, how the models were tested, the recommended model and the scenarios. A long HTML page and "
+                   "a PowerPoint deck (about 50 slides, full text in the speaker notes). No Quarto needed; a few seconds.")
+        story_dir = os.path.join(out, "process_story")
+        story_files = [os.path.join(story_dir, f) for f in ("process_story.html", "process_story.pptx")]
+        if st.button("Rebuild the process story" if os.path.exists(story_files[0]) else "Build the process story",
+                     key="build_story"):
+            if run_script(os.path.join("tools", "process_story.py"), cfg_path, ["--run-dir", out]) != 0:
+                st.error("The process story could not be built: see the log above (python-pptx and matplotlib are needed).")
+        s1, s2 = st.columns(2)
+        for col_, f_, mime_ in zip((s1, s2), story_files, ("text/html",
+                                   "application/vnd.openxmlformats-officedocument.presentationml.presentation")):
+            if os.path.exists(f_):
+                col_.download_button(f"⬇ {os.path.basename(f_)}", open(f_, "rb").read(), file_name=os.path.basename(f_),
+                                     mime=mime_, key=f"dl_{os.path.basename(f_)}")
         if S.get("last_log"):
             with st.expander("Log of the last run"):
                 st.code(S["last_log"][-20000:], language=None)

@@ -62,6 +62,8 @@ def main(argv=None):
         options["target"]["label"] = x.label
     if x.units:
         options["target"]["units"] = x.units
+    if x.units or x.target_form == "diff":
+        options["target"].update(display_scale=None, display_units=None)   # not the example's "$ billions"
     if x.options:
         from .api import parse_options, _merge
         options = _merge(options, parse_options(x.options))

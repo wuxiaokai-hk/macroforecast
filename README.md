@@ -577,6 +577,21 @@ The recommended model is the most accurate out-of-sample model with at most `max
     A column starting with ★ becomes a dark card. Tables get a dark header, banded rows, and green Pass / red Review.
   - To keep Quarto's plain output for debugging, set `STYLE_DECK_SKIP=1`.
 
+## Process story: what happened at every step (`python tools/process_story.py`)
+
+A detailed, non-technical account of a run for an audience: not the code, but every decision the process made and why, with the run's own numbers and charts.
+
+```
+python tools/process_story.py --config config/example_config.yaml            # after run_pipeline.py (and run_oos.py)
+python tools/process_story.py --config config/my.yaml --format pptx          # html, pptx or both (default)
+python tools/process_story.py --config config/my.yaml --run-dir outputs/my_run/saved_runs/<copy>
+fc.process_story()                                                           # from the package
+```
+
+Writes `outputs/<run>/process_story/process_story.html` (one long page with a contents sidebar, charts embedded) and `process_story.pptx` (about 50 slides). Both come from the same 44 sections, in 11 chapters: the question; the data (target, one-off events, macro series, expected signs, literature); building candidates (forms, stationarity, lags, the funnel); screen first (screen, best form, clusters, shortlist); Elastic Net first (selection, stability); the final search (each rule's removals, accuracy ranking, the simplest near-best model); the competition; testing (backtest design, one origin up close, every backtest path, leaderboard, errors by horizon, out of sample vs backtest, driver stability, holdout); the recommended model (equation, effects in words, drivers vs target, coefficient stability, diagnostics); the forecast (scenario inputs, forecasts, each quarter taken apart driver by driver, scenario ordering); limitations, recommendation, glossary and settings.
+
+Each section states the finding as its title, a one-line takeaway, what was done, why, what happened in this run and how to read the chart. On the slides the key points and figures sit beside the chart or table, and the full text is in the speaker notes. Titles and takeaways follow the results (e.g. a flagged diagnostic is named, not glossed over). Balance targets are described in growth and percent, rate targets (`target.transform: diff`) in changes and their own units. Needs only python-pptx and matplotlib (no Quarto); the app has a "Build the process story" button under ⑤ Results.
+
 ## Function reference (`docs/reference.html`, automatic)
 
 A searchable page with a card for every module, class, function and method in the project (about 280), built from the code itself, so it cannot drift from it. Each card shows:

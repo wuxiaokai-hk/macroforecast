@@ -107,6 +107,8 @@ class Forecaster:
             t.setdefault("label", self.label)
         if self.units:
             t.setdefault("units", self.units)
+        if (self.units or t.get("transform") == "diff") and "display_scale" not in t:
+            t["display_scale"], t["display_units"] = None, None   # not the example's "$ billions"
         run_name, out_root = None, None
         if self.path:
             out_root, run_name = os.path.dirname(self.path), os.path.basename(self.path.rstrip(os.sep))
@@ -371,6 +373,19 @@ class Forecaster:
 
     def files(self, pattern="*"):
         return self._need().files(pattern)
+
+    def process_story(self, fmt="both"):
+        """What happened at every step of the run, for an audience: an HTML page and a PowerPoint deck
+        (see tools/process_story.py). fmt: html, pptx or both. Returns the paths written."""
+        import importlib.util
+        r = self._need()
+        folder = getattr(r, "out_dir", None) or self.path
+        cfg = getattr(r, "config_file", None) or os.path.join(folder, "run_config.yaml")
+        spec = importlib.util.spec_from_file_location("process_story_tool",
+                                                      os.path.join(PROJECT_ROOT, "tools", "process_story.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod.make(cfg, folder, fmt)
 
     def __repr__(self):
         if self.results is None:

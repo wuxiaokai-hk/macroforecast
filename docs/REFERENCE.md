@@ -30,8 +30,11 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/pipelines/en_first.py](#srcpipelinesenfirstpy)
 - [src/pipelines/screen_first.py](#srcpipelinesscreenfirstpy)
 - [src/reporting/formula.py](#srcreportingformulapy)
+- [src/reporting/process_story.py](#srcreportingprocessstorypy)
 - [src/reporting/report.py](#srcreportingreportpy)
 - [src/reporting/story.py](#srcreportingstorypy)
+- [src/reporting/story_html.py](#srcreportingstoryhtmlpy)
+- [src/reporting/story_pptx.py](#srcreportingstorypptxpy)
 - [src/selection/clustering.py](#srcselectionclusteringpy)
 - [src/selection/elastic_net.py](#srcselectionelasticnetpy)
 - [src/selection/screening.py](#srcselectionscreeningpy)
@@ -56,6 +59,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [tools/make_deck.py](#toolsmakedeckpy)
 - [tools/make_docs.py](#toolsmakedocspy)
 - [tools/new_data_setup.py](#toolsnewdatasetuppy)
+- [tools/process_story.py](#toolsprocessstorypy)
 - [tools/simulate_data.py](#toolssimulatedatapy)
 - [tools/trace_to_html.py](#toolstracetohtmlpy)
 - [tools/walkthrough.py](#toolswalkthroughpy)
@@ -393,7 +397,7 @@ Compute several features side by side.
 
 **Calls:** `feature_series`
 
-**Called by:** `all_features`, `make_panel`, `_arrays`, `run`, `run_oos`, `scenarios`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
+**Called by:** `all_features`, `make_panel`, `_arrays`, `run`, `run_oos`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
 
 <sub>src/features/transforms.py:171</sub>
 
@@ -562,6 +566,8 @@ Create an ARDL specification (nothing is estimated yet).
 | `family` | `''` | model family for the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
+**Called by:** `AutoARDL.__init__`, `ECM.__init__`, `build`, `models_at`
+
 <sub>src/modelling/ardl.py:65</sub>
 
 ### `ARDL.panel`
@@ -581,6 +587,8 @@ Part of the model interface (see src/models/zoo.py): build the model's data pane
 
 **Calls:** `make_panel`
 
+**Called by:** `Combination.panel`, `worked`, `write_calculator`, `forecast_errors`, `holdout`
+
 <sub>src/modelling/ardl.py:76</sub>
 
 ### `ARDL.spec`
@@ -593,6 +601,8 @@ Part of the model interface (see src/models/zoo.py): the settings that define th
 
 **Returns:** dict.
 
+**Called by:** `Combination.spec`, `ECM.spec`
+
 <sub>src/modelling/ardl.py:87</sub>
 
 ### `ARDL.drivers`
@@ -604,6 +614,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): the model's drivers for tables.
 
 **Returns:** list of feature names.
+
+**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/modelling/ardl.py:98</sub>
 
@@ -621,7 +633,7 @@ Regressor matrix: constant, lagged growth, drivers and dummies.
 
 **Returns:** DataFrame of regressors on P's index.
 
-**Called by:** `ARDL.fit`
+**Called by:** `ARDL.fit`, `ECM._X`
 
 <sub>src/modelling/ardl.py:106</sub>
 
@@ -640,7 +652,9 @@ fast=True: plain least squares, no standard errors (used inside combinations' we
 | `end` |  | last quarter of the estimation window (Period). |
 | `fast` | `False` | plain least squares without standard errors. |
 
-**Calls:** `ARDL._X`
+**Calls:** `ARDL._X`, `AutoARDL._X`, `ECM._X`
+
+**Called by:** `AutoARDL.fit`, `Combination.fit`, `ECM.fit`, `forecast_errors`, `holdout`
 
 <sub>src/modelling/ardl.py:124</sub>
 
@@ -661,6 +675,8 @@ Lagged growth is replaced by the model's own forecast after the first quarter; d
 | `H` |  | quarters ahead. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
+
+**Called by:** `Combination.forecast`, `worked`, `forecast_errors`, `holdout`
 
 <sub>src/modelling/ardl.py:142</sub>
 
@@ -1240,6 +1256,10 @@ Create the model (nothing is estimated yet).
 | `note` | `''` | as for ARDL. |
 | `signs` | `None` | expected sign per base variable "code\|transform" (optional). |
 
+**Calls:** `ARDL.__init__`
+
+**Called by:** `build`
+
 <sub>src/models/autoardl.py:94</sub>
 
 ### `AutoARDL.panel`
@@ -1256,6 +1276,8 @@ Part of the model interface (see src/models/zoo.py): target, dummies and every c
 | `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
 
 **Calls:** `make_panel`
+
+**Called by:** `worked`, `write_calculator`, `holdout`
 
 <sub>src/models/autoardl.py:110</sub>
 
@@ -1277,6 +1299,8 @@ drivers()
 
 Part of the model interface (see src/models/zoo.py): the drivers with their chosen lags.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/autoardl.py:118</sub>
 
 ### `AutoARDL._X`
@@ -1290,6 +1314,8 @@ Constant, the chosen lags of target growth, the chosen driver lags and the dummi
 | argument | default | meaning |
 |---|---|---|
 | `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
+
+**Called by:** `ARDL.fit`
 
 <sub>src/models/autoardl.py:122</sub>
 
@@ -1310,7 +1336,9 @@ Choose the lags on start..end (unless frozen), then estimate by OLS with HAC sta
 
 **Returns:** self.
 
-**Calls:** `select_orders`
+**Calls:** `ARDL.fit`, `select_orders`
+
+**Called by:** `holdout`
 
 <sub>src/models/autoardl.py:133</sub>
 
@@ -1329,6 +1357,8 @@ Part of the model interface (see src/models/zoo.py): iterate the equation, own f
 | `H` |  | forecast horizon in quarters. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
+
+**Called by:** `worked`, `holdout`
 
 <sub>src/models/autoardl.py:153</sub>
 
@@ -1400,6 +1430,8 @@ Create the model.
 | `family` | `FAMILY` | model family used in the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
+**Called by:** `build`
+
 <sub>src/models/autoardl.py:201</sub>
 
 ### `LevelsARDL.panel`
@@ -1416,6 +1448,8 @@ Part of the model interface (see src/models/zoo.py): target, dummies, y* = ln(L*
 | `mdf` |  | macro DataFrame (quarters x Moody's mnemonics): the history or one scenario. |
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
+
+**Called by:** `holdout`
 
 <sub>src/models/autoardl.py:216</sub>
 
@@ -1436,6 +1470,8 @@ drivers()
 ```
 
 Part of the model interface (see src/models/zoo.py): the long-run variables with their chosen lags.
+
+**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/autoardl.py:231</sub>
 
@@ -1474,6 +1510,8 @@ Choose the lags (unless frozen), estimate by OLS (HAC), and run the bounds test.
 
 **Calls:** `LevelsARDL._design`, `bounds_test`, `select_orders`
 
+**Called by:** `holdout`
+
 <sub>src/models/autoardl.py:247</sub>
 
 ### `LevelsARDL.forecast`
@@ -1491,6 +1529,8 @@ Part of the model interface (see src/models/zoo.py): iterate y* forward; growth 
 | `H` |  | forecast horizon in quarters. |
 
 **Returns:** array of up to H forecasts of quarterly log growth of the organic balance.
+
+**Called by:** `holdout`
 
 <sub>src/models/autoardl.py:272</sub>
 
@@ -1652,6 +1692,8 @@ Create a combination.
 | `hmax` | `4` | horizons used. |
 | `shrink` | `0.5` | share of the way back to equal weights (0 = pure inverse-MSE). |
 
+**Called by:** `build`
+
 <sub>src/models/combination.py:19</sub>
 
 ### `Combination.features`
@@ -1676,6 +1718,8 @@ Part of the model interface (see src/models/zoo.py): settings of the combination
 
 **Returns:** dict.
 
+**Calls:** `ARDL.spec`
+
 <sub>src/models/combination.py:42</sub>
 
 ### `Combination.drivers`
@@ -1687,6 +1731,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): members with their current weights.
 
 **Returns:** list of str like "Screen first (40%)".
+
+**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/combination.py:51</sub>
 
@@ -1704,6 +1750,10 @@ Part of the model interface (see src/models/zoo.py): one panel holding the colum
 | `mdf` |  | macro DataFrame. |
 
 **Returns:** DataFrame.
+
+**Calls:** `ARDL.panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/combination.py:59</sub>
 
@@ -1723,7 +1773,9 @@ Part of the model interface (see src/models/zoo.py): estimate the weights (inv_m
 
 **Returns:** self.
 
-**Calls:** `Combination._weights`
+**Calls:** `ARDL.fit`, `Combination._weights`
+
+**Called by:** `holdout`
 
 <sub>src/models/combination.py:74</sub>
 
@@ -1762,6 +1814,10 @@ Part of the model interface (see src/models/zoo.py): weighted average of the mem
 | `H` |  | quarters ahead. |
 
 **Returns:** array of forecasts.
+
+**Calls:** `ARDL.forecast`
+
+**Called by:** `holdout`
 
 <sub>src/models/combination.py:116</sub>
 
@@ -2055,6 +2111,8 @@ Create an ARIMAX.
 | `order` | `(1, 0, 1)` | (p, d, q) of the errors. |
 | `note` | `''` | free text. |
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:297</sub>
 
 ### `ARIMAX.spec`
@@ -2079,6 +2137,8 @@ Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/deep.py:315</sub>
 
 ### `ARIMAX.panel`
@@ -2097,6 +2157,8 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/deep.py:323</sub>
 
@@ -2138,6 +2200,8 @@ Part of the model interface (see src/models/zoo.py): maximum-likelihood estimate
 
 **Calls:** `ARIMAX._exog`
 
+**Called by:** `holdout`
+
 <sub>src/models/deep.py:345</sub>
 
 ### `ARIMAX.detail_rows`
@@ -2173,6 +2237,8 @@ Part of the model interface (see src/models/zoo.py): run the Kalman filter with 
 
 **Returns:** array of forecasts.
 
+**Called by:** `holdout`
+
 <sub>src/models/deep.py:388</sub>
 
 ### `Theta`
@@ -2205,6 +2271,8 @@ Create a Theta model.
 | `name` |  | display name. |
 | `note` | `''` | free text. |
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:417</sub>
 
 ### `Theta.spec`
@@ -2229,6 +2297,8 @@ Part of the model interface (see src/models/zoo.py): "(own history only)".
 
 **Returns:** list of str.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/deep.py:435</sub>
 
 ### `Theta.panel`
@@ -2247,6 +2317,8 @@ Part of the model interface (see src/models/zoo.py): panel with target and dummi
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/deep.py:443</sub>
 
@@ -2285,6 +2357,8 @@ Part of the model interface (see src/models/zoo.py): remembers the start; the me
 
 **Returns:** self.
 
+**Called by:** `holdout`
+
 <sub>src/models/deep.py:476</sub>
 
 ### `Theta.forecast`
@@ -2304,6 +2378,8 @@ Part of the model interface (see src/models/zoo.py): fit Theta on start..origin 
 **Returns:** array of forecasts.
 
 **Calls:** `_dummies`
+
+**Called by:** `holdout`
 
 <sub>src/models/deep.py:488</sub>
 
@@ -2372,6 +2448,10 @@ Create an ECM.
 | `family` | `''` | as for ARDL. |
 | `note` | `''` | as for ARDL. |
 
+**Calls:** `ARDL.__init__`
+
+**Called by:** `build`
+
 <sub>src/models/ecm.py:45</sub>
 
 ### `ECM.spec`
@@ -2384,6 +2464,8 @@ Part of the model interface (see src/models/zoo.py): ARDL settings plus the long
 
 **Returns:** dict.
 
+**Calls:** `ARDL.spec`
+
 <sub>src/models/ecm.py:57</sub>
 
 ### `ECM.drivers`
@@ -2395,6 +2477,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): short-run drivers and the long-run variables.
 
 **Returns:** list of str.
+
+**Called by:** `build`, `holdout`, `run_oos`
 
 <sub>src/models/ecm.py:65</sub>
 
@@ -2414,6 +2498,8 @@ Part of the model interface (see src/models/zoo.py): ARDL panel plus the log lev
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
+
+**Called by:** `holdout`
 
 <sub>src/models/ecm.py:73</sub>
 
@@ -2449,6 +2535,10 @@ ARDL regressors plus the lagged error-correction term.
 
 **Returns:** DataFrame.
 
+**Calls:** `ARDL._X`
+
+**Called by:** `ARDL.fit`
+
 <sub>src/models/ecm.py:100</sub>
 
 ### `ECM.fit`
@@ -2468,7 +2558,9 @@ Part of the model interface (see src/models/zoo.py): both Engle-Granger steps on
 
 **Returns:** self (beta = long-run coefficients, params = short-run coefficients).
 
-**Calls:** `ECM._lr`
+**Calls:** `ARDL.fit`, `ECM._lr`
+
+**Called by:** `holdout`
 
 <sub>src/models/ecm.py:114</sub>
 
@@ -2487,6 +2579,8 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, upd
 | `H` |  | quarters ahead. |
 
 **Returns:** array of forecasts.
+
+**Called by:** `holdout`
 
 <sub>src/models/ecm.py:142</sub>
 
@@ -2994,7 +3088,7 @@ True for yes/true/1/y (any case), as used in the include and core columns.
 
 **Returns:** bool.
 
-**Called by:** `read_workbook`
+**Called by:** `load`, `read_workbook`
 
 <sub>src/models/literature.py:24</sub>
 
@@ -3113,6 +3207,8 @@ The table with two helper columns: active (included and mapped) and mnemonic.
 | `cfg` |  | the run configuration (from load_config). |
 
 **Config:** `literature`
+
+**Calls:** `_yes`
 
 **Called by:** `Context.__init__`, `check`, `main`
 
@@ -3286,6 +3382,8 @@ Create a machine-learning model.
 | `note` | `''` | free text. |
 | `refit_every` | `4` | quarters between re-estimations in the backtest. |
 
+**Called by:** `build`
+
 <sub>src/models/ml.py:64</sub>
 
 ### `MLModel.spec`
@@ -3310,6 +3408,8 @@ Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/ml.py:87</sub>
 
 ### `MLModel.panel`
@@ -3328,6 +3428,8 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/ml.py:95</sub>
 
@@ -3368,6 +3470,8 @@ Part of the model interface (see src/models/zoo.py): train the estimator on comp
 
 **Calls:** `MLModel._X`, `make_estimator`
 
+**Called by:** `holdout`
+
 <sub>src/models/ml.py:122</sub>
 
 ### `MLModel.forecast`
@@ -3387,6 +3491,8 @@ Part of the model interface (see src/models/zoo.py): predict one quarter at a ti
 **Returns:** array of forecasts.
 
 **Calls:** `MLModel._X`
+
+**Called by:** `holdout`
 
 <sub>src/models/ml.py:140</sub>
 
@@ -3483,6 +3589,8 @@ Part of the model interface (see src/models/zoo.py): drivers, plus the regime va
 
 **Returns:** list of str.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/regime.py:75</sub>
 
 ### `_Regime.panel`
@@ -3501,6 +3609,8 @@ Part of the model interface (see src/models/zoo.py): target, drivers, regime var
 **Returns:** DataFrame.
 
 **Calls:** `make_panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:83</sub>
 
@@ -3562,7 +3672,9 @@ Part of the model interface (see src/models/zoo.py): iterate growth forward, one
 
 **Returns:** array of forecasts.
 
-**Calls:** `_Regime._row`, `_Regime._start_state`
+**Calls:** `MarkovSwitchingARDL._row`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._step`, `_Regime._row`, `_Regime._start_state`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:128</sub>
 
@@ -3661,6 +3773,8 @@ Create a threshold model.
 
 **Calls:** `_Regime.__init__`
 
+**Called by:** `build`
+
 <sub>src/models/regime.py:188</sub>
 
 ### `ThresholdARDL.fit`
@@ -3680,6 +3794,8 @@ Part of the model interface (see src/models/zoo.py): grid search of the threshol
 **Returns:** self.
 
 **Calls:** `_Regime._named`, `_Regime._window`, `_ols`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:199</sub>
 
@@ -3771,6 +3887,8 @@ Create a smooth-transition model.
 
 **Calls:** `_Regime.__init__`
 
+**Called by:** `build`
+
 <sub>src/models/regime.py:283</sub>
 
 ### `SmoothTransitionARDL._G`
@@ -3808,6 +3926,8 @@ Part of the model interface (see src/models/zoo.py): grid search of slope gamma 
 **Returns:** self.
 
 **Calls:** `SmoothTransitionARDL._G`, `_Regime._named`, `_Regime._window`, `_ols`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:305</sub>
 
@@ -3905,6 +4025,8 @@ Create a Markov-switching model.
 
 **Calls:** `_Regime.__init__`
 
+**Called by:** `build`
+
 <sub>src/models/regime.py:382</sub>
 
 ### `MarkovSwitchingARDL._exog`
@@ -3982,6 +4104,8 @@ Part of the model interface (see src/models/zoo.py): maximum likelihood with sev
 
 **Calls:** `MarkovSwitchingARDL._exog`, `MarkovSwitchingARDL._model`, `MarkovSwitchingARDL._std`, `MarkovSwitchingARDL._unpack`, `_dummies`, `_ols`
 
+**Called by:** `holdout`
+
 <sub>src/models/regime.py:441</sub>
 
 ### `MarkovSwitchingARDL._unpack`
@@ -4036,6 +4160,8 @@ Probability of each regime at the origin.
 
 **Calls:** `MarkovSwitchingARDL._probs`, `BankFeatures.array`
 
+**Called by:** `_Regime.forecast`
+
 <sub>src/models/regime.py:540</sub>
 
 ### `MarkovSwitchingARDL._row`
@@ -4053,6 +4179,8 @@ Exogenous regressors for quarter pos (dummies zero ahead).
 | `yprev` |  | last (forecast) growth. |
 
 **Returns:** dict column -> value.
+
+**Called by:** `_Regime.forecast`
 
 <sub>src/models/regime.py:560</sub>
 
@@ -4073,6 +4201,8 @@ One quarter ahead: carry the regime probabilities forward and average the regime
 | `h` |  | step. |
 
 **Returns:** (forecast, new probabilities).
+
+**Called by:** `_Regime.forecast`
 
 <sub>src/models/regime.py:572</sub>
 
@@ -4140,6 +4270,8 @@ Create a time-varying-parameter model.
 
 **Calls:** `_Regime.__init__`
 
+**Called by:** `build`
+
 <sub>src/models/regime.py:632</sub>
 
 ### `TimeVaryingARDL._kalman`
@@ -4182,6 +4314,8 @@ Part of the model interface (see src/models/zoo.py): choose q by likelihood, the
 **Returns:** self.
 
 **Calls:** `TimeVaryingARDL._kalman`, `_Regime._named`, `_Regime._window`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:671</sub>
 
@@ -4271,6 +4405,8 @@ Create a break-adaptive model.
 
 **Calls:** `_Regime.__init__`
 
+**Called by:** `build`
+
 <sub>src/models/regime.py:740</sub>
 
 ### `BreakAdaptiveARDL.fit`
@@ -4290,6 +4426,8 @@ Part of the model interface (see src/models/zoo.py): sup-F (Quandt-Andrews) test
 **Returns:** self.
 
 **Calls:** `_Regime._named`, `_Regime._window`, `_ols`
+
+**Called by:** `holdout`
 
 <sub>src/models/regime.py:752</sub>
 
@@ -4358,7 +4496,7 @@ Create one regime-switching model.
 
 **Returns:** model.
 
-**Calls:** `BreakAdaptiveARDL`, `MarkovSwitchingARDL`, `SmoothTransitionARDL`, `ThresholdARDL`, `TimeVaryingARDL`
+**Calls:** `BreakAdaptiveARDL`, `BreakAdaptiveARDL.__init__`, `MarkovSwitchingARDL`, `MarkovSwitchingARDL.__init__`, `SmoothTransitionARDL`, `SmoothTransitionARDL.__init__`, `ThresholdARDL`, `ThresholdARDL.__init__`, `TimeVaryingARDL`, `TimeVaryingARDL.__init__`
 
 **Called by:** `build`
 
@@ -4405,6 +4543,8 @@ Create the rule.
 | `family` | `FAMILY` | model family. |
 | `note` | `''` | free text for the model list. |
 
+**Called by:** `same_growth_models`
+
 <sub>src/models/simple.py:22</sub>
 
 ### `SameGrowth.panel`
@@ -4423,6 +4563,8 @@ Part of the model interface (see src/models/zoo.py): target, dummies and the var
 **Returns:** DataFrame with y, the feature and the D_ dummies.
 
 **Calls:** `make_panel`
+
+**Called by:** `holdout`
 
 <sub>src/models/simple.py:34</sub>
 
@@ -4448,6 +4590,8 @@ Part of the model interface (see src/models/zoo.py): the one variable.
 
 **Returns:** list with one feature name.
 
+**Called by:** `build`, `holdout`, `run_oos`
+
 <sub>src/models/simple.py:53</sub>
 
 ### `SameGrowth.fit`
@@ -4469,6 +4613,8 @@ Quarters with a one-off dummy (e.g. COVID) are left out of the average.
 
 **Returns:** self, with params = {const, feature: 1.0}.
 
+**Called by:** `holdout`
+
 <sub>src/models/simple.py:61</sub>
 
 ### `SameGrowth.forecast`
@@ -4486,6 +4632,8 @@ Part of the model interface (see src/models/zoo.py): g = const + x for each quar
 | `H` |  | quarters ahead. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
+
+**Called by:** `holdout`
 
 <sub>src/models/simple.py:83</sub>
 
@@ -4639,7 +4787,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Config:** `models`
 
-**Calls:** `resolve`, `SameGrowth`
+**Calls:** `resolve`, `SameGrowth`, `SameGrowth.__init__`
 
 **Called by:** `build`
 
@@ -4662,7 +4810,7 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 
 **Config:** `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
 
-**Calls:** `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
+**Calls:** `ARDL`, `ARDL.__init__`, `ARDL.drivers`, `AutoARDL`, `AutoARDL.__init__`, `AutoARDL.drivers`, `LevelsARDL`, `LevelsARDL.__init__`, `LevelsARDL.drivers`, `base_of`, `Combination`, `Combination.__init__`, `Combination.drivers`, `ARIMAX`, `ARIMAX.__init__`, `ARIMAX.drivers`, `DeepModel`, `Theta`, `Theta.__init__`, `Theta.drivers`, `deep_available`, `ECM`, `ECM.__init__`, `ECM.drivers`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `MLModel.__init__`, `MLModel.drivers`, `_Regime.drivers`, `build`, `SameGrowth.drivers`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
 
 **Called by:** `run`, `models_at`
 
@@ -5512,7 +5660,7 @@ array(cols, nb=None)
 | `cols` |  |  |
 | `nb` | `None` |  |
 
-**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
+**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
 
 <sub>src/panel/select.py:43</sub>
 
@@ -6004,7 +6152,7 @@ The equation in one line plus the balance identity.
 
 **Returns:** str (several lines).
 
-**Calls:** `is_log`
+**Calls:** `num`, `is_log`
 
 **Called by:** `write`, `write_calculator`
 
@@ -6026,7 +6174,7 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Returns:** DataFrame: scenario, date, each driver's value and contribution, growth (log, % q/q, % annualised), balance.
 
-**Calls:** `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
+**Calls:** `ARDL.forecast`, `ARDL.panel`, `AutoARDL.forecast`, `AutoARDL.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
 
 **Called by:** `write`
 
@@ -6114,7 +6262,7 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Config:** `features`
 
-**Calls:** `lookback`, `parse_feature`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`, `Recorder.save`
+**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `AutoARDL.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
 
 **Called by:** `write`
 
@@ -6146,6 +6294,827 @@ Pick the recommended formula model, write the equation, the next quarters and th
 **Called by:** `run`, `run`
 
 <sub>src/reporting/formula.py:653</sub>
+
+
+## src/reporting/process_story.py
+
+The process story: what happened in a run, step by step, for an audience (not at the code level).
+
+### `tr_words`
+
+```python
+tr_words(tr)
+```
+
+Plain name and meaning of a transform code (moving windows included).
+
+| argument | default | meaning |
+|---|---|---|
+| `tr` |  |  |
+
+**Called by:** `Story.label`, `Story.s_bestform`, `Story.s_stationarity`, `Story.s_transforms`, `Story.short`
+
+<sub>src/reporting/process_story.py:58</sub>
+
+### `_style`
+
+```python
+_style()
+```
+
+**Called by:** `Story.__init__`
+
+<sub>src/reporting/process_story.py:72</sub>
+
+### `pct`
+
+```python
+pct(v, d=2)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `v` |  |  |
+| `d` | `2` |  |
+
+**Called by:** `Story.err`
+
+<sub>src/reporting/process_story.py:82</sub>
+
+### `num`
+
+```python
+num(v, d=0)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `v` |  |  |
+| `d` | `0` |  |
+
+**Called by:** `equation_text`, `Story.err`, `Story.s_overview`
+
+<sub>src/reporting/process_story.py:86</sub>
+
+### `plural`
+
+```python
+plural(n, word, many=None)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `n` |  |  |
+| `word` |  |  |
+| `many` | `None` |  |
+
+**Called by:** `Story.s_events`, `Story.s_literature`, `Story.s_question`, `Story.s_search_pick`, `Story.s_target`
+
+<sub>src/reporting/process_story.py:92</sub>
+
+### `parse`
+
+```python
+parse(f)
+```
+
+(code, transform, lag) of a feature name 'CODE|tr|L1'; (f, None, None) otherwise.
+
+| argument | default | meaning |
+|---|---|---|
+| `f` |  |  |
+
+**Called by:** `Story.label`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.short`, `_code_only`, `code_hash`, `scan`
+
+<sub>src/reporting/process_story.py:96</sub>
+
+### `Story`
+
+```python
+Story(cfg, out, charts)
+```
+
+Reads a run and builds its sections.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration (load_config). |
+| `out` |  | the run's output folder. |
+| `charts` |  | folder for the PNGs. |
+
+**Config:** `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
+
+**Called by:** `make`
+
+<sub>src/reporting/process_story.py:107</sub>
+
+### `Story.__init__`
+
+```python
+__init__(cfg, out, charts)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `out` |  |  |
+| `charts` |  |  |
+
+**Calls:** `_style`
+
+<sub>src/reporting/process_story.py:114</sub>
+
+### `Story.read`
+
+```python
+read(*p)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `*p` |  |  |
+
+**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `extract`, `install_hook`, `write_config`, `build`, `main`
+
+<sub>src/reporting/process_story.py:122</sub>
+
+### `Story.add`
+
+```python
+add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), chart=None, table=None, table_note='', kind='content')
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `part` |  |  |
+| `title` |  |  |
+| `takeaway` | `''` |  |
+| `what` | `()` |  |
+| `why` | `()` |  |
+| `result` | `()` |  |
+| `read` | `''` |  |
+| `numbers` | `()` |  |
+| `chart` | `None` |  |
+| `table` | `None` |  |
+| `table_note` | `''` |  |
+| `kind` | `'content'` |  |
+
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
+
+<sub>src/reporting/process_story.py:126</sub>
+
+### `Story.fig`
+
+```python
+fig(name, w=9, h=4.4)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `name` |  | display name. |
+| `w` | `9` |  |
+| `h` | `4.4` |  |
+
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
+
+<sub>src/reporting/process_story.py:133</sub>
+
+### `Story.save`
+
+```python
+save(f, path)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `f` |  |  |
+| `path` |  | file to write or read. |
+
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
+
+<sub>src/reporting/process_story.py:137</sub>
+
+### `Story.label`
+
+```python
+label(f)
+```
+
+Plain label of a feature: 'House price index, Ontario: quarterly growth, 1 quarter earlier'.
+
+| argument | default | meaning |
+|---|---|---|
+| `f` |  |  |
+
+**Calls:** `parse`, `tr_words`
+
+**Called by:** `Story.s_rec_model`, `Story.s_recommend`, `Story.s_screen`
+
+<sub>src/reporting/process_story.py:143</sub>
+
+### `Story.short`
+
+```python
+short(f, n=46)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `f` |  |  |
+| `n` | `46` |  |
+
+**Calls:** `parse`, `tr_words`
+
+**Called by:** `Story._term`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
+
+<sub>src/reporting/process_story.py:152</sub>
+
+### `Story.load`
+
+```python
+load()
+```
+
+**Config:** `data.bank.target_column`, `final_model`, `sample.horizon`, `sample.report_horizons`, `target`
+
+**Calls:** `Context`
+
+**Called by:** `Story.build`
+
+<sub>src/reporting/process_story.py:162</sub>
+
+### `Story._n_vars`
+
+```python
+_n_vars(s)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+
+<sub>src/reporting/process_story.py:225</sub>
+
+### `Story.err`
+
+```python
+err(v)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `v` |  |  |
+
+**Calls:** `num`, `pct`
+
+**Called by:** `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
+
+<sub>src/reporting/process_story.py:232</sub>
+
+### `Story.build`
+
+```python
+build()
+```
+
+**Calls:** `Story.load`
+
+**Called by:** `make`
+
+<sub>src/reporting/process_story.py:236</sub>
+
+### `Story.s_title`
+
+```python
+s_title()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:254</sub>
+
+### `Story.s_question`
+
+```python
+s_question()
+```
+
+**Config:** `data.macro.scenarios`
+
+**Calls:** `Story.add`, `plural`
+
+<sub>src/reporting/process_story.py:263</sub>
+
+### `Story.s_overview`
+
+```python
+s_overview()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrap`, `num`, `Report.text`
+
+<sub>src/reporting/process_story.py:290</sub>
+
+### `Story.s_target`
+
+```python
+s_target()
+```
+
+**Config:** `sample`
+
+**Calls:** `Story.add`, `Story.save`, `plural`
+
+<sub>src/reporting/process_story.py:324</sub>
+
+### `Story.s_events`
+
+```python
+s_events()
+```
+
+**Config:** `data.bank.target_column`, `data.events`
+
+**Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
+
+<sub>src/reporting/process_story.py:361</sub>
+
+### `Story.s_macro`
+
+```python
+s_macro()
+```
+
+**Config:** `data.macro.scenarios`, `features`
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
+
+<sub>src/reporting/process_story.py:398</sub>
+
+### `Story.s_signs`
+
+```python
+s_signs()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:428</sub>
+
+### `Story.s_literature`
+
+```python
+s_literature()
+```
+
+**Calls:** `Story.add`, `plural`
+
+<sub>src/reporting/process_story.py:460</sub>
+
+### `Story.s_transforms`
+
+```python
+s_transforms()
+```
+
+**Calls:** `Story.add`, `tr_words`
+
+<sub>src/reporting/process_story.py:484</sub>
+
+### `Story.s_stationarity`
+
+```python
+s_stationarity()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
+
+<sub>src/reporting/process_story.py:502</sub>
+
+### `Story.s_lags`
+
+```python
+s_lags()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:528</sub>
+
+### `Story.s_funnel`
+
+```python
+s_funnel()
+```
+
+**Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
+
+<sub>src/reporting/process_story.py:544</sub>
+
+### `Story._rule`
+
+```python
+_rule(T, key)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `T` |  |  |
+| `key` |  |  |
+
+**Called by:** `Story.s_funnel`, `Story.s_search_pick`
+
+<sub>src/reporting/process_story.py:583</sub>
+
+### `Story.s_screen`
+
+```python
+s_screen()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:590</sub>
+
+### `Story.s_bestform`
+
+```python
+s_bestform()
+```
+
+**Calls:** `Story.add`, `tr_words`
+
+<sub>src/reporting/process_story.py:624</sub>
+
+### `Story.s_clusters`
+
+```python
+s_clusters()
+```
+
+**Config:** `screen_first`
+
+**Calls:** `Story.add`, `Story.short`
+
+<sub>src/reporting/process_story.py:644</sub>
+
+### `Story.s_shortlist`
+
+```python
+s_shortlist()
+```
+
+**Calls:** `Story.add`, `Story.short`
+
+<sub>src/reporting/process_story.py:667</sub>
+
+### `Story.s_en`
+
+```python
+s_en()
+```
+
+**Config:** `en_first`
+
+**Calls:** `Story.add`, `Story.short`
+
+<sub>src/reporting/process_story.py:682</sub>
+
+### `Story.s_stability`
+
+```python
+s_stability()
+```
+
+**Config:** `en_first`
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:705</sub>
+
+### `Story.s_search_rules`
+
+```python
+s_search_rules()
+```
+
+**Config:** `final_model`
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
+
+<sub>src/reporting/process_story.py:735</sub>
+
+### `Story.s_search_rank`
+
+```python
+s_search_rank()
+```
+
+**Config:** `final_model`
+
+**Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:776</sub>
+
+### `Story.s_search_pick`
+
+```python
+s_search_pick()
+```
+
+**Config:** `final_model`
+
+**Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
+
+<sub>src/reporting/process_story.py:811</sub>
+
+### `Story.s_families`
+
+```python
+s_families()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:842</sub>
+
+### `Story.s_backtest_design`
+
+```python
+s_backtest_design()
+```
+
+**Config:** `sample`
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
+
+<sub>src/reporting/process_story.py:867</sub>
+
+### `Story.s_one_origin`
+
+```python
+s_one_origin()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:905</sub>
+
+### `Story.s_all_origins`
+
+```python
+s_all_origins()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:947</sub>
+
+### `Story.s_leaderboard`
+
+```python
+s_leaderboard()
+```
+
+**Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:978</sub>
+
+### `Story.s_by_horizon`
+
+```python
+s_by_horizon()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:1010</sub>
+
+### `Story.s_oos_design`
+
+```python
+s_oos_design()
+```
+
+**Config:** `oos`
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1044</sub>
+
+### `Story.s_oos_gap`
+
+```python
+s_oos_gap()
+```
+
+**Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:1066</sub>
+
+### `Story.s_driver_stability`
+
+```python
+s_driver_stability()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:1099</sub>
+
+### `Story.s_holdout`
+
+```python
+s_holdout()
+```
+
+**Config:** `oos`
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1131</sub>
+
+### `Story.s_rec_model`
+
+```python
+s_rec_model()
+```
+
+**Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
+
+<sub>src/reporting/process_story.py:1150</sub>
+
+### `Story._term`
+
+```python
+_term(t)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `t` |  |  |
+
+**Calls:** `Story.short`
+
+**Called by:** `Story.s_rec_model`
+
+<sub>src/reporting/process_story.py:1181</sub>
+
+### `Story.s_rec_effects`
+
+```python
+s_rec_effects()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
+
+<sub>src/reporting/process_story.py:1190</sub>
+
+### `Story.s_rec_fit`
+
+```python
+s_rec_fit()
+```
+
+**Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
+
+<sub>src/reporting/process_story.py:1211</sub>
+
+### `Story.s_coef_paths`
+
+```python
+s_coef_paths()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:1235</sub>
+
+### `Story.s_diagnostics`
+
+```python
+s_diagnostics()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1265</sub>
+
+### `Story.s_scen_inputs`
+
+```python
+s_scen_inputs()
+```
+
+**Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
+
+<sub>src/reporting/process_story.py:1294</sub>
+
+### `Story.s_scen_forecast`
+
+```python
+s_scen_forecast()
+```
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:1319</sub>
+
+### `Story.s_contrib`
+
+```python
+s_contrib()
+```
+
+Forecast growth taken apart: constant + persistence x last growth + coefficient x each driver (single equations whose terms are the constant, last quarter's growth, dummies and drivers).
+
+**Config:** `data.macro.base_scenario`
+
+**Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:1353</sub>
+
+### `Story.s_scen_check`
+
+```python
+s_scen_check()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1415</sub>
+
+### `Story.s_limits`
+
+```python
+s_limits()
+```
+
+**Calls:** `Story.add`, `Story.err`
+
+<sub>src/reporting/process_story.py:1441</sub>
+
+### `Story.s_recommend`
+
+```python
+s_recommend()
+```
+
+**Calls:** `Story.add`, `Story.err`, `Story.label`
+
+<sub>src/reporting/process_story.py:1460</sub>
+
+### `Story.s_glossary`
+
+```python
+s_glossary()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1474</sub>
+
+### `Story.s_settings`
+
+```python
+s_settings()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1494</sub>
+
+### `_wrap`
+
+```python
+_wrap(s, n)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+| `n` |  |  |
+
+**Called by:** `Story.s_overview`, `_wrapl`
+
+<sub>src/reporting/process_story.py:1511</sub>
+
+### `_wrapl`
+
+```python
+_wrapl(s, n)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+| `n` |  |  |
+
+**Calls:** `_wrap`
+
+**Called by:** `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
+
+<sub>src/reporting/process_story.py:1522</sub>
 
 
 ## src/reporting/report.py
@@ -6599,6 +7568,321 @@ The story of the out-of-sample test (run_oos.py).
 **Called by:** `run`
 
 <sub>src/reporting/story.py:500</sub>
+
+
+## src/reporting/story_html.py
+
+The process story as one self-contained HTML page (charts embedded), with a contents sidebar.
+
+### `_img`
+
+```python
+_img(p)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `p` |  |  |
+
+**Calls:** `Story.read`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:51</sub>
+
+### `_s`
+
+```python
+_s(v)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `v` |  |  |
+
+**Called by:** `_table`
+
+<sub>src/reporting/story_html.py:56</sub>
+
+### `_slug`
+
+```python
+_slug(s, i)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+| `i` |  |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:60</sub>
+
+### `_list`
+
+```python
+_list(items)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `items` |  |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:64</sub>
+
+### `_table`
+
+```python
+_table(df, note)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `df` |  |  |
+| `note` |  | free text shown in the model list. |
+
+**Calls:** `_s`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:69</sub>
+
+### `_tiles`
+
+```python
+_tiles(nums)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `nums` |  |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:78</sub>
+
+### `build`
+
+```python
+build(sections, path, title)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `sections` |  |  |
+| `path` |  | file to write or read. |
+| `title` |  |  |
+
+**Calls:** `_img`, `_list`, `_slug`, `_table`, `_tiles`
+
+**Called by:** `make`
+
+<sub>src/reporting/story_html.py:84</sub>
+
+
+## src/reporting/story_pptx.py
+
+The process story as a PowerPoint deck (python-pptx only; no Quarto).
+
+### `rgb`
+
+```python
+rgb(k)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `k` |  |  |
+
+**Called by:** `box`, `table`, `text`
+
+<sub>src/reporting/story_pptx.py:20</sub>
+
+### `box`
+
+```python
+box(slide, x, y, w, h, fill, line=None)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `x` |  |  |
+| `y` |  |  |
+| `w` |  |  |
+| `h` |  |  |
+| `fill` |  |  |
+| `line` | `None` |  |
+
+**Calls:** `rgb`
+
+**Called by:** `build`, `chrome`, `tiles`
+
+<sub>src/reporting/story_pptx.py:24</sub>
+
+### `text`
+
+```python
+text(slide, x, y, w, h, paras, size=12, color='ink', font=BODY, bold=False, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, space=4)
+```
+
+paras: list of strings or (string, dict(size, color, bold, font, bullet)).
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `x` |  |  |
+| `y` |  |  |
+| `w` |  |  |
+| `h` |  |  |
+| `paras` |  |  |
+| `size` | `12` |  |
+| `color` | `'ink'` |  |
+| `font` | `BODY` |  |
+| `bold` | `False` |  |
+| `align` | `PP_ALIGN.LEFT` |  |
+| `anchor` | `MSO_ANCHOR.TOP` |  |
+| `space` | `4` |  |
+
+**Calls:** `rgb`
+
+**Called by:** `build`, `chrome`, `table`, `tiles`
+
+<sub>src/reporting/story_pptx.py:36</sub>
+
+### `_fit`
+
+```python
+_fit(lines, w, h, start=15, low=9.5)
+```
+
+Largest font size (pt) at which the lines roughly fit a w x h inch box.
+
+| argument | default | meaning |
+|---|---|---|
+| `lines` |  |  |
+| `w` |  |  |
+| `h` |  |  |
+| `start` | `15` | first quarter of the estimation window (Period). |
+| `low` | `9.5` |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:60</sub>
+
+### `table`
+
+```python
+table(slide, df, x, y, w, h, note='')
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `df` |  |  |
+| `x` |  |  |
+| `y` |  |  |
+| `w` |  |  |
+| `h` |  |  |
+| `note` | `''` | free text shown in the model list. |
+
+**Calls:** `rgb`, `text`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:72</sub>
+
+### `notes`
+
+```python
+notes(slide, s)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `s` |  |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:120</sub>
+
+### `chrome`
+
+```python
+chrome(slide, s, n, footer)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `s` |  |  |
+| `n` |  |  |
+| `footer` |  |  |
+
+**Calls:** `box`, `text`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:133</sub>
+
+### `tiles`
+
+```python
+tiles(slide, nums, x, y, w)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `nums` |  |  |
+| `x` |  |  |
+| `y` |  |  |
+| `w` |  |  |
+
+**Calls:** `box`, `text`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:146</sub>
+
+### `points`
+
+```python
+points(s, n=5)
+```
+
+The slide's bullet points: what happened first, then what was done.
+
+| argument | default | meaning |
+|---|---|---|
+| `s` |  |  |
+| `n` | `5` |  |
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:160</sub>
+
+### `build`
+
+```python
+build(sections, path, footer)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `sections` |  |  |
+| `path` |  | file to write or read. |
+| `footer` |  |  |
+
+**Calls:** `_fit`, `box`, `chrome`, `notes`, `points`, `table`, `text`, `tiles`
+
+**Called by:** `make`
+
+<sub>src/reporting/story_pptx.py:170</sub>
 
 
 ## src/selection/clustering.py
@@ -7610,8 +8894,6 @@ Targets sorted so every target comes after the ones it uses.
 |---|---|---|
 | `targets` |  |  |
 
-**Calls:** `Report.add`
-
 **Called by:** `run`, `run_chain`
 
 <sub>src/system/run.py:52</sub>
@@ -8334,6 +9616,8 @@ Python source without docstrings, comments and formatting (so documentation edit
 
 **Returns:** normalised source text (the original text if it cannot be parsed).
 
+**Calls:** `parse`
+
 **Called by:** `hash_code`
 
 <sub>src/utils/cache.py:81</sub>
@@ -8350,7 +9634,7 @@ Hash of source files under src/ (so editing the code re-runs the step). Docstrin
 |---|---|---|
 | `*relpaths` |  | files or folders under src/. |
 
-**Calls:** `_code_only`
+**Calls:** `Story.read`, `_code_only`
 
 **Called by:** `run`, `select_at`
 
@@ -8408,6 +9692,8 @@ Return fn()'s result, from cache when the fingerprint is unchanged.
 | `log` | `print` | function used to print progress messages. |
 
 **Calls:** `hash_obj`
+
+**Called by:** `select_at`
 
 <sub>src/utils/cache.py:135</sub>
 
@@ -8510,7 +9796,7 @@ Read a YAML config, fill defaults, check required keys and normalise values.
 
 **Calls:** `apply_settings`, `read_workbook`, `_fix_switches`, `_merge`, `_path`, `apply`
 
-**Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `main`, `build_deck`, `main`, `main`
+**Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `main`, `build_deck`, `main`, `make`, `main`
 
 <sub>src/utils/config.py:143</sub>
 
@@ -8630,6 +9916,8 @@ Hash of a function's code without its docstring, comments or formatting, so edit
 
 **Returns:** str (12 hex characters).
 
+**Calls:** `parse`
+
 **Called by:** `collect_examples`, `scan`
 
 <sub>src/utils/docs.py:188</sub>
@@ -8668,8 +9956,6 @@ Config settings read by a piece of code, e.g. sample.horizon (direct and through
 
 **Config:** `sample`
 
-**Calls:** `Report.add`
-
 **Called by:** `scan`
 
 <sub>src/utils/docs.py:252</sub>
@@ -8707,7 +9993,7 @@ Parse every documented file into a list of items (modules, classes, functions, m
 
 **Returns:** (items dict id -> item, modules list in file order).
 
-**Calls:** `_calls`, `_config_keys`, `_imports`, `_resolve_calls`, `_signature`, `code_hash`, `module_name`, `parse_docstring`, `source_files`
+**Calls:** `Story.read`, `parse`, `_calls`, `_config_keys`, `_imports`, `_resolve_calls`, `_signature`, `code_hash`, `module_name`, `parse_docstring`, `source_files`
 
 **Called by:** `build`
 
@@ -8811,7 +10097,7 @@ A function keeps its latest example; examples of removed functions are dropped. 
 
 **Returns:** (store, run summaries for the overview).
 
-**Calls:** `code_hash`, `trace_files`, `Report.add`
+**Calls:** `code_hash`, `trace_files`
 
 **Called by:** `build`
 
@@ -8831,8 +10117,6 @@ Caller -> callee pairs seen in the traces (catches calls the code alone cannot r
 | `items` |  | from scan. |
 
 **Returns:** set of (caller id, callee id).
-
-**Calls:** `Report.add`
 
 **Called by:** `build`
 
@@ -8871,7 +10155,7 @@ Hash of everything the reference depends on: the source files, this generator an
 
 **Returns:** str.
 
-**Calls:** `source_files`, `trace_files`
+**Calls:** `Story.read`, `source_files`, `trace_files`
 
 **Called by:** `build`, `is_stale`
 
@@ -8892,7 +10176,7 @@ True if the reference does not match the current code and traces.
 
 **Returns:** bool.
 
-**Calls:** `fingerprint`
+**Calls:** `Story.read`, `fingerprint`
 
 **Called by:** `refresh`, `main`, `watch`
 
@@ -8956,8 +10240,6 @@ Top-level steps of the newest pipeline and out-of-sample runs, for the overview.
 | `items` |  | from scan. |
 
 **Returns:** list of {command, started, steps: [(id, calls, seconds)]}.
-
-**Calls:** `Report.add`
 
 **Called by:** `build`
 
@@ -9243,7 +10525,7 @@ Read a CSV or Excel file.
 
 **Returns:** DataFrame.
 
-**Called by:** `bank_events`, `load_long`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_read`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_read`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:17</sub>
 
@@ -9259,7 +10541,7 @@ to_quarters(values)
 |---|---|---|
 | `values` |  | dates or quarter labels. |
 
-**Called by:** `bank_events`, `load_long`, `_augment`, `run`, `load_bank`, `load_macro`, `organic_growth`, `_dates`, `_q`, `bank_summary`, `find_date_column`, `find_panel_column`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `organic_growth`, `_dates`, `_q`, `bank_summary`, `find_date_column`, `find_panel_column`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:32</sub>
 
@@ -9404,7 +10686,7 @@ Everything both approaches need: target, macro data, metadata, sample indices.
 
 **Config:** `data.macro.base_scenario`, `form`, `literature`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.hist_end`, `transform`
 
-**Called by:** `run`, `run`, `Panel.__init__`, `Member.__init__`, `main`
+**Called by:** `run`, `run`, `Panel.__init__`, `Story.load`, `Member.__init__`, `main`
 
 <sub>src/utils/io.py:152</sub>
 
@@ -9528,7 +10810,7 @@ Write one target's workbook and metadata from the master.
 
 **Returns:** dict workbook=<xlsx or None>, metadata=<csv or None>, target=<the master's name for it>.
 
-**Calls:** `_match`, `_norm`, `_sheets`, `_write_if_changed`
+**Calls:** `Story.read`, `_match`, `_norm`, `_sheets`, `_write_if_changed`
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
@@ -9637,8 +10919,6 @@ Record one finding.
 | `msg` |  | what was found. |
 | `fix` | `''` | how to fix it. |
 
-**Called by:** `order`, `_config_keys`, `_flow`, `collect_examples`, `observed_edges`, `_dates`, `_read`, `check`, `Tracer._example_call`, `Tracer.wrap`, `build`, `map_columns`
-
 <sub>src/utils/preflight.py:25</sub>
 
 ### `Report.errors`
@@ -9675,7 +10955,7 @@ The report as text, grouped by area.
 
 **Returns:** str.
 
-**Called by:** `chart_family_bars`, `preflight`, `main`, `main`
+**Called by:** `Story.s_backtest_design`, `Story.s_funnel`, `Story.s_macro`, `Story.s_overview`, `Story.s_search_rules`, `Story.s_stationarity`, `chart_family_bars`, `preflight`, `main`, `main`
 
 <sub>src/utils/preflight.py:43</sub>
 
@@ -9736,7 +11016,7 @@ Read a CSV/Excel file, recording an error if it is missing or unreadable.
 
 **Returns:** DataFrame or None.
 
-**Calls:** `read_table`, `Report.add`
+**Calls:** `read_table`
 
 **Called by:** `check`
 
@@ -9760,7 +11040,7 @@ Parse a date column into quarters, recording problems.
 
 **Returns:** PeriodIndex or None.
 
-**Calls:** `to_quarters`, `Report.add`
+**Calls:** `to_quarters`
 
 **Called by:** `check`
 
@@ -9782,7 +11062,7 @@ Check a loaded config and its input files.
 
 **Config:** `data.backtest_end`, `data.backtest_start`, `data.dummy_quarters`, `data.estimation_start`, `data.hist_end`, `data.horizon`, `features.allowed_geographies`, `features.deflator`, `features.excluded_themes`, `features.require_sign_prior`, `features.transforms_level`, `features.transforms_rate`, `final_model`, `literature`, `models`, `only`, `oos`, `same_growth`, `sample`
 
-**Calls:** `window`, `clean_settings`, `load`, `read_workbook`, `Report`, `Report.add`, `_dates`, `_gap`, `_q`, `_read`
+**Calls:** `window`, `clean_settings`, `load`, `read_workbook`, `Report`, `_dates`, `_gap`, `_q`, `_read`
 
 **Called by:** `preflight`, `main`, `main`
 
@@ -10600,7 +11880,7 @@ Wrap a function so each call is recorded as a node of the call tree.
 
 **Returns:** the wrapper.
 
-**Calls:** `Report.add`, `Tracer._example_call`, `Tracer._register`, `Tracer._safe`, `_project_function`, `compact`
+**Calls:** `Tracer._example_call`, `Tracer._register`, `Tracer._safe`, `_project_function`, `compact`
 
 **Called by:** `Tracer.install`
 
@@ -10663,7 +11943,7 @@ Only the first such call of each function is kept, so functions that only ever r
 
 **Returns:** the function's return value.
 
-**Calls:** `Report.add`, `Tracer._safe`
+**Calls:** `Tracer._safe`
 
 **Called by:** `Tracer.wrap`
 
@@ -10907,7 +12187,7 @@ Run one approach using data up to end_pos only. Cached by the truncated data + s
 
 **Config:** `oos.window`, `oos.window_length`
 
-**Calls:** `all_features`, `candidate_forms`, `selection_info`, `hash_code`, `hash_frame`, `hash_obj`, `truncated`
+**Calls:** `all_features`, `candidate_forms`, `selection_info`, `StepCache.run`, `hash_code`, `hash_frame`, `hash_obj`, `truncated`
 
 **Called by:** `run`, `models_at`
 
@@ -10930,7 +12210,7 @@ Every model, specified with data up to end_pos only (plus the look-ahead variant
 | `cache` |  | the StepCache. |
 | `full_sample_drivers` | `None` | drivers chosen with all data, for the look-ahead variants (None = none). |
 
-**Calls:** `ARDL`, `build`, `select_at`, `truncated`
+**Calls:** `ARDL`, `ARDL.__init__`, `build`, `select_at`, `truncated`
 
 **Called by:** `joint_oos`, `holdout`, `run_oos`
 
@@ -10955,7 +12235,7 @@ Fit on est_start..origin and forecast H quarters; return level % errors (organic
 
 **Returns:** errors (fractions), or (errors, forecast growth, actual growth) with detail=True.
 
-**Calls:** `error`
+**Calls:** `ARDL.fit`, `ARDL.forecast`, `ARDL.panel`, `error`
 
 **Called by:** `run_oos`
 
@@ -11000,7 +12280,7 @@ Out-of-sample test: at each origin, re-run selection and re-estimate every model
 
 **Config:** `oos.first_origin`, `oos.horizon`, `oos.step`, `oos.window`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.horizon`
 
-**Calls:** `freeze`, `log`, `growth_display`, `level_after`, `forecast_errors`, `models_at`
+**Calls:** `ARDL.drivers`, `freeze`, `AutoARDL.drivers`, `LevelsARDL.drivers`, `Combination.drivers`, `ARIMAX.drivers`, `Theta.drivers`, `ECM.drivers`, `MLModel.drivers`, `_Regime.drivers`, `SameGrowth.drivers`, `log`, `growth_display`, `level_after`, `forecast_errors`, `models_at`
 
 **Called by:** `run`, `main`
 
@@ -11046,7 +12326,7 @@ Select and estimate every model on data up to hist_end - holdout_quarters; forec
 
 **Config:** `oos.holdout_quarters`, `oos.window`, `sample.estimation_start`
 
-**Calls:** `log`, `error`, `level_after`, `models_at`
+**Calls:** `ARDL.drivers`, `ARDL.fit`, `ARDL.forecast`, `ARDL.panel`, `AutoARDL.drivers`, `AutoARDL.fit`, `AutoARDL.forecast`, `AutoARDL.panel`, `LevelsARDL.drivers`, `LevelsARDL.fit`, `LevelsARDL.forecast`, `LevelsARDL.panel`, `Combination.drivers`, `Combination.fit`, `Combination.forecast`, `Combination.panel`, `ARIMAX.drivers`, `ARIMAX.fit`, `ARIMAX.forecast`, `ARIMAX.panel`, `Theta.drivers`, `Theta.fit`, `Theta.forecast`, `Theta.panel`, `ECM.drivers`, `ECM.fit`, `ECM.forecast`, `ECM.panel`, `MLModel.drivers`, `MLModel.fit`, `MLModel.forecast`, `MLModel.panel`, `BreakAdaptiveARDL.fit`, `MarkovSwitchingARDL.fit`, `SmoothTransitionARDL.fit`, `ThresholdARDL.fit`, `TimeVaryingARDL.fit`, `_Regime.drivers`, `_Regime.forecast`, `_Regime.panel`, `SameGrowth.drivers`, `SameGrowth.fit`, `SameGrowth.forecast`, `SameGrowth.panel`, `log`, `error`, `level_after`, `models_at`
 
 **Called by:** `run`
 
@@ -11086,8 +12366,6 @@ pairs: {target: (workbook or None, metadata or None)}. Writes the master.
 |---|---|---|
 | `out` |  |  |
 | `pairs` |  |  |
-
-**Calls:** `Report.add`
 
 **Called by:** `main`
 
@@ -11211,6 +12489,8 @@ install_hook()
 Write .git/hooks/pre-commit so every commit rebuilds the reference and includes it.
 
 **Returns:** path of the hook, or None if the project is not a git repository.
+
+**Calls:** `Story.read`
 
 **Called by:** `main`
 
@@ -11411,7 +12691,7 @@ Match metadata headers to the six fields the model needs.
 
 **Returns:** dict field -> your column (missing fields absent).
 
-**Calls:** `Report.add`, `norm`
+**Calls:** `norm`
 
 **Called by:** `build_metadata`
 
@@ -11684,7 +12964,7 @@ Write config/<name>.yaml (a copy of the example config, comments kept) and its l
 
 **Returns:** (config path, literature table path).
 
-**Calls:** `write_workbook`, `_events_bank_column`, `rel`, `replace_block`, `set_key`, `yq`
+**Calls:** `write_workbook`, `Story.read`, `_events_bank_column`, `rel`, `replace_block`, `set_key`, `yq`
 
 **Called by:** `main`
 
@@ -11701,6 +12981,47 @@ Command line entry: detect, suggest, write the config and run the pre-flight che
 **Calls:** `load_config`, `Report.text`, `check`, `propose`, `rel`, `scenario_name`, `write_config`
 
 <sub>tools/new_data_setup.py:640</sub>
+
+
+## tools/process_story.py
+
+The process story of a run, for an audience: what happened at every step, with the run's own numbers and charts.
+
+### `make`
+
+```python
+make(config, run_dir=None, fmt='both', out_dir=None, log=print)
+```
+
+Build the story of a finished run.
+
+| argument | default | meaning |
+|---|---|---|
+| `config` |  | config file. |
+| `run_dir` | `None` | the run's output folder (default outputs/<run_name>). |
+| `fmt` | `'both'` | html, pptx or both. |
+| `out_dir` | `None` | where to write (default <run_dir>/process_story). |
+| `log` | `print` | function used to print progress messages. |
+
+**Returns:** dict with the paths written and any section that could not be built.
+
+**Config:** `out_dir`, `run_name`
+
+**Calls:** `Story`, `Story.build`, `build`, `build`, `load_config`
+
+**Called by:** `main`
+
+<sub>tools/process_story.py:30</sub>
+
+### `main`
+
+```python
+main()
+```
+
+**Calls:** `make`
+
+<sub>tools/process_story.py:59</sub>
 
 
 ## tools/simulate_data.py
@@ -11854,6 +13175,8 @@ Turn a trace.json into a self-contained HTML page (or the page body for embeddin
 | `out` | `None` |  |
 | `body_only` | `False` |  |
 
+**Calls:** `Story.read`
+
 **Called by:** `main`
 
 <sub>tools/trace_to_html.py:20</sub>
@@ -11971,7 +13294,7 @@ Save an intermediate object (CSV for tables, JSON otherwise).
 | `name` |  | display name. |
 | `obj` |  |  |
 
-**Called by:** `main`, `main`, `write_calculator`, `Recorder.step`
+**Called by:** `Recorder.step`
 
 <sub>tools/walkthrough.py:101</sub>
 
@@ -12085,7 +13408,7 @@ Run the step-by-step walkthrough on the mini example data and write walkthrough.
 
 **Config:** `cache.dir`, `data.bank.file`, `data.bank.target_column`, `data.constructed`, `data.events.amount_column`, `data.events.date_column`, `data.events.file`, `data.events.series_column`, `data.macro.base_scenario`, `en_first.group_corr`, `en_first.l1_ratio`, `en_first.primary_geography`, `en_first.rep_tolerance`, `en_first.sign_constraints`, `en_first.stability`, `en_first.target_n`, `features.adf_p`, `features.allowed_geographies`, `features.deflator`, `features.excluded_themes`, `features.max_lag`, `features.real_themes`, `features.require_sign_prior`, `features.transforms_level`, `features.transforms_rate`, `final_model.max_vars`, `final_model.min_vars`, `final_model.one_per_theme`, `final_model.selection_tolerance`, `final_model.t_min`, `final_model.vif_max`, `oos.first_origin`, `oos.step`, `out_dir`, `run_name`, `sample.backtest_start`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `screen_first.cluster_corr`, `screen_first.primary_geography`, `screen_first.rep_tolerance`, `screen_first.screen_p`, `screen_first.shortlist_max`
 
-**Calls:** `all_features`, `candidate_forms`, `describe`, `parse_feature`, `transform`, `ARDL`, `make_panel`, `ols_np`, `vif`, `evaluate`, `exhaustive_search`, `BankFeatures.array`, `run`, `run`, `cluster`, `representatives`, `_prepare`, `elastic_net_select`, `stability_selection`, `controls`, `screen`, `StepCache`, `load_config`, `Context`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `read_table`, `to_quarters`, `run_oos`, `summarise`, `Recorder`, `Recorder.step`, `_cell`, `chart`, `kv`, `note`, `table`, `text`
+**Calls:** `all_features`, `candidate_forms`, `describe`, `parse_feature`, `transform`, `ARDL`, `make_panel`, `ols_np`, `vif`, `evaluate`, `exhaustive_search`, `BankFeatures.array`, `run`, `run`, `Story.read`, `cluster`, `representatives`, `_prepare`, `elastic_net_select`, `stability_selection`, `controls`, `screen`, `StepCache`, `load_config`, `Context`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `read_table`, `to_quarters`, `run_oos`, `summarise`, `Recorder`, `Recorder.step`, `_cell`, `chart`, `kv`, `note`, `table`, `text`
 
 <sub>tools/walkthrough.py:154</sub>
 
@@ -12214,7 +13537,7 @@ Build report/reference.pptx from Quarto's default reference deck.
 | `default_path` |  |  |
 | `out_path` |  |  |
 
-**Calls:** `dark_layout`, `master_text`, `set_theme`, `Recorder.save`
+**Calls:** `dark_layout`, `master_text`, `set_theme`
 
 <sub>report/make_reference.py:125</sub>
 
@@ -12774,7 +14097,7 @@ Checks every slide and chart: text bodies without a paragraph, duplicate shape i
 
 **Returns:** list of problem descriptions (empty = clean).
 
-**Calls:** `search`
+**Calls:** `search`, `Story.read`
 
 **Called by:** `main`
 
@@ -12808,7 +14131,7 @@ Post-render step: restyle every slide of the rendered deck and save it in place.
 |---|---|---|
 | `path` |  | file to write or read. |
 
-**Calls:** `check_package`, `drop_empty_slides`, `fix_empty_text`, `process_section`, `process_slide`, `process_title`, `Recorder.save`
+**Calls:** `check_package`, `drop_empty_slides`, `fix_empty_text`, `process_section`, `process_slide`, `process_title`
 
 <sub>report/style_deck.py:696</sub>
 
