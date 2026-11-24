@@ -25,6 +25,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/panel/__init__.py](#srcpanelinitpy)
 - [src/panel/data.py](#srcpaneldatapy)
 - [src/panel/estimate.py](#srcpanelestimatepy)
+- [src/panel/reuse.py](#srcpanelreusepy)
 - [src/panel/run.py](#srcpanelrunpy)
 - [src/panel/select.py](#srcpanelselectpy)
 - [src/pipelines/en_first.py](#srcpipelinesenfirstpy)
@@ -4719,11 +4720,30 @@ The panel target file as one level series per bank.
 
 **Config:** `data.bank.date_column`, `data.bank.file`, `data.bank.frequency`, `data.bank.panel_column`, `data.bank.sheet`, `data.bank.target_column`, `panel`, `sample.hist_end`
 
-**Calls:** `read_table`, `to_quarters`
+**Calls:** `exited`, `read_table`, `to_quarters`
 
-**Called by:** `Panel.__init__`
+**Called by:** `Panel.__init__`, `status`, `run`
 
 <sub>src/panel/data.py:18</sub>
+
+### `exited`
+
+```python
+exited(levels, missing=2)
+```
+
+Banks that stopped reporting: their last quarter is at least `missing` quarters before the panel's last.
+
+| argument | default | meaning |
+|---|---|---|
+| `levels` |  | {bank: Series of levels}. |
+| `missing` | `2` | quarters without data at the end that count as an exit (2 by default, so a single late report does not drop a bank). |
+
+**Returns:** {bank: its last quarter (str)}.
+
+**Called by:** `load_long`
+
+<sub>src/panel/data.py:75</sub>
 
 ### `bank_events`
 
@@ -4742,9 +4762,9 @@ One-off events of one bank: {quarter: amount}. The events file may have the pane
 
 **Calls:** `read_table`, `to_quarters`
 
-**Called by:** `Panel.__init__`
+**Called by:** `Panel.__init__`, `status`, `run`
 
-<sub>src/panel/data.py:60</sub>
+<sub>src/panel/data.py:89</sub>
 
 ### `organic`
 
@@ -4763,7 +4783,7 @@ Organic change of one bank: tg.change((L_t - A_t), L_t-1).
 
 **Called by:** `Panel.__init__`
 
-<sub>src/panel/data.py:83</sub>
+<sub>src/panel/data.py:112</sub>
 
 ### `aggregate`
 
@@ -4784,7 +4804,7 @@ The total of all banks and its organic change, computed only over banks present 
 
 **Called by:** `Panel.__init__`
 
-<sub>src/panel/data.py:92</sub>
+<sub>src/panel/data.py:121</sub>
 
 ### `Panel`
 
@@ -4806,7 +4826,7 @@ Attributes: cfg, banks (names), levels / ys (per bank), base (Context of the tot
 
 **Called by:** `run`, `build_node`
 
-<sub>src/panel/data.py:120</sub>
+<sub>src/panel/data.py:149</sub>
 
 ### `Panel.__init__`
 
@@ -4824,7 +4844,7 @@ __init__(cfg, out_dir, log=print)
 
 **Calls:** `Panel._bank_ctx`, `aggregate`, `bank_events`, `load_long`, `organic`, `BankFeatures.array`, `Context`, `form`, `resolve`, `set_form`, `state`
 
-<sub>src/panel/data.py:129</sub>
+<sub>src/panel/data.py:158</sub>
 
 ### `Panel._bank_ctx`
 
@@ -4844,7 +4864,7 @@ A Context for one bank: the total's macro data and settings, the bank's own leve
 
 **Called by:** `Panel.__init__`
 
-<sub>src/panel/data.py:184</sub>
+<sub>src/panel/data.py:213</sub>
 
 ### `Panel.pos`
 
@@ -4860,7 +4880,7 @@ Position of a quarter in self.dates.
 
 **Called by:** `Panel.window`, `PanelModel._topdown`, `fitted_values`, `run_oos`, `quick_error`, `chain_forecast`
 
-<sub>src/panel/data.py:200</sub>
+<sub>src/panel/data.py:229</sub>
 
 ### `Panel.window`
 
@@ -4880,7 +4900,7 @@ Mask of stacked rows inside [start, end] (labels or positions) with complete fea
 
 **Called by:** `PanelModel.fit`, `pooled_fit`, `screen`
 
-<sub>src/panel/data.py:204</sub>
+<sub>src/panel/data.py:233</sub>
 
 ### `Panel.active`
 
@@ -4896,7 +4916,7 @@ Banks with data at a quarter (to forecast from it).
 
 **Called by:** `forecast_rows`, `scenarios`, `quick_error`, `chain_forecast`
 
-<sub>src/panel/data.py:213</sub>
+<sub>src/panel/data.py:242</sub>
 
 
 ## src/panel/estimate.py
@@ -5177,6 +5197,236 @@ Every bank's equation as rows: model, bank, term, coef (and std_err where estima
 <sub>src/panel/estimate.py:293</sub>
 
 
+## src/panel/reuse.py
+
+Reusing earlier panel results when nothing they depend on has changed.
+
+### `_file_hash`
+
+```python
+_file_hash(path, memo={})
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `memo` | `{}` |  |
+
+**Calls:** `Story.read`
+
+**Called by:** `_canon`
+
+<sub>src/panel/reuse.py:21</sub>
+
+### `_canon`
+
+```python
+_canon(o)
+```
+
+Settings with every file path replaced by the hash of the file's content (so moving a file changes nothing, editing it does).
+
+| argument | default | meaning |
+|---|---|---|
+| `o` |  |  |
+
+**Calls:** `_file_hash`
+
+**Called by:** `bank_components`, `panel_components`
+
+<sub>src/panel/reuse.py:30</sub>
+
+### `code_hash`
+
+```python
+code_hash()
+```
+
+Hash of every .py file under src/ (comments and docstrings ignored; this file left out, as it does not change results).
+
+**Calls:** `Story.read`, `_code_only`
+
+**Called by:** `bank_components`, `panel_components`
+
+<sub>src/panel/reuse.py:42</sub>
+
+### `_settings`
+
+```python
+_settings(cfg)
+```
+
+The settings that can change results, with the bank file and events file left out (their content enters bank by bank instead, so editing a bank that is not chosen changes nothing).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+
+**Called by:** `bank_components`, `panel_components`
+
+<sub>src/panel/reuse.py:57</sub>
+
+### `_bank_data`
+
+```python
+_bank_data(levels, events)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `levels` |  |  |
+| `events` |  |  |
+
+**Calls:** `hash_frame`, `hash_obj`
+
+**Called by:** `panel_components`
+
+<sub>src/panel/reuse.py:74</sub>
+
+### `panel_components`
+
+```python
+panel_components(cfg, levels, events)
+```
+
+Fingerprint components of a panel run: one entry per chosen bank, plus settings, files and code.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `levels` |  |  |
+| `events` |  |  |
+
+**Calls:** `_bank_data`, `_canon`, `_settings`, `code_hash`, `hash_obj`
+
+**Called by:** `status`, `run`
+
+<sub>src/panel/reuse.py:79</sub>
+
+### `bank_components`
+
+```python
+bank_components(cfg, bank, series, events)
+```
+
+Fingerprint components of one bank's own full single-series run.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `bank` |  |  |
+| `series` |  |  |
+| `events` |  |  |
+
+**Calls:** `_canon`, `_settings`, `code_hash`, `hash_frame`, `hash_obj`
+
+**Called by:** `status`
+
+<sub>src/panel/reuse.py:90</sub>
+
+### `compare`
+
+```python
+compare(new, path, need_oos=False)
+```
+
+(reusable, reason) against the fingerprint saved at `path`.
+
+| argument | default | meaning |
+|---|---|---|
+| `new` |  |  |
+| `path` |  | file to write or read. |
+| `need_oos` | `False` |  |
+
+**Called by:** `status`, `run`
+
+<sub>src/panel/reuse.py:102</sub>
+
+### `save`
+
+```python
+save(path, components, oos, extra=None)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `components` |  |  |
+| `oos` |  |  |
+| `extra` | `None` |  |
+
+**Called by:** `run`
+
+<sub>src/panel/reuse.py:127</sub>
+
+### `panel_path`
+
+```python
+panel_path(out_dir)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `out_dir` |  |  |
+
+**Called by:** `status`, `run`
+
+<sub>src/panel/reuse.py:135</sub>
+
+### `bank_path`
+
+```python
+bank_path(out_dir, bank)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `out_dir` |  |  |
+| `bank` |  |  |
+
+**Called by:** `status`
+
+<sub>src/panel/reuse.py:139</sub>
+
+### `own_run_banks`
+
+```python
+own_run_banks(cfg, available)
+```
+
+Banks that get their own full single-series run: panel.per_bank_full = true (all) or a list of names.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `available` |  |  |
+
+**Config:** `panel`
+
+**Called by:** `status`
+
+<sub>src/panel/reuse.py:143</sub>
+
+### `status`
+
+```python
+status(cfg, oos=False)
+```
+
+What a run would reuse, bank by bank: a DataFrame for the app (and the log).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `oos` | `False` |  |
+
+**Config:** `out_dir`
+
+**Calls:** `bank_events`, `load_long`, `bank_components`, `bank_path`, `compare`, `own_run_banks`, `panel_components`, `panel_path`
+
+<sub>src/panel/reuse.py:153</sub>
+
+
 ## src/panel/run.py
 
 The panel run: drivers chosen on all banks, the panel models compared bank by bank, everything saved.
@@ -5440,7 +5690,7 @@ _charts(out, O, scen, pn, best_by_bank, col)
 ### `run`
 
 ```python
-run(cfg, out_dir, oos=True, log=print)
+run(cfg, out_dir, oos=True, log=print, force=False)
 ```
 
 The whole panel analysis.
@@ -5451,14 +5701,32 @@ The whole panel analysis.
 | `out_dir` |  | outputs/<run>. |
 | `oos` | `True` | also the out-of-sample test. |
 | `log` | `print` | function used to print progress messages. |
+| `force` | `False` | re-estimate even when nothing changed since the last run. |
 
-**Returns:** dict with the leaderboards and the panel folder.
+**Returns:** dict with the leaderboards and the panel folder (and reused=True when the earlier results were kept).
 
 **Config:** `features`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `sample.report_horizons`
 
-**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `Panel`, `PanelModel.coefficient_rows`, `_arr`, `_charts`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `select`, `form`
+**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `Panel`, `bank_events`, `load_long`, `PanelModel.coefficient_rows`, `compare`, `panel_components`, `panel_path`, `save`, `_arr`, `_charts`, `_reused`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `select`, `form`
 
 <sub>src/panel/run.py:284</sub>
+
+### `_reused`
+
+```python
+_reused(out, oos)
+```
+
+The results of an earlier, still valid, panel run.
+
+| argument | default | meaning |
+|---|---|---|
+| `out` |  |  |
+| `oos` |  |  |
+
+**Called by:** `run`
+
+<sub>src/panel/run.py:399</sub>
 
 ### `_summary`
 
@@ -5474,13 +5742,13 @@ _summary(out, cfg, pn, res, col)
 | `res` |  |  |
 | `col` |  |  |
 
-**Config:** `run_name`
+**Config:** `panel`, `run_name`
 
 **Calls:** `describe`
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:384</sub>
+<sub>src/panel/run.py:417</sub>
 
 
 ## src/panel/select.py
@@ -6310,7 +6578,7 @@ read(*p)
 |---|---|---|
 | `*p` |  |  |
 
-**Called by:** `check_package`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
+**Called by:** `check_package`, `_file_hash`, `code_hash`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
 <sub>src/reporting/process_story.py:121</sub>
 
@@ -9479,7 +9747,7 @@ Stable hash of config-like objects (dicts, lists, numbers, strings).
 
 **Calls:** `_h`, `_norm`
 
-**Called by:** `run`, `StepCache.run`, `select_at`
+**Called by:** `run`, `_bank_data`, `bank_components`, `panel_components`, `StepCache.run`, `select_at`
 
 <sub>src/utils/cache.py:56</sub>
 
@@ -9497,7 +9765,7 @@ Content hash of data: values and index. For a DataFrame the column labels count 
 
 **Calls:** `_h`
 
-**Called by:** `run`, `select_at`
+**Called by:** `run`, `_bank_data`, `bank_components`, `select_at`
 
 <sub>src/utils/cache.py:65</sub>
 
@@ -9517,7 +9785,7 @@ Python source without docstrings, comments and formatting (so documentation edit
 
 **Calls:** `parse`
 
-**Called by:** `hash_code`
+**Called by:** `code_hash`, `hash_code`
 
 <sub>src/utils/cache.py:81</sub>
 
@@ -10616,13 +10884,15 @@ One master file for every target's literature workbook and macro metadata (liter
 _sheets(path)
 ```
 
+Every sheet of an Excel file (cached by path and modification time: the master is read once per run).
+
 | argument | default | meaning |
 |---|---|---|
 | `path` |  | file to write or read. |
 
 **Called by:** `extract`, `is_master`, `name_map`, `targets`
 
-<sub>src/utils/master.py:42</sub>
+<sub>src/utils/master.py:45</sub>
 
 ### `_norm`
 
@@ -10636,7 +10906,7 @@ _norm(df)
 
 **Called by:** `extract`, `name_map`, `targets`
 
-<sub>src/utils/master.py:52</sub>
+<sub>src/utils/master.py:63</sub>
 
 ### `is_master`
 
@@ -10654,7 +10924,7 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Called by:** `resolve_master`, `apply`, `name_map`, `resolve`, `catalog`
 
-<sub>src/utils/master.py:61</sub>
+<sub>src/utils/master.py:72</sub>
 
 ### `targets`
 
@@ -10672,7 +10942,7 @@ The targets in a master file, with what each one has.
 
 **Called by:** `apply`, `catalog`, `main`
 
-<sub>src/utils/master.py:69</sub>
+<sub>src/utils/master.py:80</sub>
 
 ### `name_map`
 
@@ -10691,7 +10961,7 @@ name_map(master=None, names_file=None)
 
 **Called by:** `apply_names`, `apply`, `extract`
 
-<sub>src/utils/master.py:82</sub>
+<sub>src/utils/master.py:93</sub>
 
 ### `rename_expr`
 
@@ -10708,7 +10978,7 @@ Replace master codes inside an expression or name (whole tokens only: letters, d
 
 **Called by:** `_rename_settings`, `rename_config`, `rename_tree`
 
-<sub>src/utils/master.py:108</sub>
+<sub>src/utils/master.py:119</sub>
 
 ### `_rename_meta`
 
@@ -10723,7 +10993,7 @@ _rename_meta(m, names)
 
 **Called by:** `extract`
 
-<sub>src/utils/master.py:117</sub>
+<sub>src/utils/master.py:128</sub>
 
 ### `_rename_concepts`
 
@@ -10738,7 +11008,7 @@ _rename_concepts(c, names)
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:124</sub>
+<sub>src/utils/master.py:135</sub>
 
 ### `_rename_settings`
 
@@ -10757,7 +11027,7 @@ Series codes written in the settings sheet's values (e.g. ecm_deflator: FCPI.ION
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:132</sub>
+<sub>src/utils/master.py:143</sub>
 
 ### `_match`
 
@@ -10774,7 +11044,7 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 
 **Called by:** `apply`, `extract`, `catalog`
 
-<sub>src/utils/master.py:140</sub>
+<sub>src/utils/master.py:151</sub>
 
 ### `extract`
 
@@ -10797,7 +11067,7 @@ Write one target's workbook and metadata from the master.
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
-<sub>src/utils/master.py:147</sub>
+<sub>src/utils/master.py:158</sub>
 
 ### `_write_if_changed`
 
@@ -10814,7 +11084,7 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:212</sub>
+<sub>src/utils/master.py:223</sub>
 
 ### `resolve`
 
@@ -10835,7 +11105,7 @@ path if it is an ordinary file; the target's extracted file if path is a master.
 
 **Called by:** `resolve_master`
 
-<sub>src/utils/master.py:228</sub>
+<sub>src/utils/master.py:239</sub>
 
 ### `apply`
 
@@ -10858,7 +11128,7 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Called by:** `load_config`
 
-<sub>src/utils/master.py:242</sub>
+<sub>src/utils/master.py:253</sub>
 
 ### `rename_config`
 
@@ -10879,7 +11149,7 @@ Master codes named in the config -> your names: deflator, constructed series, sa
 
 **Called by:** `apply_names`, `apply`
 
-<sub>src/utils/master.py:296</sub>
+<sub>src/utils/master.py:307</sub>
 
 ### `_rename_plain`
 
@@ -10901,7 +11171,7 @@ A plain literature workbook and metadata file with the names map applied (writte
 
 **Called by:** `apply`
 
-<sub>src/utils/master.py:312</sub>
+<sub>src/utils/master.py:323</sub>
 
 ### `rename_tree`
 
@@ -10921,7 +11191,7 @@ Master codes -> your names everywhere in a nested config (strings equal to a cod
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:338</sub>
+<sub>src/utils/master.py:349</sub>
 
 ### `write_names`
 
@@ -10938,7 +11208,7 @@ The names map as a CSV (code, your_name), for runs that start from extracted fil
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:352</sub>
+<sub>src/utils/master.py:363</sub>
 
 
 ## src/utils/multi.py

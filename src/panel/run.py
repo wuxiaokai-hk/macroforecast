@@ -281,18 +281,30 @@ def _charts(out, O, scen, pn, best_by_bank, col):
     plt.close(fig)
 
 
-def run(cfg, out_dir, oos=True, log=print):
+def run(cfg, out_dir, oos=True, log=print, force=False):
     """The whole panel analysis.
 
     Args:
         cfg: configuration with data.bank.panel_column. out_dir: outputs/<run>. oos: also the out-of-sample test.
+        force: re-estimate even when nothing changed since the last run.
 
     Returns:
-        dict with the leaderboards and the panel folder.
+        dict with the leaderboards and the panel folder (and reused=True when the earlier results were kept).
     """
+    from . import reuse
+    from .data import bank_events, load_long
     p = settings(cfg)
     out = os.path.join(out_dir, "panel")
     os.makedirs(out, exist_ok=True)
+    lv0 = load_long(copy.deepcopy(cfg))
+    comps = reuse.panel_components(copy.deepcopy(cfg), lv0, {b: bank_events(cfg, b) for b in lv0})
+    fp_path = reuse.panel_path(out_dir)
+    ok, why = reuse.compare(comps, fp_path, need_oos=oos)
+    if ok and not force and os.path.exists(os.path.join(out, "1_leaderboard_overall.csv")):
+        log(f"Panel: nothing changed ({why}) - reusing the earlier results in {out} "
+            f"(use --force to re-estimate)")
+        return _reused(out, oos)
+    log(f"Panel: estimating ({'forced' if force else why}) ...")
     log("Panel: loading the banks ...")
     pn = Panel(cfg, out, log)
     H = int(cfg["sample"]["horizon"])
@@ -379,7 +391,26 @@ def run(cfg, out_dir, oos=True, log=print):
                    "panel_drivers": sel["features"], "core": core,
                    "models": [m.name for m in models], "best_by_bank": res["best_by_bank"],
                    "backtest_origins": sorted(at), "oos": bool(oos)}, f, indent=1)
+    reuse.save(fp_path, comps, oos, {"banks": pn.banks})
     log(f"Panel results in {out}")
+    return res
+
+
+def _reused(out, oos):
+    """The results of an earlier, still valid, panel run."""
+    res = {"folder": out, "reused": True}
+    for key, f in (("overall", "1_leaderboard_overall.csv"), ("by_bank", "2_leaderboard_by_bank.csv"),
+                   ("oos_overall", os.path.join("oos", "1_leaderboard_overall.csv")),
+                   ("oos_by_bank", os.path.join("oos", "2_leaderboard_by_bank.csv"))):
+        fp = os.path.join(out, f)
+        if os.path.exists(fp):
+            res[key] = pd.read_csv(fp)
+    mf = os.path.join(out, "fitted", "manifest.json")
+    if os.path.exists(mf):
+        with open(mf, encoding="utf-8") as f:
+            m = json.load(f)
+        res.update(best_by_bank=m.get("best_by_bank", {}), panel_drivers=m.get("panel_drivers", []),
+                   core=m.get("core", []))
     return res
 
 

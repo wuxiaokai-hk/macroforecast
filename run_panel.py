@@ -3,6 +3,8 @@ Panel run - several banks (or regions, or portfolios) with the same target and c
 
     python run_panel.py --config config/panel_example.yaml
     python run_panel.py --config config/panel_example.yaml --no-oos
+    python run_panel.py --config config/panel_example.yaml --status    # what would be reused / re-estimated
+    python run_panel.py --config config/panel_example.yaml --force     # re-estimate everything
 
 The target file has one row per bank and quarter: date, bank name, balance (data.bank.panel_column names the bank
 column). Drivers are chosen on all banks together, then each bank is forecast by the panel models
@@ -61,12 +63,22 @@ def main():
     ap.add_argument("--config", default=os.path.join(HERE, "config", "panel_example.yaml"))
     ap.add_argument("--no-oos", action="store_true", help="skip the out-of-sample test")
     ap.add_argument("--skip-check", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-estimate even if nothing changed since the last run")
+    ap.add_argument("--status", action="store_true", help="only show what would be reused or re-estimated")
     a = ap.parse_args()
     cfg = load_config(a.config)
     if not cfg["data"]["bank"].get("panel_column"):
         raise SystemExit("data.bank.panel_column is not set: name the column that holds the bank")
+    if a.status:
+        from src.panel.reuse import status
+        print(status(cfg, oos=not a.no_oos).to_string(index=False))
+        return
     check(cfg, strict=not a.skip_check)
-    panel_run.run(cfg, cfg["out_dir"], oos=not a.no_oos, log=log)
+    panel_run.run(cfg, cfg["out_dir"], oos=not a.no_oos, log=log, force=a.force)
+    if (cfg.get("panel") or {}).get("per_bank_full"):          # each chosen bank's own full single-series run
+        from macroforecast.api import _per_bank_full
+        _per_bank_full(load_config(a.config), load_config(a.config), cfg["out_dir"], not a.no_oos,
+                       not a.skip_check, force=a.force)
 
 
 if __name__ == "__main__":

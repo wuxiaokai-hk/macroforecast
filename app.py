@@ -208,13 +208,28 @@ def run_check(cfg_path):
 
 def run_buttons(cfg_path, key=""):
     """The run buttons: panel analysis for a panel config, otherwise the pipeline and the out-of-sample test."""
-    c1, c2 = st.columns(2)
-    if is_panel(load_config(cfg_path)):
+    cfg = load_config(cfg_path)
+    if is_panel(cfg):
+        try:
+            from src.panel.reuse import status
+            stt = status(cfg)
+            n_re = int((stt["panel"] != "reuse").iloc[0]) if len(stt) else 1
+            st.markdown("**What a run would do** (results are reused when nothing they depend on changed)")
+            st.dataframe(stt, hide_index=True, use_container_width=True)
+            if not n_re:
+                st.caption("The panel results are up to date: running again only reloads them, unless you force it. "
+                           "With the out-of-sample test, they are reused only if the last run had it too.")
+        except Exception as e:
+            st.caption(f"Cannot compare with the last run: {e}")
+        force = st.checkbox("Re-estimate everything, even what is unchanged", False, key=f"pf{key}")
+        extra = ["--force"] if force else []
+        c1, c2 = st.columns(2)
         if c1.button("Run the panel analysis (selection on all banks, backtest, scenarios)", type="primary", key=f"rp{key}"):
-            run_script("run_panel.py", cfg_path, ["--no-oos"])
+            run_script("run_panel.py", cfg_path, ["--no-oos", *extra])
         if c2.button("Run it with the out-of-sample test (slower: re-selects at every origin)", key=f"rpo{key}"):
-            run_script("run_panel.py", cfg_path)
+            run_script("run_panel.py", cfg_path, extra)
     else:
+        c1, c2 = st.columns(2)
         if c1.button("Run the pipeline (selection, backtest, scenarios)", type="primary", key=f"rr{key}"):
             run_script("run_pipeline.py", cfg_path)
         if c2.button("Run the out-of-sample test (slower: re-selects at every origin)", key=f"ro{key}"):
@@ -715,13 +730,58 @@ if mode == "New data set":
                     st.markdown(f"**Panel: {len(summ)} banks** by `{pc_}`")
                     short = summ[summ["quarters"] < 20]
                     summ = summ.assign(first=summ["first"].astype(str), last=summ["last"].astype(str))
-                    st.dataframe(summ, hide_index=True, use_container_width=True)
+                    # choose the banks: in the panel (pooled together) and, optionally, their own full run
+                    names = list(summ["bank"])
+                    ch = P.get("bank_choice") or {}
+                    if ch.get("banks") != names:          # a new file or bank column: every bank in, no own runs
+                        ch = {"banks": names, "in_panel": {b: True for b in names},
+                              "own_run": {b: False for b in names}, "ver": ch.get("ver", 0) + 1}
+                    a1, a2, a3, _ = st.columns([1, 1, 1.4, 2])
+                    bset = None
+                    if a1.button("Select all", key="bk_all"):
+                        bset = ("in_panel", True)
+                    if a2.button("Select none", key="bk_none"):
+                        bset = ("in_panel", False)
+                    if a3.button("Own run for selected", key="bk_own"):
+                        ch["own_run"] = {b: bool(ch["in_panel"].get(b)) for b in names}
+                        ch["ver"] += 1
+                    if bset:
+                        ch[bset[0]] = {b: bset[1] for b in names}
+                        ch["ver"] += 1                     # a new editor, so the buttons override earlier ticks
+                    tab = summ.assign(in_panel=[ch["in_panel"].get(b, True) for b in names],
+                                      own_run=[ch["own_run"].get(b, False) for b in names])
+                    ed = st.data_editor(
+                        tab[["in_panel", "own_run", "bank", "first", "last", "quarters", "last_value"]],
+                        hide_index=True, use_container_width=True, key=f"bk_ed_{ch['ver']}",
+                        disabled=["bank", "first", "last", "quarters", "last_value"],
+                        column_config={
+                            "in_panel": st.column_config.CheckboxColumn(
+                                "Estimate", help="Banks pooled together in the panel models. Leaving a bank out "
+                                                 "changes the panel estimates of the others."),
+                            "own_run": st.column_config.CheckboxColumn(
+                                "Own full run", help="Also the complete single-series project for this bank on its "
+                                                     "own (every model family); slower. Reused when nothing about "
+                                                     "this bank changed.")})
+                    chosen = [b for b, v in zip(ed["bank"], ed["in_panel"]) if v]
+                    own = [b for b, v, o in zip(ed["bank"], ed["in_panel"], ed["own_run"]) if v and o]
+                    ch.update(in_panel=dict(zip(ed["bank"], map(bool, ed["in_panel"]))),
+                              own_run=dict(zip(ed["bank"], map(bool, ed["own_run"]))))
+                    P["bank_choice"] = ch
+                    P["panel_banks"], P["own_banks"] = chosen, own
+                    if not chosen:
+                        st.error("Tick at least one bank to estimate.")
+                    else:
+                        st.caption(f"Estimating {len(chosen)} of {len(summ)} banks"
+                                   + (f"; own full run for {', '.join(own)}" if own else "")
+                                   + ". Results are reused when the chosen banks' data, the macro files and the "
+                                     "settings are unchanged since the last run (see ④).")
                     if len(short):
                         st.warning(f"{', '.join(short['bank'])}: fewer than 20 quarters; they borrow from the other banks "
                                    "(fully pooled) instead of getting their own equation.")
                     if (bq["v"] <= 0).any():
                         st.error("Some balances are zero or negative: use a rate-type target (quarterly change) in ③.")
-                    wide = bq.assign(q=bq["q"].astype(str)).pivot_table(index="q", columns="bank", values="v")
+                    wide = bq[bq["bank"].isin(P.get("panel_banks") or names)].assign(q=bq["q"].astype(str)).pivot_table(
+                        index="q", columns="bank", values="v")
                     st.line_chart(wide)
                 except Exception as e:
                     st.warning(f"Cannot preview the banks: {e}")
@@ -901,11 +961,13 @@ if mode == "New data set":
                 ov["panel.min_obs"] = str(p3.number_input("Quarters for its own equation", 8, 80, 20, key="pn_min",
                                                           help="A bank with fewer is fully pooled"))
                 bnames = list(P["banks"]["bank"]) if isinstance(P.get("banks"), pd.DataFrame) else []
-                p1, p2 = st.columns([2, 1])
-                ov["panel.banks"] = setup.yq(p1.multiselect("Banks to analyse (empty = all)", bnames, default=[], key="pn_banks"))
-                ov["panel.per_bank_full"] = "true" if p2.checkbox(
-                    "Also the full single-series run for every bank", False, key="pn_full",
-                    help="Every model family for each bank on its own (outputs/<run>/banks/<bank>/); slower") else "false"
+                chosen = P.get("panel_banks") or bnames
+                own = P.get("own_banks") or []
+                # all banks ticked -> leave the list empty, so banks added to the file later are included
+                ov["panel.banks"] = setup.yq([] if set(chosen) == set(bnames) else list(chosen))
+                ov["panel.per_bank_full"] = setup.yq(list(own)) if own else "false"
+                st.caption(f"Banks: {', '.join(chosen) if chosen else 'none'} (choose them in ②, next to the bank "
+                           f"column); own full run: {', '.join(own) or 'none'}.")
                 gone = []
                 if isinstance(P.get("banks"), pd.DataFrame) and {"bank", "last"} <= set(P["banks"].columns):
                     _e = pd.PeriodIndex(P["banks"]["last"].astype(str), freq="Q")

@@ -405,9 +405,9 @@ def run(target, metadata, literature=None, *, target_column=None, date_column=No
         c = load_config(cfg_file)
         _script("run_panel").check(c, strict=check)
         from src.panel import run as panel_run
-        panel_run.run(c, out_dir, oos=oos, log=log)
+        panel_run.run(c, out_dir, oos=oos, log=log, force=force)
         if (c.get("panel") or {}).get("per_bank_full"):
-            _per_bank_full(c, cfg, out_dir, oos, check)
+            _per_bank_full(c, cfg, out_dir, oos, check, force=force)
         return Results(out_dir, cfg_file)
     steps = [("run_pipeline", "run_pipeline.py", "trace")] + ([("run_oos", "run_oos.py", "trace_oos")] if oos else [])
     for mod_name, script, folder in steps:
@@ -429,18 +429,37 @@ def run(target, metadata, literature=None, *, target_column=None, date_column=No
     return res
 
 
-def _per_bank_full(c, cfg, out_dir, oos, check):
-    """The complete single-series project for every bank (every model family), in <out>/banks/<bank>/."""
+def _per_bank_full(c, cfg, out_dir, oos, check, force=False):
+    """The complete single-series project for the chosen banks (every model family), in <out>/banks/<bank>/.
+
+    panel.per_bank_full: true (every bank in the panel) or a list of bank names. A bank whose data, events,
+    macro files, literature, settings and code are unchanged since its last run is not run again.
+    """
     import copy as _copy
+    from src.panel import reuse
     from src.panel.data import bank_events, load_long
     from src.utils.io import log
     levels = load_long(c)
-    for b, lvl in levels.items():
-        log(f"Full single-series run for {b} ...")
+    chosen = reuse.own_run_banks(c, levels)
+    skipped = [b for b in levels if b not in chosen]
+    if skipped:
+        log(f"Own single-series runs: {', '.join(chosen) or 'none'} (not requested: {', '.join(skipped)})")
+    for b in chosen:
+        lvl = levels[b]
+        ev = bank_events(c, b)
+        comps = reuse.bank_components(c, b, lvl, ev)
+        fp = reuse.bank_path(out_dir, b)
+        ok, why = reuse.compare(comps, fp, need_oos=oos)
+        done = os.path.exists(os.path.join(os.path.dirname(fp), "macroforecast_result.json"))
+        if ok and done and not force:
+            log(f"Full single-series run for {b}: nothing changed ({why}) - reusing it")
+            continue
+        log(f"Full single-series run for {b} ({'forced' if force else why}) ...")
         o = _copy.deepcopy(cfg)
+        for k in ("out_dir", "config_file"):
+            o.pop(k, None)
         o["data"]["bank"].pop("panel_column", None)
         o.pop("panel", None)
-        ev = bank_events(c, b)
         inp = os.path.join(out_dir, "banks", "_inputs")
         os.makedirs(inp, exist_ok=True)
         ef = None
@@ -455,7 +474,8 @@ def _per_bank_full(c, cfg, out_dir, oos, check):
         o.setdefault("oos", {})["first_origin"] = None
         run(series.rename_axis("date"), o["data"]["metadata"]["file"], (o.get("literature") or {}).get("workbook"),
             target_column=c["data"]["bank"]["target_column"], events=ef, options=o, run_name=str(b).replace(" ", "_"),
-            output_dir=os.path.join(out_dir, "banks"), oos=oos, check=check)
+            output_dir=os.path.join(out_dir, "banks"), oos=oos, check=check, force=force)
+        reuse.save(fp, comps, oos, {"bank": b})
 
 
 def load(out_dir):

@@ -2545,9 +2545,9 @@
   "changed": "2026-11-03"
  },
  "src.panel.data.load_long": {
-  "hash": "78f64cd5886f",
+  "hash": "83c16b5ca288",
   "added": "2026-11-04",
-  "changed": "2026-11-04"
+  "changed": "2026-11-23"
  },
  "src.panel.data.bank_events": {
   "hash": "3eb6533cc16e",
@@ -2710,14 +2710,14 @@
   "changed": "2026-11-04"
  },
  "src.panel.run.run": {
-  "hash": "7151eea40a9c",
+  "hash": "cd3ed4521acd",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-23"
  },
  "src.panel.run._summary": {
-  "hash": "4def7e1ac4de",
+  "hash": "5fd8d15ea6fe",
   "added": "2026-11-04",
-  "changed": "2026-11-04"
+  "changed": "2026-11-23"
  },
  "src.panel.select._controls": {
   "hash": "ade858b08d43",
@@ -3180,9 +3180,9 @@
   "changed": "2026-11-19"
  },
  "src.utils.master._sheets": {
-  "hash": "99e5d63df073",
+  "hash": "718f60500de3",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-23"
  },
  "src.utils.master._norm": {
   "hash": "c8854a0f0454",
@@ -3849,112 +3849,82 @@
   "added": "2026-11-19",
   "changed": "2026-11-19"
  },
+ "src.panel.data.exited": {
+  "hash": "66afba669829",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse._file_hash": {
+  "hash": "e48f43017c47",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse._canon": {
+  "hash": "68eb8fcae73e",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.code_hash": {
+  "hash": "b575bc8515ed",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse._settings": {
+  "hash": "9dbb0159b544",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse._bank_data": {
+  "hash": "7ab627c9351d",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.panel_components": {
+  "hash": "ace18363575e",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.bank_components": {
+  "hash": "3a0f6e2fbf7a",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.compare": {
+  "hash": "9a6c18f21b98",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.save": {
+  "hash": "6ccd448f9f1c",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.panel_path": {
+  "hash": "230981818e30",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.bank_path": {
+  "hash": "2fbcbb2f2c65",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.own_run_banks": {
+  "hash": "306c0d19b03a",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.reuse.status": {
+  "hash": "713dfd4360bd",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
+ "src.panel.run._reused": {
+  "hash": "dcb7f902b305",
+  "added": "2026-11-23",
+  "changed": "2026-11-23"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run._summary",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select._controls",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.screen",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.shortlist",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.pooled_fit",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.search",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.quick_error",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.select.select",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.summarise",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.panel.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.sysname",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.order",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.settings",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._augment",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.run_chain",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.series_level",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.Member",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.Member.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.Member.panel_with",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.joint_forecast",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._panel_with",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.system.run._rows",
@@ -5348,6 +5318,111 @@
   {
    "date": "2026-11-19",
    "id": "src.utils.master._rename_plain",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.data.load_long",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.data.exited",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse._file_hash",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse._canon",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.code_hash",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse._settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse._bank_data",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.panel_components",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.bank_components",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.compare",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.save",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.panel_path",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.bank_path",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.own_run_banks",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.status",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.run._reused",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.run._summary",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.utils.master._sheets",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse.code_hash",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-23",
+   "id": "src.panel.reuse._settings",
    "what": "changed"
   }
  ]

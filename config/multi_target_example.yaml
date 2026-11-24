@@ -250,7 +250,8 @@ panel:                              # used only when data.bank.panel_column is s
   dk_lags: 4                        # Bartlett lags of the Driscoll-Kraay standard errors
   n_search_candidates: 20           # driver combinations (lowest pooled BIC) backtested in the search
   banks: []                         # [] = every bank; or a list of names
-  per_bank_full: false              # also the complete single-series project for every bank (slower)
+  per_bank_full: false              # true (every bank) or a list of banks: also their complete single-series
+                                    # project, in <run>/banks/<bank>/ (slower; reused when the bank is unchanged)
 
 # Several targets in one file (run_targets.py): which column is which master target, and overrides
 targets:
