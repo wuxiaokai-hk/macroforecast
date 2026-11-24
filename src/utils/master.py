@@ -27,7 +27,21 @@ series the master uses, under the master's own code (e.g. the Moody's mnemonic F
 series in your macro files in `your_name` (blank = the same as the code). The map is applied to every target's
 metadata, to every literature concept (series_name), and to the config's deflator, constructed series and
 same-growth drivers, so data from any provider runs without editing anything else. `literature.names:` can point to
-a separate file with the columns code and your_name instead (it wins over the sheet).
+a separate file with the columns code and your_name instead (it wins over the sheet). A series your macro file does
+not have (under its code or your_name) is simply not used: blank = you do not have it, unless your file uses the
+master's codes.
+
+Your financial data in ONE place: the `target_names` sheet lists every target of the master (mortgage_loans, NIM,
+...). Write the name of the column in your data in `your_name`; blank = you do not have it, and it is skipped. You
+may forecast only a few of them.
+
+Adding what the master does not have (rows at the bottom, `source` left empty):
+    target_names  a new target: target (a new name), your_name, form (dlog for balances, diff for rates), units,
+                  label, and like = an existing target whose literature and expected signs it borrows (blank = no
+                  literature: every macro series is a candidate with a free sign).
+    macro_names   a new macro series: your_name (and code if you like), description, geography, theme, transform,
+                  expected_sign (for every target) and signs_by_target ("mortgage_loans:+1; deposits:-1") to
+                  override it target by target.
 """
 import os
 import re
@@ -35,6 +49,7 @@ import re
 import pandas as pd
 
 NAMES_SHEET = "macro_names"
+TARGET_SHEET = "target_names"
 
 WB_SHEETS = {"models": "models", "concepts": "concepts", "settings": "settings", "how_to_fill": "how to fill"}
 
@@ -87,6 +102,11 @@ def targets(path):
             if "target" in d:
                 for t, g in d.groupby(d["target"].astype(str).str.strip()):
                     rows.setdefault(t, {"target": t})[n] = len(g)
+    for r in target_rows(path).itertuples():         # targets you added in target_names
+        if r.new and _match(list(rows), r.target) is None:
+            like = _match(list(rows), r.like) if r.like else None
+            base = dict(rows.get(like, {})) if like else {"metadata": 1}
+            rows[r.target] = {**base, "target": r.target, "like": like or ""}
     return pd.DataFrame(list(rows.values())).fillna(0)
 
 
@@ -155,6 +175,60 @@ def _match(names, target):
     return m.get(key(target))
 
 
+def _blank(v):
+    return "" if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip().lower() == "nan" else str(v).strip()
+
+
+def target_rows(path):
+    """The target_names sheet: target, your_name, form, units, label, like, new (True for rows you added)."""
+    sh = _sheets(path) if path and is_master(path) else {}
+    if TARGET_SHEET not in sh:
+        return pd.DataFrame(columns=["target", "your_name", "form", "units", "label", "like", "new"])
+    d = _norm(sh[TARGET_SHEET])
+    out = pd.DataFrame({k: (d[k].map(_blank) if k in d else "") for k in
+                        ("target", "your_name", "form", "units", "label", "like", "source")})
+    out = out[(out["target"] != "") | (out["your_name"] != "")]
+    out["target"] = [t or y for t, y in zip(out["target"], out["your_name"])]
+    out["new"] = out["source"] != "master"
+    return out.drop(columns="source").reset_index(drop=True)
+
+
+def new_macro(path):
+    """Macro series you added to macro_names (rows whose source is not 'master'): one row per series, with
+    mnemonic (code, else your_name), description, geography, theme, transform and the signs."""
+    sh = _sheets(path) if path and is_master(path) else {}
+    if NAMES_SHEET not in sh:
+        return pd.DataFrame()
+    d = _norm(sh[NAMES_SHEET])
+    if "source" not in d:
+        return pd.DataFrame()
+    d = d[d["source"].map(_blank) != "master"]
+    rows = []
+    for _, r in d.iterrows():
+        code, yn = _blank(r.get("code")), _blank(r.get("your_name"))
+        if not (code or yn):
+            continue
+        rows.append({"mnemonic": code or yn, "description": _blank(r.get("description")) or (code or yn),
+                     "geography": _blank(r.get("geography")), "theme": _blank(r.get("theme")) or "Other",
+                     "transform": _blank(r.get("transform")) or "dlog",
+                     "expected_sign": pd.to_numeric(r.get("expected_sign"), errors="coerce"),
+                     "signs_by_target": _blank(r.get("signs_by_target"))})
+    return pd.DataFrame(rows)
+
+
+def _sign_for(row, target):
+    for part in re.split(r"[;,]", row["signs_by_target"] or ""):
+        if ":" in part:
+            t, v = part.split(":", 1)
+            if _match([t.strip()], target) or t.strip().lower() == "all":
+                try:
+                    return int(float(v.strip().replace("+", "")))
+                except ValueError:
+                    pass
+    s = row["expected_sign"]
+    return 0 if s is None or pd.isna(s) else int(s)
+
+
 def extract(path, target, folder, names=None):
     """Write one target's workbook and metadata from the master.
 
@@ -173,22 +247,33 @@ def extract(path, target, folder, names=None):
     for n in ("models", "concepts", "metadata"):
         if n in s and "target" in _norm(s[n]):
             tset |= set(_norm(s[n])["target"].dropna().astype(str).str.strip())
+    tr = target_rows(path)
+    added = {r.target: r for r in tr.itertuples() if r.new and _match(tset, r.target) is None}
     if not target:
         raise ValueError(f"{os.path.basename(path)} is a master file: say which target with literature.target "
-                         f"(it has: {', '.join(sorted(tset))})")
+                         f"(it has: {', '.join(sorted(tset | set(added)))})")
     t = _match(tset, target)
-    if t is None:
-        raise ValueError(f"target '{target}' is not in {os.path.basename(path)}; set literature.target to one of: "
-                         f"{', '.join(sorted(tset))}")
+    like = None
+    if t is None:                                    # a target you added in target_names
+        t = _match(list(added), target)
+        if t is None:
+            raise ValueError(f"target '{target}' is not in {os.path.basename(path)}; set literature.target to one "
+                             f"of: {', '.join(sorted(tset | set(added)))} (or add it to the target_names sheet)")
+        like = _match(tset, added[t].like) if added[t].like else None
+        if added[t].like and like is None:
+            raise ValueError(f"target_names: '{t}' is like '{added[t].like}', which is not a target of the master")
     os.makedirs(folder, exist_ok=True)
     names = name_map(path) if names is None else names
 
+    src = like or t                                  # whose rows: the target's own, or those of the one it is like
+    generic = t in added and like is None
+
     def rows(name):
         d = _norm(s[name])
-        d = d[d["target"].astype(str).str.strip() == t].drop(columns="target")
+        d = d[d["target"].astype(str).str.strip() == (None if generic else src)].drop(columns="target")
         return d.reset_index(drop=True)
 
-    out = {"workbook": None, "metadata": None, "target": t}
+    out = {"workbook": None, "metadata": None, "target": t, "like": like, "generic": generic}
     if "models" in s and "concepts" in s and len(rows("models")):
         wb = {WB_SHEETS[k]: rows(k) for k in WB_SHEETS if k in s and "target" in _norm(s[k])}
         if "concepts" in wb:
@@ -207,8 +292,18 @@ def extract(path, target, folder, names=None):
         _write_if_changed(f, wb)
         out["workbook"] = f
     if "metadata" in s and "target" in _norm(s["metadata"]):
-        m = rows("metadata")
+        if generic:                                  # no literature: every series of the master, sign free
+            m = _norm(s["metadata"]).drop(columns="target").drop_duplicates("mnemonic")
+            m = m[[c for c in ("mnemonic", "description", "geography", "theme", "transform") if c in m]]
+            m = m.assign(expected_sign=0).reset_index(drop=True)
+        else:
+            m = rows("metadata")
         m = m[[c for c in m.columns if c in ("mnemonic", "expected_sign") or m[c].notna().any()]]   # other targets' columns
+        nm = new_macro(path)
+        if len(nm):                                  # series you added in macro_names
+            nm = nm.assign(expected_sign=[_sign_for(r, t) for _, r in nm.iterrows()])
+            nm = nm[~nm["mnemonic"].isin(set(m["mnemonic"].astype(str)))]
+            m = pd.concat([m, nm.drop(columns="signs_by_target")], ignore_index=True)
         m = _rename_meta(m, names)
         if len(m):
             f = os.path.join(folder, f"macro_metadata_{t}.csv")
@@ -278,12 +373,16 @@ def apply(cfg, folder):
         src = lit["workbook"] if is_master(lit.get("workbook")) else md["file"]
         tnames = list(targets(src)["target"])
         tc = cfg["data"]["bank"].get("target_column")
-        mapped = ((cfg.get("targets") or {}).get("map") or {}).get(tc)
+        tr = target_rows(src)
+        yours = {_blank(y).lower(): t for t, y in zip(tr["target"], tr["your_name"]) if y}
+        mapped = ((cfg.get("targets") or {}).get("map") or {}).get(tc) or yours.get(str(tc).strip().lower())
         target = next((x for x in (mapped, tc, cfg.get("run_name")) if x and _match(tnames, x)), mapped or tc)
     used = None
     if is_master(lit.get("workbook")):
         x = extract(lit["workbook"], target, folder, names)
         lit["workbook"], used = x["workbook"], x["target"]
+        if x.get("generic"):                         # a target you added without 'like': every series, free sign
+            cfg.setdefault("features", {})["require_sign_prior"] = False
         if lit["workbook"] is None:                  # metadata only: the theory-based models are off
             m = cfg.setdefault("models", {})
             m["literature"], m["hybrids"], m["same_growth"] = False, False, []

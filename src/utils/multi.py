@@ -4,9 +4,11 @@ A data file can hold many target series side by side (date, cre_loans, heloc_bal
 literature master (literature.master), each column is matched to the master's rows for that target, so every target
 gets its own literature models and its own expected signs. Used by run_targets.py and the app.
 
-Matching a column to a master target: targets.map in the config first ({column: master target}), then the same
-name (case, spaces, hyphens and underscores ignored). A column with no match can still run with a metadata file
-given in the config, without literature models.
+Matching a column to a master target: targets.map in the config first ({column: master target}), then the master's
+target_names sheet (your_name = the column), then the same name (case, spaces, hyphens and underscores ignored).
+A column with no match can still run with a metadata file given in the config, without literature models. Targets
+of target_names whose your_name is not a column of the file are listed as "not in your data"; targets with a blank
+your_name are the ones you do not have, and are not listed.
 
 The target form (growth or change) is suggested per target: targets.forms in the config first, then 'diff' for
 rates, ratios, shares, margins and anything that is negative or crosses zero, else 'dlog'.
@@ -77,21 +79,37 @@ def catalog(cfg, master=None):
     T = ms.targets(master) if master and ms.is_master(master) else pd.DataFrame(columns=["target"])
     names = list(T["target"]) if len(T) else []
     tcfg = cfg.get("targets") or {}
-    mp = {_key(k): v for k, v in (tcfg.get("map") or {}).items()}
+    TR = ms.target_rows(master) if master and ms.is_master(master) else ms.target_rows(None)
+    sheet = {_key(r.your_name): r for r in TR.itertuples() if r.your_name}
+    mp = {k: r.target for k, r in sheet.items()}
+    mp.update({_key(k): v for k, v in (tcfg.get("map") or {}).items()})
     mdf = (cfg["data"].get("metadata") or {}).get("file")
     own_meta = bool(mdf) and os.sep + os.path.join("inputs", "master") + os.sep not in str(mdf) and not ms.is_master(mdf)
     rows = []
+    forms = dict(tcfg.get("forms") or {})
+    for k, r in sheet.items():                       # the sheet's form wins over the guess, the config over both
+        if r.form and k not in {_key(x) for x in forms}:
+            forms[k] = r.form
     for c in X.columns:
         s = X[c].dropna()
         m = mp.get(_key(c)) or ms._match(names, c)
         m = ms._match(names, m) if m and names else m
         info = T.set_index("target").loc[m] if m in names else None
+        sr = sheet.get(_key(c))
         rows.append({"column": c, "master_target": m or "", "literature": int(info["models"]) if info is not None and "models" in info else 0,
                      "metadata": int(info["metadata"]) if info is not None and "metadata" in info else 0,
+                     "like": (info.get("like") or "") if info is not None and "like" in info else "",
                      "first": str(s.index[0]) if len(s) else "", "last": str(s.index[-1]) if len(s) else "",
-                     "quarters": len(s), "form": suggest_form(c, s, tcfg.get("forms")),
+                     "quarters": len(s), "form": suggest_form(c, s, forms),
+                     "units": sr.units if sr is not None else "", "label": sr.label if sr is not None else "",
                      "ready": bool(len(s) >= 40 and (info is not None and info.get("metadata", 0) > 0
-                                                     or own_meta))})
+                                                     or own_meta)), "note": ""})
+    have = {_key(c) for c in X.columns}
+    for k, r in sheet.items():                       # filled in target_names, but not a column of the file
+        if k not in have:
+            rows.append({"column": r.your_name, "master_target": r.target, "literature": 0, "metadata": 0, "like": "",
+                         "first": "", "last": "", "quarters": 0, "form": r.form, "units": r.units, "label": r.label,
+                         "ready": False, "note": "not in your data (check your_name in target_names)"})
     return pd.DataFrame(rows)
 
 
@@ -115,12 +133,12 @@ def target_config(base, row, run_prefix=None):
             lit["workbook"] = None
     t = c.setdefault("target", {})
     t["transform"] = row["form"]
-    t["label"] = (base.get("targets") or {}).get("labels", {}).get(col) or str(col).replace("_", " ")
+    t["label"] = (base.get("targets") or {}).get("labels", {}).get(col) or row.get("label") or str(col).replace("_", " ")
     if row["form"] == "diff":
         t["display_scale"], t["display_units"] = None, None
-        t["units"] = (base.get("targets") or {}).get("units", {}).get(col) or ""
+        t["units"] = (base.get("targets") or {}).get("units", {}).get(col) or row.get("units") or ""
     else:
-        u = (base.get("targets") or {}).get("units", {}).get(col)
+        u = (base.get("targets") or {}).get("units", {}).get(col) or row.get("units")
         if u:
             t["units"], t["display_scale"], t["display_units"] = u, None, None
     if not row.get("master_target") and lit.get("master"):

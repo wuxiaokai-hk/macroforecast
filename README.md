@@ -359,6 +359,36 @@ literature:
 - The target's rows are written as ordinary files to `outputs/<run>/inputs/master/` (rewritten only when they change, so the cache still works) and everything else reads those. A target with metadata but no literature rows runs without the literature models. A target not in the master stops with the list of targets it has.
 - `python tools/literature_master.py list|split|build` shows the targets, writes one target's files, or builds a master from per-target files. `config/literature_master_example.xlsx` holds the project's five example targets.
 
+### Your data: two sheets to fill (`target_names` and `macro_names`)
+
+The master knows many targets and the macro series their literature uses. You only say which of them you have, and
+what they are called in your files, in two sheets (the yellow columns), and nothing else:
+
+| Sheet | One row per | You fill | Blank means |
+|---|---|---|---|
+| `target_names` | target of the master (mortgage_loans, net_interest_margin, ...) | `your_name`: the column in your data file | you do not have it: it is skipped |
+| `macro_names` | macro series the master uses (its code, e.g. `FHPI.ION`) | `your_name`: the name in your macro files | the same as the code; a series your files do not have is not used |
+
+You may have only a few targets: fill those rows and leave the rest blank. With a filled `target_names`,
+`run_targets.py --list` (and the app) match your columns to the master's targets by `your_name`, and take the form
+(`dlog`/`diff`), units and label from the sheet; a `your_name` that is not a column of your file is listed as
+"not in your data".
+
+**Adding what the master does not have.** Add rows at the bottom and leave `source` empty (`source = master` marks
+the master's own rows; refreshing the sheets keeps your rows and your entries):
+
+- **A new target** in `target_names`: `target` (a name of your own), `your_name`, `form`, `units`, `label`, and
+  `like`: an existing target whose literature and expected signs it borrows (e.g. `auto_loans` like `cre_loans`).
+  With `like` blank it has no literature: every macro series is a candidate with a free sign (the sign-prior rule is
+  switched off for it), and the data-driven models choose.
+- **A new macro series** in `macro_names`: `your_name` (and a `code` if you want one), `description`, `geography`,
+  `theme`, `transform` (`dlog`/`diff`), `expected_sign` for every target (+1, -1, 0 = free), and
+  `signs_by_target` to override it per target, e.g. `mortgage_loans:+1; demand_deposits:0`. It joins the metadata
+  of every target with that sign, so the screen and the searches can use it.
+
+`python tools/literature_master.py names <master>` adds or refreshes both sheets (and the README sheet's
+instructions); your entries and added rows are kept.
+
 ### Your macro names: one place (`macro_names` sheet)
 
 The master names macro series by its own codes (e.g. `FHPI.ION`, vendor-style mnemonics), in every target's metadata and in every literature concept. When your scenario files come from another provider, or use other names, there is **one place to edit**: the master's `macro_names` sheet.

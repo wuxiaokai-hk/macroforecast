@@ -3195,9 +3195,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.targets": {
-  "hash": "5a91f4cc627a",
+  "hash": "487d895bf6b3",
   "added": "2026-11-12",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.utils.master._match": {
   "hash": "2d79b75651fd",
@@ -3205,9 +3205,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.extract": {
-  "hash": "96b295359c9f",
+  "hash": "c881d622c552",
   "added": "2026-11-12",
-  "changed": "2026-11-19"
+  "changed": "2026-11-24"
  },
  "src.utils.master._write_if_changed": {
   "hash": "21c6910fc024",
@@ -3220,9 +3220,9 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.apply": {
-  "hash": "458e79536377",
+  "hash": "7ab357d46153",
   "added": "2026-11-12",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "tools.literature_master.build": {
   "hash": "00d1db5ee470",
@@ -3695,14 +3695,14 @@
   "changed": "2026-11-18"
  },
  "src.utils.multi.catalog": {
-  "hash": "e18d9838eeee",
+  "hash": "77bee0195be8",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.utils.multi.target_config": {
-  "hash": "9e41da374938",
+  "hash": "3cedafc05661",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.utils.multi.outdir": {
   "hash": "f4fef352d5a6",
@@ -3820,9 +3820,9 @@
   "changed": "2026-11-18"
  },
  "tools.literature_master.names_sheet": {
-  "hash": "62acf2fd61fe",
+  "hash": "91557efa8f2c",
   "added": "2026-11-18",
-  "changed": "2026-11-19"
+  "changed": "2026-11-24"
  },
  "src.system.run.apply_names": {
   "hash": "807915c205f0",
@@ -3924,72 +3924,42 @@
   "added": "2026-11-23",
   "changed": "2026-11-23"
  },
+ "src.utils.master._blank": {
+  "hash": "fd869a43150b",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.utils.master.target_rows": {
+  "hash": "9ffea1a4ad18",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.utils.master.new_macro": {
+  "hash": "c0bc4ee32823",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.utils.master._sign_for": {
+  "hash": "90a23de90c2b",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "tools.literature_master.target_names_sheet": {
+  "hash": "47d236853ab0",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "tools.literature_master.readme": {
+  "hash": "7a03b81b4c91",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "tools.literature_master.style_inputs": {
+  "hash": "89ff8ee1d853",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._rows",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.covid_checker",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.joint_backtest",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.members_by",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.joint_oos",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.BVARX",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.BVARX.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.BVARX.fit",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.BVARX.forecast",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.BVARX.table",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.bvarx_inputs",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.bvarx_backtest",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._bvarx_rows",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.system.run.reconcile_levels",
@@ -5424,6 +5394,71 @@
    "date": "2026-11-23",
    "id": "src.panel.reuse._settings",
    "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.targets",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master._blank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.target_rows",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.new_macro",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master._sign_for",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.extract",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.apply",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.multi.catalog",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.multi.target_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.literature_master.names_sheet",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.literature_master.target_names_sheet",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.literature_master.readme",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.literature_master.style_inputs",
+   "what": "added"
   }
  ]
 }

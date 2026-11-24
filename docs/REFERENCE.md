@@ -5984,7 +5984,7 @@ Every valid combination of shortlisted drivers, ranked by pooled BIC, then the b
 
 **Calls:** `vif`, `BankFeatures.array`, `BankFeatures.frame`, `_fs`, `pooled_fit`, `quick_error`
 
-**Called by:** `check_package`, `select`, `find_date_column`, `guess_transform`, `match_concepts`, `read_bank`, `scenario_name`, `yq`
+**Called by:** `check_package`, `select`, `target_names_sheet`, `find_date_column`, `guess_transform`, `match_concepts`, `read_bank`, `scenario_name`, `yq`
 
 <sub>src/panel/select.py:170</sub>
 
@@ -10890,9 +10890,9 @@ Every sheet of an Excel file (cached by path and modification time: the master i
 |---|---|---|
 | `path` |  | file to write or read. |
 
-**Called by:** `extract`, `is_master`, `name_map`, `targets`
+**Called by:** `extract`, `is_master`, `name_map`, `new_macro`, `target_rows`, `targets`
 
-<sub>src/utils/master.py:45</sub>
+<sub>src/utils/master.py:60</sub>
 
 ### `_norm`
 
@@ -10904,9 +10904,9 @@ _norm(df)
 |---|---|---|
 | `df` |  |  |
 
-**Called by:** `extract`, `name_map`, `targets`
+**Called by:** `extract`, `name_map`, `new_macro`, `target_rows`, `targets`
 
-<sub>src/utils/master.py:63</sub>
+<sub>src/utils/master.py:78</sub>
 
 ### `is_master`
 
@@ -10922,9 +10922,9 @@ True when path is an Excel file whose models or metadata sheet has a 'target' co
 
 **Calls:** `_sheets`
 
-**Called by:** `resolve_master`, `apply`, `name_map`, `resolve`, `catalog`
+**Called by:** `resolve_master`, `apply`, `name_map`, `new_macro`, `resolve`, `target_rows`, `catalog`
 
-<sub>src/utils/master.py:72</sub>
+<sub>src/utils/master.py:87</sub>
 
 ### `targets`
 
@@ -10938,11 +10938,11 @@ The targets in a master file, with what each one has.
 |---|---|---|
 | `path` |  | file to write or read. |
 
-**Calls:** `_norm`, `_sheets`
+**Calls:** `_match`, `_norm`, `_sheets`, `target_rows`
 
 **Called by:** `apply`, `catalog`, `main`
 
-<sub>src/utils/master.py:80</sub>
+<sub>src/utils/master.py:95</sub>
 
 ### `name_map`
 
@@ -10961,7 +10961,7 @@ name_map(master=None, names_file=None)
 
 **Called by:** `apply_names`, `apply`, `extract`
 
-<sub>src/utils/master.py:93</sub>
+<sub>src/utils/master.py:113</sub>
 
 ### `rename_expr`
 
@@ -10978,7 +10978,7 @@ Replace master codes inside an expression or name (whole tokens only: letters, d
 
 **Called by:** `_rename_settings`, `rename_config`, `rename_tree`
 
-<sub>src/utils/master.py:119</sub>
+<sub>src/utils/master.py:139</sub>
 
 ### `_rename_meta`
 
@@ -10993,7 +10993,7 @@ _rename_meta(m, names)
 
 **Called by:** `extract`
 
-<sub>src/utils/master.py:128</sub>
+<sub>src/utils/master.py:148</sub>
 
 ### `_rename_concepts`
 
@@ -11008,7 +11008,7 @@ _rename_concepts(c, names)
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:135</sub>
+<sub>src/utils/master.py:155</sub>
 
 ### `_rename_settings`
 
@@ -11027,7 +11027,7 @@ Series codes written in the settings sheet's values (e.g. ecm_deflator: FCPI.ION
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:143</sub>
+<sub>src/utils/master.py:163</sub>
 
 ### `_match`
 
@@ -11042,9 +11042,76 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 | `names` |  |  |
 | `target` |  |  |
 
-**Called by:** `apply`, `extract`, `catalog`
+**Called by:** `_sign_for`, `apply`, `extract`, `targets`, `catalog`
 
-<sub>src/utils/master.py:151</sub>
+<sub>src/utils/master.py:171</sub>
+
+### `_blank`
+
+```python
+_blank(v)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `v` |  |  |
+
+**Called by:** `apply`, `new_macro`
+
+<sub>src/utils/master.py:178</sub>
+
+### `target_rows`
+
+```python
+target_rows(path)
+```
+
+The target_names sheet: target, your_name, form, units, label, like, new (True for rows you added).
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+
+**Calls:** `_norm`, `_sheets`, `is_master`
+
+**Called by:** `apply`, `extract`, `targets`, `catalog`
+
+<sub>src/utils/master.py:182</sub>
+
+### `new_macro`
+
+```python
+new_macro(path)
+```
+
+Macro series you added to macro_names (rows whose source is not 'master'): one row per series, with mnemonic (code, else your_name), description, geography, theme, transform and the signs.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+
+**Calls:** `_blank`, `_norm`, `_sheets`, `is_master`
+
+**Called by:** `extract`
+
+<sub>src/utils/master.py:196</sub>
+
+### `_sign_for`
+
+```python
+_sign_for(row, target)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `row` |  |  |
+| `target` |  |  |
+
+**Calls:** `_match`
+
+**Called by:** `extract`
+
+<sub>src/utils/master.py:219</sub>
 
 ### `extract`
 
@@ -11063,11 +11130,11 @@ Write one target's workbook and metadata from the master.
 
 **Returns:** dict workbook=<xlsx or None>, metadata=<csv or None>, target=<the master's name for it>.
 
-**Calls:** `Story.read`, `_match`, `_norm`, `_rename_concepts`, `_rename_meta`, `_rename_settings`, `_sheets`, `_write_if_changed`, `name_map`
+**Calls:** `Story.read`, `_match`, `_norm`, `_rename_concepts`, `_rename_meta`, `_rename_settings`, `_sheets`, `_sign_for`, `_write_if_changed`, `name_map`, `new_macro`, `target_rows`
 
 **Called by:** `resolve_master`, `apply`, `resolve`, `main`
 
-<sub>src/utils/master.py:158</sub>
+<sub>src/utils/master.py:232</sub>
 
 ### `_write_if_changed`
 
@@ -11084,7 +11151,7 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 
 **Called by:** `_rename_plain`, `extract`
 
-<sub>src/utils/master.py:223</sub>
+<sub>src/utils/master.py:318</sub>
 
 ### `resolve`
 
@@ -11105,7 +11172,7 @@ path if it is an ordinary file; the target's extracted file if path is a master.
 
 **Called by:** `resolve_master`
 
-<sub>src/utils/master.py:239</sub>
+<sub>src/utils/master.py:334</sub>
 
 ### `apply`
 
@@ -11124,11 +11191,11 @@ Resolve literature.master / a master given as literature.workbook or data.metada
 
 **Config:** `data.bank`, `data.file`, `data.sheet`, `run_name`, `targets`
 
-**Calls:** `_match`, `_rename_plain`, `extract`, `is_master`, `name_map`, `rename_config`, `targets`
+**Calls:** `_blank`, `_match`, `_rename_plain`, `extract`, `is_master`, `name_map`, `rename_config`, `target_rows`, `targets`
 
 **Called by:** `load_config`
 
-<sub>src/utils/master.py:253</sub>
+<sub>src/utils/master.py:348</sub>
 
 ### `rename_config`
 
@@ -11149,7 +11216,7 @@ Master codes named in the config -> your names: deflator, constructed series, sa
 
 **Called by:** `apply_names`, `apply`
 
-<sub>src/utils/master.py:307</sub>
+<sub>src/utils/master.py:406</sub>
 
 ### `_rename_plain`
 
@@ -11171,7 +11238,7 @@ A plain literature workbook and metadata file with the names map applied (writte
 
 **Called by:** `apply`
 
-<sub>src/utils/master.py:323</sub>
+<sub>src/utils/master.py:422</sub>
 
 ### `rename_tree`
 
@@ -11191,7 +11258,7 @@ Master codes -> your names everywhere in a nested config (strings equal to a cod
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:349</sub>
+<sub>src/utils/master.py:448</sub>
 
 ### `write_names`
 
@@ -11208,7 +11275,7 @@ The names map as a CSV (code, your_name), for runs that start from extracted fil
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:363</sub>
+<sub>src/utils/master.py:462</sub>
 
 
 ## src/utils/multi.py
@@ -11227,7 +11294,7 @@ _key(x)
 
 **Called by:** `catalog`, `suggest_form`, `target_config`
 
-<sub>src/utils/multi.py:27</sub>
+<sub>src/utils/multi.py:29</sub>
 
 ### `columns`
 
@@ -11249,7 +11316,7 @@ The numeric columns of the target file (the date and bank columns left out).
 
 **Called by:** `catalog`
 
-<sub>src/utils/multi.py:31</sub>
+<sub>src/utils/multi.py:33</sub>
 
 ### `suggest_form`
 
@@ -11269,7 +11336,7 @@ suggest_form(name, series, forms=None)
 
 **Called by:** `catalog`
 
-<sub>src/utils/multi.py:50</sub>
+<sub>src/utils/multi.py:52</sub>
 
 ### `catalog`
 
@@ -11288,9 +11355,9 @@ Every column of the target file with its match in the master, history and sugges
 
 **Config:** `data`, `forms`, `literature`, `map`, `targets`
 
-**Calls:** `_match`, `is_master`, `targets`, `_key`, `columns`, `suggest_form`
+**Calls:** `_match`, `is_master`, `target_rows`, `targets`, `_key`, `columns`, `suggest_form`
 
-<sub>src/utils/multi.py:65</sub>
+<sub>src/utils/multi.py:67</sub>
 
 ### `target_config`
 
@@ -11308,7 +11375,7 @@ The config for one target, as a dict (written as YAML by the caller).
 
 **Calls:** `_key`
 
-<sub>src/utils/multi.py:98</sub>
+<sub>src/utils/multi.py:116</sub>
 
 ### `outdir`
 
@@ -11321,7 +11388,7 @@ outdir(base_cfg_loaded, run_name)
 | `base_cfg_loaded` |  |  |
 | `run_name` |  |  |
 
-<sub>src/utils/multi.py:131</sub>
+<sub>src/utils/multi.py:149</sub>
 
 
 ## src/utils/preflight.py
@@ -13105,11 +13172,62 @@ Add or refresh the macro_names sheet (keeps every your_name already filled in). 
 | `log` | `print` | function used to print progress messages. |
 | `accept` | `None` |  |
 
-**Calls:** `read_table`, `_tokens`, `add_views`
+**Calls:** `read_table`, `_tokens`, `add_views`, `readme`, `style_inputs`, `target_names_sheet`
 
 **Called by:** `main`
 
 <sub>tools/literature_master.py:135</sub>
+
+### `target_names_sheet`
+
+```python
+target_names_sheet(sh, data=None)
+```
+
+The target_names sheet: one row per target of the master (source = master), your_name kept from the old sheet, and the rows you added (source empty) kept at the bottom.
+
+| argument | default | meaning |
+|---|---|---|
+| `sh` |  |  |
+| `data` | `None` |  |
+
+**Calls:** `search`
+
+**Called by:** `names_sheet`
+
+<sub>tools/literature_master.py:229</sub>
+
+### `readme`
+
+```python
+readme(old)
+```
+
+The README sheet: the 'your data' instructions first, then the master's own description.
+
+| argument | default | meaning |
+|---|---|---|
+| `old` |  |  |
+
+**Called by:** `names_sheet`
+
+<sub>tools/literature_master.py:289</sub>
+
+### `style_inputs`
+
+```python
+style_inputs(path)
+```
+
+Colour the columns you fill (your_name, and the inputs of new rows), add notes on the headers, freeze panes.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+
+**Called by:** `names_sheet`
+
+<sub>tools/literature_master.py:302</sub>
 
 ### `add_views`
 
@@ -13125,7 +13243,7 @@ Next to every master code (concepts.series_name, metadata.mnemonic, sign_matrix.
 
 **Called by:** `names_sheet`
 
-<sub>tools/literature_master.py:213</sub>
+<sub>tools/literature_master.py:344</sub>
 
 ### `from_folder`
 
@@ -13139,7 +13257,7 @@ from_folder(folder)
 
 **Called by:** `main`
 
-<sub>tools/literature_master.py:256</sub>
+<sub>tools/literature_master.py:387</sub>
 
 ### `main`
 
@@ -13149,7 +13267,7 @@ main()
 
 **Calls:** `extract`, `targets`, `build`, `from_folder`, `merge`, `names_sheet`
 
-<sub>tools/literature_master.py:265</sub>
+<sub>tools/literature_master.py:396</sub>
 
 
 ## tools/literature_template.py

@@ -634,11 +634,19 @@ if mode == "New data set":
                 if ms.is_master(_lp):
                     _T = ms.targets(_lp)
                     _names = list(_T["target"])
-                    _m = ms._match(_names, target) if target else None
+                    _tr = ms.target_rows(_lp)
+                    _yours = {str(y).strip().lower(): t for t, y in zip(_tr["target"], _tr["your_name"]) if y}
+                    _m = ms._match(_names, _yours.get(str(target).strip().lower()) or target) if target else None
                     master_t = st.selectbox("Target in the master file", _names, key="master_t",
-                                            index=_names.index(_m) if _m else 0,
-                                            help="Its literature rows and its metadata are used. A metadata file "
-                                                 "uploaded on the left takes precedence over the master's.")
+                                            index=_names.index(_m) if _m in _names else 0,
+                                            help="Its literature rows and its metadata are used. Filled from the "
+                                                 "master's target_names sheet (your_name = your column) when you "
+                                                 "have filled it. A metadata file uploaded on the left takes "
+                                                 "precedence over the master's.")
+                    _have = _tr[_tr["your_name"] != ""]
+                    if len(_have):
+                        st.caption(f"target_names: you have {len(_have)} of the master's series "
+                                   f"({', '.join(f'{y} = {t}' for t, y in zip(_have['target'], _have['your_name']))}).")
                     st.caption(f"Master file: {len(_T)} targets. {master_t}: "
                                + ", ".join(f"{int(_T.set_index('target').loc[master_t].get(k, 0))} {k} rows"
                                            for k in ("models", "concepts", "metadata")))

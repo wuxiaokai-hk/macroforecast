@@ -156,8 +156,16 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
         if extra:                                   # named by a concept but not in any metadata
             rows = pd.concat([rows, pd.DataFrame({"code": extra})], ignore_index=True)
     rows["literature_uses"] = rows["code"].map(lambda c: len(lit.get(c, ()))).astype(int)
+    rows["source"] = "master"
     old = sh.get("macro_names")
     keep = dict(zip(old["code"].astype(str), old["your_name"])) if old is not None and "your_name" in old else {}
+    mine = pd.DataFrame()
+    if old is not None:                              # series you added (source empty): kept as they are
+        o = old.copy()
+        src_ = o["source"].fillna("").astype(str).str.strip() if "source" in o else pd.Series("master", index=o.index)
+        mine = o[(src_ != "master") & ~o["code"].astype(str).isin(set(rows["code"]))
+                 & (o["code"].notna() | o["your_name"].notna())]
+        mine = mine.drop(columns=[c for c in ("in_your_data", "suggestion", "suggestion_score") if c in mine])
     rows["your_name"] = rows["code"].map(lambda c: keep.get(c, ""))
     rows["your_name"] = rows["your_name"].fillna("")
     if macro:
@@ -191,15 +199,23 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
                 name = rows.apply(lambda r: r["your_name"] or r["code"], axis=1)
                 rows["in_your_data"] = name.map(lambda n: "yes" if n in cols else "no")
     rows = rows.sort_values(["literature_uses", "targets_with_a_sign", "code"], ascending=[False, False, True])
+    for c in ("expected_sign", "signs_by_target"):
+        rows[c] = ""
+    if len(mine):
+        rows = pd.concat([rows, mine], ignore_index=True)
     lead = ["code", "your_name"] + [c for c in ("in_your_data", "suggestion", "suggestion_score") if c in rows]
-    rows = rows[lead + [c for c in rows.columns if c not in lead]]
+    tail = ["expected_sign", "signs_by_target", "source"]
+    rows = rows[lead + [c for c in rows.columns if c not in lead + tail] + tail]
     sh["macro_names"] = rows
-    order = ["README", "macro_names"] + [k for k in sh if k not in ("README", "macro_names")]
+    sh["target_names"] = target_names_sheet(sh)
+    sh["README"] = readme(sh.get("README"))
+    order = ["README", "target_names", "macro_names"] + [k for k in sh if k not in ("README", "target_names", "macro_names")]
     with pd.ExcelWriter(out or master) as w:
         for k in order:
             if k in sh:
                 sh[k].to_excel(w, sheet_name=k, index=False)
     add_views(out or master)
+    style_inputs(out or master)
     if macro:
         miss = rows[(rows["in_your_data"] != "yes")]
         lm = miss[miss["literature_uses"] > 0]
@@ -208,6 +224,121 @@ def names_sheet(master, macro=None, macro_meta=None, out=None, log=print, accept
     else:
         log(f"macro_names: {len(rows)} series ({int((rows['literature_uses'] > 0).sum())} used by literature models)")
     return rows
+
+
+def target_names_sheet(sh, data=None):
+    """The target_names sheet: one row per target of the master (source = master), your_name kept from the old
+    sheet, and the rows you added (source empty) kept at the bottom."""
+    import re as _re
+    tg = sh.get("targets")
+    if tg is None:
+        tg = pd.DataFrame({"target": sorted(set(sh["metadata"]["target"].dropna().astype(str)))})
+    rows = pd.DataFrame({"target": tg["target"].astype(str)})
+    lab = tg["label"].astype(str) if "label" in tg else pd.Series("", index=tg.index)
+    rows["label"] = lab.str.replace(r",\s*quarterly.*$", "", regex=True).str.replace(r"\s*\(workbook not.*$", "", regex=True)
+    rows["form"] = lab.map(lambda x: "diff" if "(diff)" in x else "dlog" if "(dlog)" in x else "")
+    rows["units"] = lab.map(lambda x: (_re.search(r"\(([^()]*%[^()]*|pp)\)", x) or [None, ""])[1])
+    rows["literature"] = (tg["has_workbook"].astype(str) if "has_workbook" in tg else "").map(
+        lambda v: "yes" if v == "yes" else "no")
+    rows["like"] = ""
+    rows["source"] = "master"
+    old = sh.get("target_names")
+    if old is not None and "your_name" in old:
+        o = old.copy()
+        o["target"] = o["target"].fillna("").astype(str).str.strip()
+        keep = {t: v for t, v in zip(o["target"], o["your_name"]) if isinstance(v, str) and v.strip()}
+        rows["your_name"] = rows["target"].map(keep).fillna("")
+        for c in ("form", "units", "label"):          # your own entries win over the defaults
+            if c in o:
+                mine = {t: v for t, v in zip(o["target"], o[c]) if isinstance(v, str) and v.strip()}
+                rows[c] = [mine.get(t, v) for t, v in zip(rows["target"], rows[c])]
+        src_ = o["source"].fillna("").astype(str).str.strip() if "source" in o else pd.Series("master", index=o.index)
+        added = o[(src_ != "master") & ~o["target"].isin(set(rows["target"])) & (o["target"] != "")]
+        if len(added):
+            rows = pd.concat([rows, added[[c for c in added.columns if c in
+                                           ("target", "your_name", "label", "form", "units", "like", "notes")]]],
+                             ignore_index=True)
+    else:
+        rows["your_name"] = ""
+    for c in ("your_name", "like", "source", "notes"):
+        if c not in rows:
+            rows[c] = ""
+    return rows[["target", "your_name", "form", "units", "label", "literature", "like", "notes", "source"]].fillna("")
+
+
+README_TOP = [
+    "YOUR DATA: fill two sheets, nothing else",
+    "target_names : your financial data. One row per target of the master. In your_name write the column name of that "
+    "series in YOUR data file. Blank = you do not have it: it is skipped. Fill only the ones you have.",
+    "macro_names  : your macro data. One row per macro series the master uses (code = the master's code, e.g. the "
+    "Moody's mnemonic). In your_name write the name of that series in YOUR macro files. Blank = the same as the code; "
+    "a series your files do not have is simply not used.",
+    "Adding a target the master does not have: a new row at the bottom of target_names with target (your own name), "
+    "your_name, form (dlog for balances and income, diff for rates and ratios), units, label, and like = an existing "
+    "target whose literature and signs it borrows (blank = no literature; every macro series is tried with a free sign).",
+    "Adding a macro series the master does not have: a new row at the bottom of macro_names with your_name, "
+    "description, geography, theme, transform (dlog or diff) and expected_sign (+1/-1/0 for every target); "
+    "signs_by_target overrides it per target, e.g. 'mortgage_loans:+1; deposits:-1'.",
+    "Leave 'source' empty on rows you add (source = master marks the master's own rows). The yellow columns are the "
+    "ones you fill; hover over a header for a note. Every other sheet is the literature and is read only for you.",
+    "The 'view: your name' columns in concepts, metadata and sign_matrix show your names live (Excel formulas).",
+    "",
+]
+
+
+def readme(old):
+    """The README sheet: the 'your data' instructions first, then the master's own description."""
+    col = "literature_master.xlsx - how to use"
+    lines = [] if old is None else [str(x) for x in old.iloc[:, 0].tolist()]
+    if old is not None:
+        col = str(old.columns[0])
+    if README_TOP[0] in lines:                       # refresh: drop the old block
+        i = lines.index(README_TOP[0])
+        lines = lines[:i] + lines[i + len(README_TOP):]
+    lines = [x for x in lines if not x.strip().lower().startswith("macro_names") or "your_name" not in x]
+    return pd.DataFrame({col: README_TOP + lines})
+
+
+def style_inputs(path):
+    """Colour the columns you fill (your_name, and the inputs of new rows), add notes on the headers, freeze panes."""
+    from openpyxl import load_workbook
+    from openpyxl.comments import Comment
+    from openpyxl.styles import Font, PatternFill
+    wb = load_workbook(path)
+    fill = PatternFill("solid", fgColor="FFF4D6")
+    tips = {
+        "target_names": {
+            "your_name": "The column of this series in YOUR data file. Blank = you do not have it (skipped).",
+            "form": "dlog = log growth (balances, income); diff = change (rates, ratios, shares).",
+            "like": "For a target you add: an existing target whose literature and signs it borrows. "
+                    "Blank = no literature, every macro series is a candidate with a free sign.",
+            "source": "master = from the master. Leave empty on rows you add.",
+            "target": "Add a new target in an empty row at the bottom: a name of your own."},
+        "macro_names": {
+            "your_name": "The name of this series in YOUR macro files. Blank = the same as the code; a series your "
+                         "files do not have is not used.",
+            "expected_sign": "Rows you add: the sign of the effect for every target (+1, -1, 0 = free).",
+            "signs_by_target": "Rows you add: target:sign pairs that override expected_sign, e.g. "
+                               "mortgage_loans:+1; deposits:-1",
+            "source": "master = from the master. Leave empty on rows you add."}}
+    for sheet, notes in tips.items():
+        if sheet not in wb.sheetnames:
+            continue
+        ws = wb[sheet]
+        hdr = [c.value for c in ws[1]]
+        for i, h in enumerate(hdr, 1):
+            c = ws.cell(row=1, column=i)
+            c.font = Font(bold=True)
+            if h in notes:
+                c.comment = Comment(notes[h], "literature_master")
+            if h in ("your_name",) or (h in ("form", "units", "label", "like", "expected_sign", "signs_by_target")):
+                for r in range(1, ws.max_row + 30):
+                    ws.cell(row=r, column=i).fill = fill
+        ws.freeze_panes = "C2"
+        for i, h in enumerate(hdr, 1):
+            ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = \
+                {"your_name": 24, "label": 48, "description": 44, "notes": 30, "signs_by_target": 30}.get(h, 16)
+    wb.save(path)
 
 
 def add_views(path):
