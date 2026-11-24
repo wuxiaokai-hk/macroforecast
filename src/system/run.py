@@ -77,6 +77,14 @@ def settings(scfg):
     return s
 
 
+def tr_row(master, target):
+    """The target_names row of a target, or None."""
+    from ..utils import master as ms
+    tr = ms.target_rows(master)
+    hit = tr[tr["target"].map(lambda v: ms._match([v], target) is not None)]
+    return next(hit.itertuples(), None)
+
+
 def resolve_master(scfg, t, path_of, folder):
     """One master file for every target (system.master, or a target's metadata / literature pointing at one):
     replace it by this target's own workbook and metadata, extracted to folder (see src/utils/master.py).
@@ -90,7 +98,27 @@ def resolve_master(scfg, t, path_of, folder):
         t["metadata"] = t.get("metadata") or m
         if "literature" not in t or t["literature"] is None:
             t["literature"] = m
+    src = t.get("_master") or (t.get("metadata") if ms.is_master(t.get("metadata")) else None)
+    if not t.get("master_target") and src:           # the master's target_names: your column -> its target
+        tr = ms.target_rows(src)
+        yours = {str(y).strip().lower(): tn for tn, y in zip(tr["target"], tr["your_name"]) if y}
+        hit = yours.get(str(t.get("column", "")).strip().lower())
+        if hit:
+            t["master_target"] = hit
     name = t.get("master_target") or t["name"]
+    if src and ms.is_master(src):
+        x = ms.extract(src, name, folder)
+        if x.get("generic"):                         # a target you added without 'like': free signs
+            hp = t.setdefault("hyperparameters", {})
+            if isinstance(hp, dict):
+                hp["features.require_sign_prior"] = False
+        if not t.get("form") and not t.get("transform"):
+            row = tr_row(src, x["target"])
+            if row is not None and row.form:
+                t["transform"] = row.form
+            if row is not None:
+                t.setdefault("units", row.units or None)
+                t.setdefault("label", row.label or None)
     if ms.is_master(t.get("metadata")):
         t["metadata"] = ms.resolve(t["metadata"], "metadata", name, folder)
     if ms.is_master(t.get("literature")):

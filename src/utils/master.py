@@ -378,6 +378,15 @@ def apply(cfg, folder):
         mapped = ((cfg.get("targets") or {}).get("map") or {}).get(tc) or yours.get(str(tc).strip().lower())
         target = next((x for x in (mapped, tc, cfg.get("run_name")) if x and _match(tnames, x)), mapped or tc)
     used = None
+    row = next((r for r in target_rows(src_master).itertuples() if _match([r.target], target or "")), None)
+    if row is not None:                              # form, units and label from target_names (the config wins)
+        tc_ = cfg.setdefault("target", {})
+        if row.form and str(tc_.get("transform", "auto")).lower() in ("auto", "none", ""):
+            tc_["transform"] = row.form
+        if row.units and not tc_.get("units"):
+            tc_["units"] = row.units
+        if row.label and not tc_.get("label"):
+            tc_["label"] = row.label
     if is_master(lit.get("workbook")):
         x = extract(lit["workbook"], target, folder, names)
         lit["workbook"], used = x["workbook"], x["target"]

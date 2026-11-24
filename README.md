@@ -386,6 +386,11 @@ the master's own rows; refreshing the sheets keeps your rows and your entries):
   `signs_by_target` to override it per target, e.g. `mortgage_loans:+1; demand_deposits:0`. It joins the metadata
   of every target with that sign, so the screen and the searches can use it.
 
+Every entry point reads it: a single run (`literature.master:` and your column as `data.bank.target_column`; no
+`literature.target` needed), `run_targets.py`, the panel, the app, and a system (`system.master:`; each target's
+`column` is looked up in `target_names`, so `master_target:` is only needed to override it). The sheet's form, units
+and label are used unless the config sets them.
+
 `python tools/literature_master.py names <master>` adds or refreshes both sheets (and the README sheet's
 instructions); your entries and added rows are kept.
 

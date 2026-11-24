@@ -9056,6 +9056,25 @@ settings(scfg)
 
 <sub>src/system/run.py:73</sub>
 
+### `tr_row`
+
+```python
+tr_row(master, target)
+```
+
+The target_names row of a target, or None.
+
+| argument | default | meaning |
+|---|---|---|
+| `master` |  |  |
+| `target` |  |  |
+
+**Calls:** `_match`, `target_rows`
+
+**Called by:** `resolve_master`
+
+<sub>src/system/run.py:80</sub>
+
 ### `resolve_master`
 
 ```python
@@ -9073,11 +9092,11 @@ One master file for every target (system.master, or a target's metadata / litera
 
 **Config:** `master`
 
-**Calls:** `extract`, `is_master`, `resolve`
+**Calls:** `tr_row`, `extract`, `is_master`, `resolve`, `target_rows`
 
 **Called by:** `run`, `run`
 
-<sub>src/system/run.py:80</sub>
+<sub>src/system/run.py:88</sub>
 
 ### `apply_names`
 
@@ -9100,7 +9119,7 @@ Your macro names (the master's macro_names sheet, or system.names) applied to th
 
 **Called by:** `run`, `run`
 
-<sub>src/system/run.py:102</sub>
+<sub>src/system/run.py:130</sub>
 
 ### `_augment`
 
@@ -9126,7 +9145,7 @@ Macro scenario files and metadata for one target: the base ones plus the earlier
 
 **Called by:** `run_chain`
 
-<sub>src/system/run.py:123</sub>
+<sub>src/system/run.py:151</sub>
 
 ### `run_chain`
 
@@ -9150,7 +9169,7 @@ Every target through the single-target project, in order. Returns {name: info}.
 
 **Called by:** `run`
 
-<sub>src/system/run.py:165</sub>
+<sub>src/system/run.py:193</sub>
 
 ### `series_level`
 
@@ -9164,7 +9183,7 @@ series_level(s)
 
 **Called by:** `run_chain`
 
-<sub>src/system/run.py:204</sub>
+<sub>src/system/run.py:232</sub>
 
 ### `Member`
 
@@ -9181,7 +9200,7 @@ One target inside the joint backtest: its Context, chosen model and the targets 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:211</sub>
+<sub>src/system/run.py:239</sub>
 
 ### `Member.__init__`
 
@@ -9196,7 +9215,7 @@ __init__(t, info)
 
 **Calls:** `load_config`, `Context`, `load_models`, `set_form`
 
-<sub>src/system/run.py:214</sub>
+<sub>src/system/run.py:242</sub>
 
 ### `Member.panel_with`
 
@@ -9214,7 +9233,7 @@ The model's panel with the earlier targets replaced by their forecasts after the
 
 **Called by:** `joint_forecast`
 
-<sub>src/system/run.py:233</sub>
+<sub>src/system/run.py:261</sub>
 
 ### `joint_forecast`
 
@@ -9237,7 +9256,7 @@ Forecast the chain from one origin. Returns {name: (forecast changes, actual cha
 
 **Called by:** `joint_backtest`, `joint_oos`
 
-<sub>src/system/run.py:247</sub>
+<sub>src/system/run.py:275</sub>
 
 ### `_panel_with`
 
@@ -9255,7 +9274,7 @@ _panel_with(m, mod, upstream)
 
 **Called by:** `joint_forecast`
 
-<sub>src/system/run.py:278</sub>
+<sub>src/system/run.py:306</sub>
 
 ### `_rows`
 
@@ -9275,7 +9294,7 @@ _rows(res, origin, method, test, covid)
 
 **Called by:** `_bvarx_rows`, `joint_backtest`, `joint_oos`
 
-<sub>src/system/run.py:289</sub>
+<sub>src/system/run.py:317</sub>
 
 ### `covid_checker`
 
@@ -9291,7 +9310,7 @@ covid_checker(cfg)
 
 **Called by:** `run`, `bvarx_backtest`, `joint_backtest`, `joint_oos`, `run`
 
-<sub>src/system/run.py:305</sub>
+<sub>src/system/run.py:333</sub>
 
 ### `joint_backtest`
 
@@ -9314,7 +9333,7 @@ Rolling joint backtest at the first target's origins and re-estimation schedule.
 
 **Called by:** `run`
 
-<sub>src/system/run.py:316</sub>
+<sub>src/system/run.py:344</sub>
 
 ### `members_by`
 
@@ -9328,7 +9347,7 @@ members_by(members)
 
 **Called by:** `joint_backtest`, `joint_oos`, `reconcile_all`
 
-<sub>src/system/run.py:336</sub>
+<sub>src/system/run.py:364</sub>
 
 ### `joint_oos`
 
@@ -9351,7 +9370,7 @@ Out-of-sample: at each origin every target's drivers are re-selected with data u
 
 **Called by:** `run`
 
-<sub>src/system/run.py:340</sub>
+<sub>src/system/run.py:368</sub>
 
 ### `BVARX`
 
@@ -9372,7 +9391,7 @@ Equation i: y_i,t = c_i + sum_j a_ij y_j,t-1 + b_i' x_t + e_i,t. Prior: a_ij ~ N
 
 **Called by:** `bvarx_backtest`
 
-<sub>src/system/run.py:379</sub>
+<sub>src/system/run.py:407</sub>
 
 ### `BVARX.__init__`
 
@@ -9387,7 +9406,7 @@ __init__(names, forms, exog, lam=0.2)
 | `exog` |  |  |
 | `lam` | `0.2` |  |
 
-<sub>src/system/run.py:387</sub>
+<sub>src/system/run.py:415</sub>
 
 ### `BVARX.fit`
 
@@ -9405,7 +9424,7 @@ Y: DataFrame of changes (columns = targets), X: DataFrame of exogenous features;
 
 **Calls:** `BankFeatures.array`
 
-<sub>src/system/run.py:391</sub>
+<sub>src/system/run.py:419</sub>
 
 ### `BVARX.forecast`
 
@@ -9422,7 +9441,7 @@ y0: last actual changes (n), Xf: exogenous values for the forecast quarters (H x
 
 **Calls:** `BankFeatures.array`
 
-<sub>src/system/run.py:411</sub>
+<sub>src/system/run.py:439</sub>
 
 ### `BVARX.table`
 
@@ -9430,7 +9449,7 @@ y0: last actual changes (n), Xf: exogenous values for the forecast quarters (H x
 table()
 ```
 
-<sub>src/system/run.py:419</sub>
+<sub>src/system/run.py:447</sub>
 
 ### `bvarx_inputs`
 
@@ -9450,7 +9469,7 @@ Changes of every target and the exogenous macro drivers (non-system) of the chai
 
 **Called by:** `bvarx_backtest`, `run`
 
-<sub>src/system/run.py:429</sub>
+<sub>src/system/run.py:457</sub>
 
 ### `bvarx_backtest`
 
@@ -9471,7 +9490,7 @@ bvarx_backtest(members, lam, H, keep=None)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:447</sub>
+<sub>src/system/run.py:475</sub>
 
 ### `_bvarx_rows`
 
@@ -9494,7 +9513,7 @@ _bvarx_rows(bv, members, Y, X, o, H, covid, test)
 
 **Called by:** `bvarx_backtest`
 
-<sub>src/system/run.py:467</sub>
+<sub>src/system/run.py:495</sub>
 
 ### `reconcile_levels`
 
@@ -9515,7 +9534,7 @@ WLS (MinT with a diagonal error covariance) for total = sum(parts) at one horizo
 
 **Called by:** `reconcile_all`
 
-<sub>src/system/run.py:487</sub>
+<sub>src/system/run.py:515</sub>
 
 ### `leaderboard`
 
@@ -9530,7 +9549,7 @@ leaderboard(E, hz)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:507</sub>
+<sub>src/system/run.py:535</sub>
 
 ### `scenario_paths`
 
@@ -9555,7 +9574,7 @@ Every target under every scenario: the chain (each target's best model with the 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:529</sub>
+<sub>src/system/run.py:557</sub>
 
 ### `ratio_table`
 
@@ -9574,7 +9593,7 @@ Ratios such as loan-to-deposit, history and every scenario, with the historical 
 
 **Called by:** `run`
 
-<sub>src/system/run.py:557</sub>
+<sub>src/system/run.py:585</sub>
 
 ### `_fan_chart`
 
@@ -9592,7 +9611,7 @@ SUR fan charts: 5-95% and 25-75% bands of every target, baseline and the most se
 
 **Called by:** `run`
 
-<sub>src/system/run.py:580</sub>
+<sub>src/system/run.py:608</sub>
 
 ### `links_table`
 
@@ -9610,7 +9629,7 @@ How each target responds to the earlier targets in its chosen model (from its dr
 
 **Called by:** `run`
 
-<sub>src/system/run.py:608</sub>
+<sub>src/system/run.py:636</sub>
 
 ### `_chart`
 
@@ -9626,7 +9645,7 @@ _chart(out, paths, members)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:624</sub>
+<sub>src/system/run.py:652</sub>
 
 ### `run`
 
@@ -9646,7 +9665,7 @@ The whole system analysis from a system config (see config/system_example.yaml).
 
 **Calls:** `SURChain.correlation`, `cointegration_tests`, `sur_backtest`, `sur_scenarios`, `vecm_backtest`, `vecm_scenarios`, `run`, `Member`, `_chart`, `_fan_chart`, `_summary`, `apply_names`, `bvarx_backtest`, `bvarx_inputs`, `covid_checker`, `joint_backtest`, `joint_oos`, `leaderboard`, `links_table`, `ratio_table`, `reconcile_all`, `resolve_master`, `run_chain`, `scenario_paths`, `settings`, `read_table`, `to_quarters`
 
-<sub>src/system/run.py:650</sub>
+<sub>src/system/run.py:678</sub>
 
 ### `reconcile_all`
 
@@ -9675,7 +9694,7 @@ For each identity (total = sum of parts): forecast the total on its own (single-
 
 **Called by:** `run`
 
-<sub>src/system/run.py:784</sub>
+<sub>src/system/run.py:812</sub>
 
 ### `_summary`
 
@@ -9692,7 +9711,7 @@ _summary(sd, run_name, tables, LB)
 
 **Called by:** `run`
 
-<sub>src/system/run.py:866</sub>
+<sub>src/system/run.py:894</sub>
 
 
 ## src/utils/cache.py
@@ -11042,7 +11061,7 @@ The master's spelling of target (case, spaces, hyphens and underscores ignored).
 | `names` |  |  |
 | `target` |  |  |
 
-**Called by:** `_sign_for`, `apply`, `extract`, `targets`, `catalog`
+**Called by:** `tr_row`, `_sign_for`, `apply`, `extract`, `targets`, `catalog`
 
 <sub>src/utils/master.py:171</sub>
 
@@ -11074,7 +11093,7 @@ The target_names sheet: target, your_name, form, units, label, like, new (True f
 
 **Calls:** `_norm`, `_sheets`, `is_master`
 
-**Called by:** `apply`, `extract`, `targets`, `catalog`
+**Called by:** `resolve_master`, `tr_row`, `apply`, `extract`, `targets`, `catalog`
 
 <sub>src/utils/master.py:182</sub>
 
@@ -11216,7 +11235,7 @@ Master codes named in the config -> your names: deflator, constructed series, sa
 
 **Called by:** `apply_names`, `apply`
 
-<sub>src/utils/master.py:406</sub>
+<sub>src/utils/master.py:415</sub>
 
 ### `_rename_plain`
 
@@ -11238,7 +11257,7 @@ A plain literature workbook and metadata file with the names map applied (writte
 
 **Called by:** `apply`
 
-<sub>src/utils/master.py:422</sub>
+<sub>src/utils/master.py:431</sub>
 
 ### `rename_tree`
 
@@ -11258,7 +11277,7 @@ Master codes -> your names everywhere in a nested config (strings equal to a cod
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:448</sub>
+<sub>src/utils/master.py:457</sub>
 
 ### `write_names`
 
@@ -11275,7 +11294,7 @@ The names map as a CSV (code, your_name), for runs that start from extracted fil
 
 **Called by:** `apply_names`
 
-<sub>src/utils/master.py:462</sub>
+<sub>src/utils/master.py:471</sub>
 
 
 ## src/utils/multi.py

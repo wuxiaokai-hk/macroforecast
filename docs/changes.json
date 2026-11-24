@@ -3175,9 +3175,9 @@
   "changed": "2026-11-12"
  },
  "src.system.run.resolve_master": {
-  "hash": "6434eb0eeda6",
+  "hash": "478c72624c78",
   "added": "2026-11-12",
-  "changed": "2026-11-19"
+  "changed": "2026-11-24"
  },
  "src.utils.master._sheets": {
   "hash": "718f60500de3",
@@ -3220,7 +3220,7 @@
   "changed": "2026-11-12"
  },
  "src.utils.master.apply": {
-  "hash": "7ab357d46153",
+  "hash": "74b0fe81dd1c",
   "added": "2026-11-12",
   "changed": "2026-11-24"
  },
@@ -3959,22 +3959,12 @@
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
+ "src.system.run.tr_row": {
+  "hash": "fc34815857bd",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.reconcile_levels",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.leaderboard",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.scenario_paths",
-   "what": "added"
-  },
   {
    "date": "2026-11-04",
    "id": "src.system.run.ratio_table",
@@ -5459,6 +5449,21 @@
    "date": "2026-11-24",
    "id": "tools.literature_master.style_inputs",
    "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.system.run.tr_row",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.system.run.resolve_master",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.utils.master.apply",
+   "what": "changed"
   }
  ]
 }
