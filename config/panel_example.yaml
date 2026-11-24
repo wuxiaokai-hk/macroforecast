@@ -275,3 +275,13 @@ panel:
   - panel
   - core
   banks: []
+  evaluation:                       # how the models are compared (redone from the saved errors in the app
+                                    # or with tools/panel_compare.py, no re-estimation)
+    metric: mape                    # mape | rmse | p90 | cvar (average of the worst tail_share) | worst | combined
+    banks: all                      # all, or a list: the credit unions in the average comparison
+    horizon: null                   # quarters 1..h (null: all)
+    tail_share: 0.10
+    penalty: 0.5                    # combined = mape + penalty x (cvar - mape)
+    weighting: equal                # equal or size (latest balance)
+    benchmark: null                 # model for the "vs" columns (null: the AR(1) benchmark)
+    exclude_covid: true

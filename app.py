@@ -248,42 +248,91 @@ def panel_results(out, cfg):
     if not os.path.exists(f_all):
         st.info("No panel results yet: run the panel analysis in ④.")
         return
-    oos_all = os.path.join(pdir, "oos", "1_leaderboard_overall.csv")
-    use_oos = os.path.exists(oos_all)
-    O = pd.read_csv(oos_all if use_oos else f_all)
-    LB = pd.read_csv(os.path.join(pdir, "oos" if use_oos else "", "2_leaderboard_by_bank.csv"))
-    col = O["ranked_on"].iloc[0] if "ranked_on" in O else sorted(c for c in O.columns if c.startswith("avg_1_"))[-1]
-    h = col.split("_")[2]
+    from src.panel import compare
+    use_oos_avail = os.path.exists(os.path.join(pdir, "oos", "4_forecasts.csv"))
     man = {}
     try:
         import json
         man = json.load(open(os.path.join(pdir, "fitted", "manifest.json"), encoding="utf-8"))
     except Exception:
         pass
-    b0 = O.iloc[0]
     unit = "%" if man.get("target_form", "dlog") == "dlog" else " (target units)"
-    st.success(f"**Most accurate {'out of sample' if use_oos else 'in the backtest'}: {b0['model']}**: average error "
-               f"{b0[col]:.2f}{unit} over 1–{h} quarters, mean across {int(b0['banks'])} banks; best for "
-               f"{int(b0['banks_won'])} bank(s), better than AR(1) for {int(b0['banks_better_than_AR'])}.")
     st.caption(f"Panel drivers (chosen on all banks together): {', '.join(man.get('panel_drivers') or []) or 'none'}. "
                f"Literature core: {', '.join(man.get('core') or []) or 'none'}.")
-    st.subheader("Ranking across banks" + (" (out of sample: drivers re-selected at every origin)" if use_oos else
-                                          " (backtest; run the out-of-sample test in ④ for the fair ranking)"))
-    show = [c for c in ["rank", "model"] + [c for c in O.columns if c.startswith("avg_1_")] +
-            ["banks_won", "banks_better_than_AR", "banks"] if c in O.columns]
-    st.dataframe(friendly(O[show]), hide_index=True, use_container_width=True)
-    for p_ in (os.path.join(pdir, "panel_leaderboard.png"), os.path.join(pdir, "panel_forecasts.png")):
+
+    # ---- how to compare: metric, test, horizon, which credit unions
+    ev0 = compare.settings(cfg)
+    st.subheader("Comparing the models")
+    k1, k2, k3 = st.columns([1.2, 1.4, 1])
+    mets = list(compare.METRICS)
+    metric = k1.selectbox("Rank on", mets, index=mets.index(ev0["metric"]), format_func=compare.METRICS.get,
+                          key="pe_metric",
+                          help="MAPE: average absolute error. RMSE and the tail measures punish a model that is right "
+                               "on average but sometimes far off: 90th percentile, average of the worst 10%, largest "
+                               "error, or MAPE plus a penalty on the worst errors.")
+    tests = (["Out of sample (drivers re-selected at every origin)"] if use_oos_avail else []) + ["Backtest"]
+    test = k2.radio("Test", tests, key="pe_test", horizontal=True)
+    use_oos = test.startswith("Out")
+    E = compare.load_errors(pdir, use_oos)
+    Hmax = int(E["horizon_q"].max())
+    H = k3.slider("Quarters ahead (1..h)", 1, Hmax, min(int(ev0.get("horizon") or Hmax), Hmax), key="pe_h")
+    all_banks = sorted(E["bank"].astype(str).unique())
+    pick = st.multiselect("Credit unions in the comparison (empty = all)", all_banks, default=[], key="pe_banks")
+    with st.expander("More settings"):
+        q1, q2, q3, q4 = st.columns(4)
+        tail = q1.number_input("Worst share (tail)", 0.02, 0.5, float(ev0["tail_share"]), 0.01, key="pe_tail")
+        pen = q2.number_input("Penalty (MAPE + tail)", 0.0, 3.0, float(ev0["penalty"]), 0.1, key="pe_pen")
+        wgt = q3.radio("Average across credit unions", ["equal", "size"], key="pe_w",
+                       index=["equal", "size"].index(ev0["weighting"]),
+                       help="equal: every credit union counts the same; size: weighted by its latest balance")
+        mods = sorted(E["model"].unique())
+        bm0 = next((m for m in mods if m.startswith("AR(1)")), mods[0])
+        bench = q4.selectbox("Benchmark", mods, index=mods.index(bm0), key="pe_bench")
+        cov = st.checkbox("Leave out the dummy (COVID) windows", bool(ev0["exclude_covid"]), key="pe_cov")
+    res = compare.evaluate(E, metric, pick or None, H, tail, pen, wgt, bench, exclude_covid=cov)
+    O, used = res["overall"], res["settings"]
+    b0 = O.iloc[0]
+    st.success(f"**Most accurate {'out of sample' if use_oos else 'in the backtest'} on the {used['metric_long']}: "
+               f"{b0['model']}** ({b0['score']:.2f}{unit} over 1–{H} quarters, average across {int(b0['banks'])} "
+               f"credit union(s)); best for {int(b0['banks_won'])} of them"
+               + (f", better than {bench} for {int(b0['banks_better_than_benchmark'])}."
+                  if "banks_better_than_benchmark" in O else "."))
+    st.markdown(f"**All {'selected ' if pick else ''}credit unions: average comparison**")
+    show = ["rank", "model", "score", "mape", "rmse", "p90", "cvar", "worst", "bias", "vs_benchmark_pct",
+            "banks_won", "banks_better_than_benchmark", "median_bank_score", "pooled_score"]
+    names = {"score": f"Score ({compare.METRICS[metric]})", "mape": "MAPE", "rmse": "RMSE", "p90": "90th pct",
+             "cvar": f"Worst {tail:.0%} avg", "worst": "Largest", "bias": "Bias (+ = over)",
+             "vs_benchmark_pct": f"vs {bench} (%)", "banks_won": "Best for", "banks_better_than_benchmark":
+             "Beat benchmark", "median_bank_score": "Median CU score", "pooled_score": "Pooled score"}
+    st.dataframe(O[[c for c in show if c in O]].round(3).rename(columns=names), hide_index=True,
+                 use_container_width=True)
+    g1, g2 = st.columns(2)
+    g1.caption(f"Score by model ({compare.METRICS[metric]}, lower is better)")
+    g1.bar_chart(O.set_index("model")["score"].sort_values())
+    g2.caption("Score by quarter ahead, average across the credit unions (top 6 models and the benchmark)")
+    top = list(O["model"].head(6)) + ([bench] if bench not in list(O["model"].head(6)) else [])
+    hz = res["by_horizon"]
+    g2.line_chart(hz[hz["model"].isin(top)].pivot_table(index="horizon_q", columns="model", values="score"))
+
+    st.subheader("One credit union")
+    banks = pick or all_banks
+    b = st.selectbox("Credit union", banks, key="panel_bank")
+    lb = compare.one_bank(res, b)
+    best = lb["model"].iloc[0] if len(lb) else None
+    if best:
+        st.markdown(f"Most accurate model for **{b}** on the {used['metric_long']}: **{best}**")
+    shw = ["rank_in_bank", "model", "score", "mape", "rmse", "p90", "cvar", "worst", "bias", "vs_benchmark_pct", "forecasts"]
+    st.dataframe(lb[[c for c in shw if c in lb]].round(3).rename(columns={**names, "rank_in_bank": "Rank",
+                                                                          "forecasts": "Forecasts"}),
+                 hide_index=True, use_container_width=True)
+    d1, d2 = st.columns(2)
+    d1.download_button("This comparison (all credit unions), CSV", O.to_csv(index=False).encode(),
+                       file_name=f"panel_comparison_{metric}.csv", key="pe_dl1")
+    d2.download_button("Every credit union x model, CSV", res["by_bank"].to_csv(index=False).encode(),
+                       file_name=f"panel_comparison_by_cu_{metric}.csv", key="pe_dl2")
+    for p_ in (os.path.join(pdir, "panel_forecasts.png"),):
         if os.path.exists(p_):
             wide_image(p_)
-    st.subheader("One bank")
-    banks = sorted(LB["bank"].unique())
-    b = st.selectbox("Bank", banks, key="panel_bank")
-    best = (man.get("best_by_bank") or {}).get(b)
-    if best:
-        st.markdown(f"Most accurate model for **{b}**: **{best}**")
-    lb = LB[LB["bank"] == b].sort_values(col)
-    st.dataframe(friendly(lb[[c for c in ["model"] + [c for c in lb.columns if c.startswith("avg_1_")] + ["vs_AR_pct"]
-                              if c in lb.columns]]), hide_index=True, use_container_width=True)
     sc = os.path.join(pdir, "7_scenario_forecasts.csv")
     if os.path.exists(sc):
         S_ = pd.read_csv(sc)
@@ -976,6 +1025,12 @@ if mode == "New data set":
                 ov["panel.per_bank_full"] = setup.yq(list(own)) if own else "false"
                 st.caption(f"Banks: {', '.join(chosen) if chosen else 'none'} (choose them in ②, next to the bank "
                            f"column); own full run: {', '.join(own) or 'none'}.")
+                from src.panel.compare import METRICS as _PM
+                ov["panel.evaluation.metric"] = st.selectbox(
+                    "Rank the models on", list(_PM), format_func=_PM.get, key="pn_metric",
+                    help="Used for the leaderboards and each credit union's best model. MAPE is the average absolute "
+                         "error; RMSE and the tail measures punish occasional large misses. You can change it later "
+                         "in ⑤ without re-estimating.")
                 gone = []
                 if isinstance(P.get("banks"), pd.DataFrame) and {"bank", "last"} <= set(P["banks"].columns):
                     _e = pd.PeriodIndex(P["banks"]["last"].astype(str), freq="Q")

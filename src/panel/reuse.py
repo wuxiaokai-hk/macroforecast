@@ -65,7 +65,7 @@ def _settings(cfg):
         d["events"] = {k: v for k, v in d["events"].items() if k != "file"}
     from .run import PANEL_DEFAULTS
     p = dict(copy.deepcopy(PANEL_DEFAULTS), **(c.get("panel") or {}))     # defaults filled in, as the run does
-    for k in ("per_bank_full", "banks"):
+    for k in ("per_bank_full", "banks", "evaluation"):     # evaluation is redone from the saved errors
         p.pop(k, None)
     c["panel"] = p
     return c

@@ -2710,14 +2710,14 @@
   "changed": "2026-11-04"
  },
  "src.panel.run.run": {
-  "hash": "cd3ed4521acd",
+  "hash": "3559e39117bd",
   "added": "2026-11-04",
-  "changed": "2026-11-23"
+  "changed": "2026-11-24"
  },
  "src.panel.run._summary": {
-  "hash": "5fd8d15ea6fe",
+  "hash": "0fbd2fba4454",
   "added": "2026-11-04",
-  "changed": "2026-11-23"
+  "changed": "2026-11-24"
  },
  "src.panel.select._controls": {
   "hash": "ade858b08d43",
@@ -3870,9 +3870,9 @@
   "changed": "2026-11-23"
  },
  "src.panel.reuse._settings": {
-  "hash": "9dbb0159b544",
+  "hash": "6790246e2f19",
   "added": "2026-11-23",
-  "changed": "2026-11-23"
+  "changed": "2026-11-24"
  },
  "src.panel.reuse._bank_data": {
   "hash": "7ab627c9351d",
@@ -4004,82 +4004,57 @@
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
+ "src.panel.compare.settings": {
+  "hash": "2a8cec1db87c",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare.describe": {
+  "hash": "8e30d9d41f34",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare._one": {
+  "hash": "fb3504f11838",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare.load_errors": {
+  "hash": "bd29273896ab",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare.evaluate": {
+  "hash": "5d37da7db1a8",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare.one_bank": {
+  "hash": "f4c9180cec52",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.compare.write": {
+  "hash": "8477321ef6bb",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.run._re_evaluate": {
+  "hash": "86d7111dbf1c",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "tools.panel_compare.main": {
+  "hash": "a28fa71785b7",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.run._eval_lines": {
+  "hash": "6a8cbc2dbcb6",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM._levels",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM._ect",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.fit",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.forecast",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.table",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.cointegration_tests",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.vecm_backtest",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.vecm_scenarios",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.ratio_table",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._fan_chart",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.run._summary",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint._res_rows",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint._against",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM",
-   "what": "changed"
-  },
   {
    "date": "2026-11-04",
    "id": "src.system.joint.VECM.__init__",
@@ -5504,6 +5479,81 @@
    "date": "2026-11-24",
    "id": "src.selection.bayes.bma_select",
    "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.describe",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare._one",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.load_errors",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.evaluate",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.one_bank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.write",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.reuse._settings",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._re_evaluate",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._summary",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.panel_compare.main",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._re_evaluate",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._eval_lines",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._summary",
+   "what": "changed"
   }
  ]
 }

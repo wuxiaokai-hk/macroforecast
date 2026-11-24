@@ -10,6 +10,8 @@ Outputs (outputs/<run>/panel/):
     6_shrinkage.csv                         partial pooling: own, pooled, tau^2, weight on own, shrunk
     7_scenario_forecasts.csv                bank x model x scenario forecasts (change and level)
     8_fitted_values.csv                     in-sample one-step fit of every bank in every model
+    10_evaluation_overall.csv               every model on the chosen metric (panel.evaluation), across the chosen
+                                            banks; 11_evaluation_by_bank.csv, 12_evaluation_by_horizon.csv (also in oos/)
     9_coefficients_by_origin.csv            the coefficients at every backtest re-estimation
     oos/                                    out-of-sample test with re-selection at each origin (same tables)
     fitted/models.pkl                       every model estimated on all history; backtest_models.pkl,
@@ -303,7 +305,9 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
     if ok and not force and os.path.exists(os.path.join(out, "1_leaderboard_overall.csv")):
         log(f"Panel: nothing changed ({why}) - reusing the earlier results in {out} "
             f"(use --force to re-estimate)")
-        return _reused(out, oos)
+        res = _reused(out, oos)
+        _re_evaluate(cfg, out, res, log)
+        return res
     log(f"Panel: estimating ({'forced' if force else why}) ...")
     log("Panel: loading the banks ...")
     pn = Panel(cfg, out, log)
@@ -365,7 +369,13 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
     if at:
         with open(os.path.join(fdir, "backtest_models.pkl"), "wb") as f:
             pickle.dump(at, f)
-    best_by_bank = LB.sort_values(col).groupby("bank").head(1).set_index("bank")["model"].to_dict() if len(LB) else {}
+    from . import compare
+    ev_cfg = compare.settings(cfg)
+    ev = compare.evaluate(E, **ev_cfg) if len(E) else None
+    if ev is not None:
+        compare.write(ev, out)
+    best_by_bank = (ev["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict() if ev is not None
+                    else LB.sort_values(col).groupby("bank").head(1).set_index("bank")["model"].to_dict() if len(LB) else {})
     res = {"overall": O, "by_bank": LB, "best_by_bank": best_by_bank, "panel_drivers": sel["features"],
            "core": core, "folder": out}
     if oos:
@@ -380,9 +390,14 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
         with open(os.path.join(fdir, "oos_models.pkl"), "wb") as f:
             pickle.dump(at_o, f)
         res.update(oos_overall=Oo, oos_by_bank=LBo)
-        if len(LBo):
-            res["best_by_bank"] = LBo.sort_values(col_o).groupby("bank").head(1).set_index("bank")["model"].to_dict()
+        if len(Eo):
+            evo = compare.evaluate(Eo, **ev_cfg)
+            compare.write(evo, od)
+            res["oos_evaluation"] = evo["overall"]
+            res["best_by_bank"] = evo["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict()
             col = col_o
+    if ev is not None:
+        res["evaluation"] = ev["overall"]
     _charts(out, res.get("oos_overall", O) if len(res.get("oos_overall", [])) else O, scen, pn, res["best_by_bank"], col)
     _summary(out, cfg, pn, res, col)
     with open(os.path.join(fdir, "manifest.json"), "w", encoding="utf-8") as f:
@@ -394,6 +409,32 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
     reuse.save(fp_path, comps, oos, {"banks": pn.banks})
     log(f"Panel results in {out}")
     return res
+
+
+def _re_evaluate(cfg, out, res, log=print):
+    """The evaluation is cheap and depends only on the saved errors: redo it with the current settings."""
+    from . import compare
+    ev_cfg = compare.settings(cfg)
+    for sub, key in (("", "evaluation"), ("oos", "oos_evaluation")):
+        try:
+            E = compare.load_errors(out, oos=bool(sub))
+        except FileNotFoundError:
+            continue
+        ev = compare.evaluate(E, **ev_cfg)
+        compare.write(ev, os.path.join(out, sub) if sub else out)
+        res[key] = ev["overall"]
+        res["best_by_bank"] = ev["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict()
+    sm = os.path.join(out, "summary.md")
+    if os.path.exists(sm) and ("evaluation" in res or "oos_evaluation" in res):   # refresh its ranking block
+        txt = open(sm, encoding="utf-8").read().split("\n")
+        i = next((k for k, x in enumerate(txt) if x.startswith("## Ranked on")), None)
+        j = next((k for k, x in enumerate(txt) if x.startswith("## Best model for each bank")), len(txt))
+        basis = "out of sample" if "oos_evaluation" in res else "backtest"
+        block = _eval_lines(cfg, res.get("oos_evaluation", res.get("evaluation")), basis)[1:] + [""]
+        best = ["## Best model for each bank", ""] + [f"- {b}: {m}" for b, m in res["best_by_bank"].items()]
+        head = txt[:i - 1] if i is not None else txt[:j]
+        open(sm, "w", encoding="utf-8").write("\n".join(head + [""] + block + best) + "\n")
+    log(f"Panel: evaluation redone on the saved errors ({compare.describe(ev_cfg['metric'], ev_cfg['tail_share'], ev_cfg['penalty'])})")
 
 
 def _reused(out, oos):
@@ -414,6 +455,23 @@ def _reused(out, oos):
     return res
 
 
+def _eval_lines(cfg, ev, basis):
+    """The 'Ranked on ...' block of summary.md."""
+    if ev is None or not len(ev):
+        return []
+    from . import compare
+    e = compare.settings(cfg)
+    L = ["", f"## Ranked on the {compare.describe(e['metric'], e['tail_share'], e['penalty'])} ({basis}; "
+         f"{'every bank' if e['banks'] in (None, 'all', []) else ', '.join(map(str, e['banks']))}, "
+         f"{e['weighting']} weights)", "",
+         "| Rank | Model | Score | MAPE | RMSE | Worst-tail avg | Largest | Banks won |", "|---|---|---|---|---|---|---|---|"]
+    for r in ev.itertuples():
+        L.append(f"| {r.rank} | {r.model} | {r.score:.3f} | {r.mape:.3f} | {r.rmse:.3f} | {r.cvar:.3f} | "
+                 f"{r.worst:.3f} | {r.banks_won}/{r.banks} |")
+    return L + ["", "Other metrics, other banks or one bank: `python tools/panel_compare.py --run <outputs/run> "
+                    "--metric rmse --banks ... --bank ...` (no re-estimation), or ⑤ in the app."]
+
+
 def _summary(out, cfg, pn, res, col):
     basis = "out of sample" if "oos_overall" in res else "backtest"
     O = res.get("oos_overall", res["overall"])
@@ -429,5 +487,6 @@ def _summary(out, cfg, pn, res, col):
     for r in O.itertuples():
         L.append(f"| {r.rank} | {r.model} | {getattr(r, col):.3f} | {r.banks_won}/{r.banks} | "
                  f"{r.banks_better_than_AR}/{r.banks} |")
+    L += _eval_lines(cfg, res.get("oos_evaluation", res.get("evaluation")), basis)
     L += ["", "## Best model for each bank", ""] + [f"- {b}: {m}" for b, m in res["best_by_bank"].items()]
     open(os.path.join(out, "summary.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")

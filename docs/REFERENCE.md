@@ -23,6 +23,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/models/simple.py](#srcmodelssimplepy)
 - [src/models/zoo.py](#srcmodelszoopy)
 - [src/panel/__init__.py](#srcpanelinitpy)
+- [src/panel/compare.py](#srcpanelcomparepy)
 - [src/panel/data.py](#srcpaneldatapy)
 - [src/panel/estimate.py](#srcpanelestimatepy)
 - [src/panel/reuse.py](#srcpanelreusepy)
@@ -64,6 +65,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [tools/make_deck.py](#toolsmakedeckpy)
 - [tools/make_docs.py](#toolsmakedocspy)
 - [tools/new_data_setup.py](#toolsnewdatasetuppy)
+- [tools/panel_compare.py](#toolspanelcomparepy)
 - [tools/process_story.py](#toolsprocessstorypy)
 - [tools/simulate_data.py](#toolssimulatedatapy)
 - [tools/trace_to_html.py](#toolstracetohtmlpy)
@@ -4703,6 +4705,144 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 Panel analysis: one target (e.g. a loan balance) for several banks, with common macro drivers.
 
 
+## src/panel/compare.py
+
+Comparing the panel models: any error metric, all banks or some, one bank at a time.
+
+### `settings`
+
+```python
+settings(cfg)
+```
+
+panel.evaluation with the defaults filled in.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+
+**Config:** `panel`
+
+**Called by:** `_eval_lines`, `_re_evaluate`, `run`
+
+<sub>src/panel/compare.py:34</sub>
+
+### `describe`
+
+```python
+describe(metric, tail_share=0.1, penalty=0.5)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `metric` |  |  |
+| `tail_share` | `0.1` |  |
+| `penalty` | `0.5` |  |
+
+**Called by:** `evaluate`, `_eval_lines`, `_re_evaluate`
+
+<sub>src/panel/compare.py:43</sub>
+
+### `_one`
+
+```python
+_one(a, tail, pen)
+```
+
+Metrics of one set of signed errors.
+
+| argument | default | meaning |
+|---|---|---|
+| `a` |  |  |
+| `tail` |  |  |
+| `pen` |  |  |
+
+**Called by:** `evaluate`
+
+<sub>src/panel/compare.py:47</sub>
+
+### `load_errors`
+
+```python
+load_errors(pdir, oos=False)
+```
+
+The saved forecast errors of a panel run (backtest, or the out-of-sample test).
+
+| argument | default | meaning |
+|---|---|---|
+| `pdir` |  |  |
+| `oos` | `False` |  |
+
+**Called by:** `_re_evaluate`, `main`
+
+<sub>src/panel/compare.py:61</sub>
+
+### `evaluate`
+
+```python
+evaluate(E, metric='mape', banks=None, horizon=None, tail_share=0.1, penalty=0.5, weighting='equal', benchmark=None, exclude_covid=True, **_)
+```
+
+Compare the models on a metric, for some or all banks.
+
+| argument | default | meaning |
+|---|---|---|
+| `E` |  | error rows (model, kind, bank, origin, horizon_q, error_pct, covid_window, level_at_origin). |
+| `metric` | `'mape'` | one of METRICS (the ranking). |
+| `banks` | `None` | list of banks, or None / 'all'. |
+| `horizon` | `None` | 1..h (default: all). |
+| `tail_share` | `0.1` | for cvar and combined. |
+| `penalty` | `0.5` | for cvar and combined. |
+| `weighting` | `'equal'` | equal or size (latest level at origin). |
+| `benchmark` | `None` | model name for the 'vs' columns (default: the AR(1) benchmark). |
+| `exclude_covid` | `True` |  |
+| `**_` |  |  |
+
+**Returns:** dict with overall (one row per model), by_bank (bank x model), by_horizon (model x horizon, averaged across banks), and the settings used.
+
+**Calls:** `_one`, `describe`
+
+**Called by:** `_re_evaluate`, `run`, `main`
+
+<sub>src/panel/compare.py:70</sub>
+
+### `one_bank`
+
+```python
+one_bank(res, bank)
+```
+
+The comparison for one bank, ranked.
+
+| argument | default | meaning |
+|---|---|---|
+| `res` |  |  |
+| `bank` |  |  |
+
+**Called by:** `main`
+
+<sub>src/panel/compare.py:151</sub>
+
+### `write`
+
+```python
+write(res, folder, prefix='')
+```
+
+Write the evaluation tables next to the leaderboards.
+
+| argument | default | meaning |
+|---|---|---|
+| `res` |  |  |
+| `folder` |  | output folder. |
+| `prefix` | `''` |  |
+
+**Called by:** `_re_evaluate`, `run`, `main`
+
+<sub>src/panel/compare.py:157</sub>
+
+
 ## src/panel/data.py
 
 Panel data: the long target file (date, bank, balance), each bank's organic change, and the stacked arrays
@@ -5451,7 +5591,7 @@ panel: block with defaults.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:39</sub>
+<sub>src/panel/run.py:41</sub>
 
 ### `_arr`
 
@@ -5471,7 +5611,7 @@ Feature values for a model: (dates, k) for common drivers, (banks, dates, k) wit
 
 **Called by:** `backtest`, `fitted_values`, `run`, `run_oos`
 
-<sub>src/panel/run.py:47</sub>
+<sub>src/panel/run.py:49</sub>
 
 ### `build_models`
 
@@ -5493,7 +5633,7 @@ The competing panel models for each driver set, plus the AR(1) benchmark.
 
 **Called by:** `run`, `run_oos`
 
-<sub>src/panel/run.py:55</sub>
+<sub>src/panel/run.py:57</sub>
 
 ### `_hist`
 
@@ -5511,7 +5651,7 @@ Last actual change of a bank and of the total at position o.
 
 **Called by:** `forecast_rows`
 
-<sub>src/panel/run.py:69</sub>
+<sub>src/panel/run.py:71</sub>
 
 ### `_covid`
 
@@ -5530,7 +5670,7 @@ _covid(cfg, dates, o, h)
 
 **Called by:** `forecast_rows`
 
-<sub>src/panel/run.py:75</sub>
+<sub>src/panel/run.py:77</sub>
 
 ### `forecast_rows`
 
@@ -5555,7 +5695,7 @@ Forecast every active bank from position o and append error rows.
 
 **Called by:** `backtest`, `run_oos`
 
-<sub>src/panel/run.py:83</sub>
+<sub>src/panel/run.py:85</sub>
 
 ### `summarise`
 
@@ -5574,7 +5714,7 @@ Errors -> by-horizon table, leaderboard by bank, overall leaderboard.
 
 **Called by:** `run`, `build_node`
 
-<sub>src/panel/run.py:113</sub>
+<sub>src/panel/run.py:115</sub>
 
 ### `backtest`
 
@@ -5598,7 +5738,7 @@ Rolling backtest of every panel model (same origins and re-estimation schedule a
 
 **Called by:** `run`, `build_node`
 
-<sub>src/panel/run.py:148</sub>
+<sub>src/panel/run.py:150</sub>
 
 ### `scenarios`
 
@@ -5621,7 +5761,7 @@ Forecast every scenario with every model estimated on all history.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:171</sub>
+<sub>src/panel/run.py:173</sub>
 
 ### `fitted_values`
 
@@ -5644,7 +5784,7 @@ In-sample one-step fit of every bank in every model estimated on all history.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:195</sub>
+<sub>src/panel/run.py:197</sub>
 
 ### `run_oos`
 
@@ -5668,7 +5808,7 @@ Out-of-sample test: at every origin the drivers are re-selected on all banks wit
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:214</sub>
+<sub>src/panel/run.py:216</sub>
 
 ### `_charts`
 
@@ -5689,7 +5829,7 @@ _charts(out, O, scen, pn, best_by_bank, col)
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:247</sub>
+<sub>src/panel/run.py:249</sub>
 
 ### `run`
 
@@ -5711,9 +5851,32 @@ The whole panel analysis.
 
 **Config:** `features`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `sample.report_horizons`
 
-**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `Panel`, `bank_events`, `load_long`, `PanelModel.coefficient_rows`, `compare`, `panel_components`, `panel_path`, `save`, `_arr`, `_charts`, `_reused`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `select`, `form`
+**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `evaluate`, `settings`, `write`, `Panel`, `bank_events`, `load_long`, `PanelModel.coefficient_rows`, `compare`, `panel_components`, `panel_path`, `save`, `_arr`, `_charts`, `_re_evaluate`, `_reused`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `select`, `form`
 
-<sub>src/panel/run.py:284</sub>
+<sub>src/panel/run.py:286</sub>
+
+### `_re_evaluate`
+
+```python
+_re_evaluate(cfg, out, res, log=print)
+```
+
+The evaluation is cheap and depends only on the saved errors: redo it with the current settings.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `out` |  |  |
+| `res` |  |  |
+| `log` | `print` | function used to print progress messages. |
+
+**Config:** `metric`, `penalty`, `tail_share`
+
+**Calls:** `describe`, `evaluate`, `load_errors`, `settings`, `write`, `_eval_lines`, `Story.read`
+
+**Called by:** `run`
+
+<sub>src/panel/run.py:414</sub>
 
 ### `_reused`
 
@@ -5730,7 +5893,27 @@ The results of an earlier, still valid, panel run.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:399</sub>
+<sub>src/panel/run.py:440</sub>
+
+### `_eval_lines`
+
+```python
+_eval_lines(cfg, ev, basis)
+```
+
+The 'Ranked on ...' block of summary.md.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ev` |  |  |
+| `basis` |  |  |
+
+**Calls:** `describe`, `settings`
+
+**Called by:** `_re_evaluate`, `_summary`
+
+<sub>src/panel/run.py:458</sub>
 
 ### `_summary`
 
@@ -5748,11 +5931,11 @@ _summary(out, cfg, pn, res, col)
 
 **Config:** `panel`, `run_name`
 
-**Calls:** `describe`
+**Calls:** `_eval_lines`, `describe`
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:417</sub>
+<sub>src/panel/run.py:475</sub>
 
 
 ## src/panel/select.py
@@ -6613,7 +6796,7 @@ read(*p)
 |---|---|---|
 | `*p` |  |  |
 
-**Called by:** `check_package`, `_file_hash`, `code_hash`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
+**Called by:** `check_package`, `_file_hash`, `code_hash`, `_re_evaluate`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
 <sub>src/reporting/process_story.py:121</sub>
 
@@ -14056,6 +14239,25 @@ Command line entry: detect, suggest, write the config and run the pre-flight che
 **Calls:** `load_config`, `Report.text`, `check`, `propose`, `rel`, `scenario_name`, `write_config`
 
 <sub>tools/new_data_setup.py:640</sub>
+
+
+## tools/panel_compare.py
+
+Compare the panel models on any metric, for all banks, some banks, or one bank, from a finished panel run.
+
+### `main`
+
+```python
+main(argv=None)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `argv` | `None` |  |
+
+**Calls:** `evaluate`, `load_errors`, `one_bank`, `write`
+
+<sub>tools/panel_compare.py:27</sub>
 
 
 ## tools/process_story.py

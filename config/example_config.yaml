@@ -269,3 +269,13 @@ panel:                              # used only when data.bank.panel_column is s
                                     # project, in <run>/banks/<bank>/ (slower; reused when the bank is unchanged)
   drop_exited: false                # true = leave out banks that stopped reporting (exited, failed, acquired)
   exited_after_missing: 2           # quarters without data at the end that count as having stopped reporting
+  evaluation:                       # how the panel models are compared (redone from the saved errors in the
+                                    # app or with tools/panel_compare.py, no re-estimation needed)
+    metric: mape                    # mape | rmse | p90 | cvar (average of the worst tail_share) | worst | combined
+    banks: all                      # all, or a list: the credit unions in the average comparison
+    horizon: null                   # quarters 1..h (null: all)
+    tail_share: 0.10                # the "worst 10%" for cvar and combined
+    penalty: 0.5                    # combined = mape + penalty x (cvar - mape)
+    weighting: equal                # equal (every credit union counts the same) or size (latest balance)
+    benchmark: null                 # model for the "vs" columns (null: the AR(1) benchmark)
+    exclude_covid: true             # leave out the forecasts that cover the dummy (COVID) quarters
