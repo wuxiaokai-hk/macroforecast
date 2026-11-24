@@ -40,7 +40,7 @@ from src.features.transforms import all_features, candidate_forms  # noqa: E402
 from src.modelling.ardl import ARDL  # noqa: E402
 from src.modelling.evaluate import evaluate, horizon_summary  # noqa: E402
 from src.models import horizon, zoo  # noqa: E402
-from src.pipelines import en_first, screen_first  # noqa: E402
+from src.pipelines import bayes_first, en_first, screen_first  # noqa: E402
 from src.reporting import formula, report, story  # noqa: E402
 from src.utils.config import load_config  # noqa: E402
 from src.utils.cache import StepCache, hash_code, hash_frame, hash_obj  # noqa: E402
@@ -49,14 +49,14 @@ from src.utils import docs, saved, trace  # noqa: E402
 from src.utils.preflight import preflight  # noqa: E402
 
 warnings.filterwarnings("ignore")
-APPROACHES = {"screen_first": screen_first, "en_first": en_first}
+APPROACHES = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first}
 
 
 def main():
     """Command line entry: parse arguments, load the config, start the trace and run the pipeline."""
     ap = argparse.ArgumentParser(description="Macro-driver forecasting pipeline")
     ap.add_argument("--config", default=os.path.join(HERE, "config", "example_config.yaml"))
-    ap.add_argument("--approach", choices=["both", "screen_first", "en_first"], default=None,
+    ap.add_argument("--approach", choices=["both", "all", "screen_first", "en_first", "bayes_first"], default=None,
                     help="overrides 'approaches' in the config")
     ap.add_argument("--force", action="store_true", help="recompute every step (ignore the cache)")
     ap.add_argument("--force-step", action="append", default=[],
@@ -86,7 +86,8 @@ def run(cfg, args):
     if args.approach is None:
         approaches = list(cfg["approaches"])
     else:
-        approaches = ["screen_first", "en_first"] if args.approach == "both" else [args.approach]
+        approaches = ["screen_first", "en_first"] if args.approach == "both" else \
+            list(APPROACHES) if args.approach == "all" else [args.approach]
     out = cfg["out_dir"]
     os.makedirs(out, exist_ok=True)
     log(f"Run '{cfg['run_name']}' -> {out}")
@@ -104,7 +105,7 @@ def run(cfg, args):
     h_y, h_level, h_meta = hash_frame(ctx.y), hash_frame(ctx.level), hash_frame(ctx.meta)
     h_hist = hash_frame(ctx.hist)
     h_scen = {k: hash_frame(v) for k, v in ctx.macro.items()}
-    cs = {k: hash_obj(cfg[k]) for k in ("sample", "features", "screen_first", "en_first", "final_model")}
+    cs = {k: hash_obj(cfg[k]) for k in ("sample", "features", "screen_first", "en_first", "bayes_first", "final_model")}
     log("Steps (cached = loaded because nothing it depends on changed):")
     cache.run("data", {"target": h_y, "balance": h_level, "metadata": h_meta, "macro_history": h_hist,
                        "scenarios": hash_obj(h_scen)}, lambda: True, log)
@@ -127,6 +128,8 @@ def run(cfg, args):
                          "modelling/ardl.py", "pipelines/screen_first.py"],
         "en_first": ["selection/elastic_net.py", "selection/screening.py", "selection/clustering.py",
                      "modelling/search.py", "modelling/ardl.py", "pipelines/en_first.py"],
+        "bayes_first": ["selection/bayes.py", "selection/screening.py", "selection/clustering.py",
+                        "modelling/search.py", "modelling/ardl.py", "pipelines/bayes_first.py"],
     }
     results = []
     for a in approaches:

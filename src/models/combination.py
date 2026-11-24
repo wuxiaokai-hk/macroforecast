@@ -16,7 +16,8 @@ class Combination:
     """
     family = "Hybrid"
 
-    def __init__(self, name, members, weighting="equal", family="Hybrid", note="", window=16, hmax=4, shrink=0.5):
+    def __init__(self, name, members, weighting="equal", family="Hybrid", note="", window=16, hmax=4, shrink=0.5,
+                 weights=None):
         """Create a combination.
 
         Args:
@@ -28,6 +29,9 @@ class Combination:
         self.family, self.note = family, note
         self.window, self.hmax, self.shrink = window, hmax, shrink
         self.weights = np.full(len(self.members), 1 / len(self.members))
+        if weighting == "fixed" and weights is not None:     # given weights (e.g. posterior model probabilities)
+            w = np.asarray(weights, float)
+            self.weights = w / w.sum()
         self.params, self.res = None, None
 
     @property
@@ -46,7 +50,8 @@ class Combination:
             dict.
         """
         return {"class": "Combination", "weighting": self.weighting, "members": [m.spec() for m in self.members],
-                "window": self.window, "hmax": self.hmax, "shrink": self.shrink}
+                "window": self.window, "hmax": self.hmax, "shrink": self.shrink,
+                "weights": [round(float(w), 6) for w in self.weights] if self.weighting == "fixed" else None}
 
     def drivers(self):
         """Part of the model interface (see src/models/zoo.py): members with their current weights.
@@ -54,6 +59,8 @@ class Combination:
         Returns:
             list of str like "Screen first (40%)".
         """
+        if self.weighting == "fixed":               # averaged models: show each one's drivers
+            return [f"{' + '.join(m.features) or 'no macro driver'} ({w:.0%})" for m, w in zip(self.members, self.weights)]
         return [f"{m.name} ({w:.0%})" for m, w in zip(self.members, self.weights)]
 
     def panel(self, ctx, mdf):

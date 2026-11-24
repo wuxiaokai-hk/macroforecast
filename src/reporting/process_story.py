@@ -194,6 +194,9 @@ class Story:
             "A5_search.csv", "A6_search_rules.csv"))
         self.b1, self.b2, self.b3, self.b4, self.b5 = (R("en_first", f) for f in (
             "B1_en_full_sample.csv", "B2_en_stability.csv", "B3_groups.csv", "B4_search.csv", "B5_search_rules.csv"))
+        self.c1, self.c2, self.c3, self.c5, self.c6 = (R("bayes_first", f) for f in (
+            "C1_bma_settings.csv", "C2_bma_inclusion.csv", "C3_bma_top_models.csv", "C5_search.csv",
+            "C6_search_rules.csv"))
         self.oos, self.oos_h, self.dm, self.picks, self.stab, self.hold = (R("oos", f) for f in (
             "1_oos_summary.csv", "2_oos_by_horizon.csv", "3_dm_tests_vs_benchmark.csv", "4_drivers_by_origin.csv",
             "5_driver_stability.csv", "7_holdout.csv"))
@@ -238,7 +241,7 @@ class Story:
         for f in (self.s_title, self.s_question, self.s_overview, self.s_target, self.s_events, self.s_macro,
                   self.s_signs, self.s_literature, self.s_transforms, self.s_stationarity, self.s_lags,
                   self.s_funnel, self.s_screen, self.s_bestform, self.s_clusters, self.s_shortlist, self.s_en,
-                  self.s_stability, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
+                  self.s_stability, self.s_bayes, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
                   self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
                   self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
@@ -732,6 +735,47 @@ class Story:
                  read="Blue bars cross the dashed threshold and survive.",
                  chart=self.save(f, p))
 
+    def s_bayes(self):
+        C2 = self.c2
+        if C2.empty:
+            return
+        bc = self.cfg.get("bayes_first") or {}
+        thr = float(bc.get("threshold", 0.5))
+        top = C2.nlargest(15, "inclusion_probability").iloc[::-1]
+        f, ax, p = self.fig("bma_inclusion", 9, 5)
+        ax.barh([self.short(x, 50) for x in top["feature"]], top["inclusion_probability"] * 100,
+                color=[C["teal"] if v >= thr else C["line"] for v in top["inclusion_probability"]])
+        ax.axvline(thr * 100, color=C["red"], ls="--", lw=1)
+        ax.set_xlim(0, 100)
+        ax.set_title("Inclusion probability of each candidate (%)", loc="left")
+        ax.tick_params(axis="y", labelsize=8.5)
+        m = self.c1.iloc[0] if not self.c1.empty else {}
+        n_in = int((C2["inclusion_probability"] >= thr).sum())
+        T = None
+        if not self.c3.empty:
+            t3 = self.c3.head(6)
+            T = pd.DataFrame({"Model (drivers)": [self.short(x, 90) for x in t3["drivers"]],
+                              "Probability": [f"{v:.0%}" for v in t3["prob"]]})
+        self.add("5. Choosing drivers: Bayesian first", f"{n_in} candidates appear in at least {thr:.0%} of the "
+                 "probability-weighted models", "The third approach weighs every combination of drivers instead of "
+                 "choosing one.",
+                 what=["Every combination of candidates (up to a maximum size) is a possible model. Each gets a "
+                       "probability: how well it explains growth, against a prior that prefers small models.",
+                       "Models in which a driver has the wrong sign get no probability. Near-identical candidates (the "
+                       "same series for several regions) are grouped first, so they do not split the probability.",
+                       "A candidate's inclusion probability is the total probability of the models that contain it. "
+                       f"Those with at least {thr:.0%} go to the final search; the most probable models are also "
+                       "averaged into a forecast of their own ('Bayesian model average')."],
+                 why=["Choosing one model ignores that several are almost as good. Averaging over them, weighted by "
+                      "how probable each is, is the textbook answer to model uncertainty (Fernandez, Ley & Steel 2001; "
+                      "the IMF uses a sign-constrained version in its stress tests)."],
+                 result=[f"{int(m.get('candidates', 0))} candidates; {int(m.get('models_visited', 0)):,} models "
+                         f"visited; on average {float(m.get('posterior_mean_model_size', 0)):.1f} drivers per model.",
+                         f"{n_in} candidates reach {thr:.0%}; the top model alone has "
+                         + (f"{self.c3['prob'].iloc[0]:.0%}" if not self.c3.empty else "n/a") + " of the probability."],
+                 read="Blue bars cross the dashed threshold and go to the final search.",
+                 chart=self.save(f, p), table=T, table_note="The most probable models.")
+
     # ---------------------------------------------------------------------------------------------- part 6: search
     def s_search_rules(self):
         T = self.a6
@@ -811,7 +855,8 @@ class Story:
 
     def s_search_pick(self):
         rows = []
-        for name, S, R in (("Screen first", self.a5, self.a6), ("Elastic Net first", self.b4, self.b5)):
+        for name, S, R in (("Screen first", self.a5, self.a6), ("Elastic Net first", self.b4, self.b5),
+                           ("Bayesian first", self.c5, self.c6)):
             if S.empty:
                 continue
             sel = S[S["selected"]]
@@ -1090,7 +1135,8 @@ class Story:
                           **{f"1-{h}Q": [self.err(v) for v in top[f"avg_1_{h}_pct"]] for h in self.HZ if f"avg_1_{h}_pct" in top}})
         dd = self.comp.set_index("model")[col]
         gap = {r["model"]: r[col] - dd.get(r["model"], np.nan) for _, r in self.rank.iterrows()}
-        dd_models = [x for x in ("Screen first", "Elastic Net first") if x in gap]
+        dd_models = [x for x in ("Screen first", "Elastic Net first", "Bayesian first", "Bayesian model average")
+                     if x in gap]
         self.add("8. Testing", f"Out of sample, {self.rank.iloc[0]['model']} is the most accurate",
                  "Models whose drivers were chosen from the data lose the most once the choice can no longer see the future.",
                  what=["The two scores of each model side by side: with drivers chosen on all the data (light dot) and "
@@ -1106,7 +1152,7 @@ class Story:
         P = self.picks
         if P.empty:
             return
-        P = P[P["model"].isin(["Screen first", "Elastic Net first"])] if "model" in P else P
+        P = P[P["model"].isin(["Screen first", "Elastic Net first", "Bayesian first"])] if "model" in P else P
         fcol = "features" if "features" in P else [c for c in P.columns if "driver" in c or "feature" in c][0]
         rows = []
         for _, r in P.iterrows():

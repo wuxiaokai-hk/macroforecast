@@ -453,7 +453,7 @@ Copy `config/example_config.yaml`, rename it, and edit it. Everything that depen
 | Metadata file and **your** column names for mnemonic, description, geography, theme, transform, expected sign | `data.metadata.columns` |
 | Extra variables built from macro columns (spreads, real rates) | `data.constructed` |
 | Dates: last actual quarter, estimation start, backtest start, dummy quarters | `sample` |
-| Selection settings for each approach and the final model | `features`, `screen_first`, `en_first`, `final_model` |
+| Selection settings for each approach and the final model | `features`, `screen_first`, `en_first`, `bayes_first`, `final_model` |
 
 A few details on the inputs:
 
@@ -557,7 +557,7 @@ After the two approaches have chosen their drivers, `src/models/zoo.py` builds e
 | Family | Models | How they are specified |
 |---|---|---|
 | Benchmark | AR(1); mean growth | Loan growth on its own lag; average growth (a random walk with drift in the balance) |
-| Data-driven | Screen first; Elastic Net first | The two selection approaches |
+| Data-driven | Screen first; Elastic Net first; Bayesian first; Bayesian model average | The three selection approaches, and the probability-weighted average of the most probable models |
 | Literature | Classic ARDL (Hofmann; Calza et al.); ECB BEAST loan demand (Budnik et al. 2023); four-channel core (house prices, income, mortgage rate, unemployment); error-correction model | Fixed specifications from published studies, in the literature workbook |
 | Same growth as a driver | Same growth as disposable income; same growth as house prices (each exact, and plus the average gap) | Loan growth = growth of the chosen variable, nothing estimated (or plus its average historical gap); `models.same_growth` in the config |
 | Auto ARDL | Auto-ARDL on the literature core; auto-ARDL on the screen-first drivers; ARDL in levels with the bounds test | EViews-style: lags chosen by BIC/AIC/HQ, again at every re-estimation (`models.auto_ardl`) |
@@ -757,7 +757,7 @@ python tools/process_story.py --config config/my.yaml --run-dir outputs/my_run/s
 fc.process_story()                                                           # from the package
 ```
 
-Writes `outputs/<run>/process_story/process_story.html` (one long page with a contents sidebar, charts embedded) and `process_story.pptx` (about 50 slides). Both come from the same 44 sections, in 11 chapters: the question; the data (target, one-off events, macro series, expected signs, literature); building candidates (forms, stationarity, lags, the funnel); screen first (screen, best form, clusters, shortlist); Elastic Net first (selection, stability); the final search (each rule's removals, accuracy ranking, the simplest near-best model); the competition; testing (backtest design, one origin up close, every backtest path, leaderboard, errors by horizon, out of sample vs backtest, driver stability, holdout); the recommended model (equation, effects in words, drivers vs target, coefficient stability, diagnostics); the forecast (scenario inputs, forecasts, each quarter taken apart driver by driver, scenario ordering); limitations, recommendation, glossary and settings.
+Writes `outputs/<run>/process_story/process_story.html` (one long page with a contents sidebar, charts embedded) and `process_story.pptx` (about 50 slides). Both come from the same 45 sections, in 11 chapters: the question; the data (target, one-off events, macro series, expected signs, literature); building candidates (forms, stationarity, lags, the funnel); screen first (screen, best form, clusters, shortlist); Elastic Net first (selection, stability); Bayesian first (inclusion probabilities, the most probable models); the final search (each rule's removals, accuracy ranking, the simplest near-best model); the competition; testing (backtest design, one origin up close, every backtest path, leaderboard, errors by horizon, out of sample vs backtest, driver stability, holdout); the recommended model (equation, effects in words, drivers vs target, coefficient stability, diagnostics); the forecast (scenario inputs, forecasts, each quarter taken apart driver by driver, scenario ordering); limitations, recommendation, glossary and settings.
 
 Each section states the finding as its title, a one-line takeaway, what was done, why, what happened in this run and how to read the chart. On the slides the key points and figures sit beside the chart or table, and the full text is in the speaker notes. Titles and takeaways follow the results (e.g. a flagged diagnostic is named, not glossed over). Balance targets are described in growth and percent, rate targets (`target.transform: diff`) in changes and their own units. Needs only python-pptx and matplotlib (no Quarto); the app has a "Build the process story" button under ⑤ Results.
 
@@ -912,7 +912,7 @@ src/utils/               config loading, file reading, package set-up, cache.py 
 src/features/            transformations, stationarity tests, candidate features
 src/selection/           screening.py, clustering.py, elastic_net.py (incl. stability selection)
 src/modelling/           ardl.py (final model), search.py (shared final search), evaluate.py
-src/pipelines/           screen_first.py (A), en_first.py (B)
+src/pipelines/           screen_first.py (A), en_first.py (B), bayes_first.py (C)
 src/validation/oos.py    out-of-sample test
 src/models/              competing models: zoo.py (builds them all), ecm.py, ml.py, combination.py, foundation.py,
                          hybrid.py, deep.py (TiDE, N-HiTS, TFT, ARIMAX, Theta), regime.py (regime switching)
@@ -926,7 +926,7 @@ src/models/simple.py     same-growth-as-a-driver models
 src/models/autoardl.py   auto-ARDL (lags by information criterion), ARDL in levels, bounds test
 src/models/horizon.py    horizon combinations (a different model for each block of quarters ahead)
 src/reporting/           tables, charts, summary
-outputs/<run_name>/      common/, screen_first/, en_first/, comparison/, summary.md
+outputs/<run_name>/      common/, screen_first/, en_first/, bayes_first/, comparison/, summary.md
 ```
 
 ## What each approach does
@@ -949,6 +949,15 @@ outputs/<run_name>/      common/, screen_first/, en_first/, comparison/, summary
 4. Lambda is the first point on the path where `target_n` features are selected. There is no cross-validation, so the result is deterministic for given data.
 5. **Stability selection** (optional, on by default): repeat on 100 subsamples built from blocks of consecutive quarters, and keep features selected in at least 60% of them.
 6. Group the picks at |correlation| > 0.75 and keep one per group.
+
+**C: Bayesian first** (`src/pipelines/bayes_first.py`, `src/selection/bayes.py`)
+1. Lagged loan growth and the dummies are in every model; they are partialled out first.
+2. One feature per variable (the form and lag most correlated with the target, with its expected sign). Near-duplicates (|correlation| > `candidate_corr`, e.g. the same series for several cities) are grouped and one is kept, so copies of a series do not split the probability (the "dilution" problem). The strongest `max_candidates` (40) remain.
+3. **Bayesian model averaging** over every combination of up to `max_vars` (6) of them: Zellner's g-prior with g = max(n, K²) (the benchmark prior of Fernández, Ley & Steel 2001; `g: uip` for g = n), a beta-binomial prior on the number of drivers with prior mean `model_size` (4) (Ley & Steel 2009), and prior 0 for any model in which a driver has the wrong sign (as in the IMF's sign-constrained BMA). The model space is searched by MC3 (Madigan & York 1995, 20,000 draws); the posterior probabilities are exact over the models visited.
+4. A driver's **inclusion probability** is the total probability of the models that contain it. Drivers with at least `threshold` (0.5), the median probability model (Barbieri & Berger 2004), are grouped by correlation and passed to the final search.
+5. The forecasts of the most probable models (up to 90% of the probability, at most 20 models), weighted by their probabilities, form an extra model: **Bayesian model average** (`bayes_first.average`).
+
+Tables in `outputs/<run>/bayes_first/`: `C1_bma_settings` (prior, models visited, posterior mean size), `C2_bma_inclusion` (inclusion probability and posterior mean effect of every candidate), `C3_bma_top_models`, `C4_groups`, `C5_search`. On the example data it gives Ontario house prices an inclusion probability of 1.00 and disposable income 0.70 (the drivers the loans were simulated with) and chooses them. Out of sample, the averaged model had a 1–12 quarter error of 1.55%, against 1.84% for its single chosen model and 1.66% for Elastic Net first.
 
 **Shared final step** (`src/modelling/search.py`)
 1. Try every combination of 1–3 candidates. A combination is kept only if:

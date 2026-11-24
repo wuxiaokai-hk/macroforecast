@@ -1016,7 +1016,11 @@ if mode == "New data set":
             ov["final_model.max_vars"] = str(c1.slider("Most drivers in a model", 1, 6, 3))
             ov["final_model.t_min"] = str(c2.number_input("Smallest |t| allowed", 1.0, 4.0, 1.96, 0.01))
             ov["final_model.vif_max"] = str(c3.number_input("Largest VIF allowed", 2.0, 20.0, 5.0, 0.5))
-            ov["approaches"] = setup.yq(c4.multiselect("Selection approaches", ["screen_first", "en_first"], default=["screen_first", "en_first"]))
+            ov["approaches"] = setup.yq(c4.multiselect(
+                "Selection approaches", ["screen_first", "en_first", "bayes_first"],
+                default=["screen_first", "en_first", "bayes_first"],
+                help="screen_first: one variable at a time; en_first: Elastic Net on all at once; bayes_first: Bayesian "
+                     "model averaging (inclusion probabilities), which also adds the 'Bayesian model average' model"))
 
             st.subheader("Competing models")
             c1, c2, c3 = st.columns(3)
@@ -1039,7 +1043,7 @@ if mode == "New data set":
                                                             help="BIC (Schwarz) picks shorter lags; AIC longer ones")
             ov["models.auto_ardl.max_p"] = str(a3.number_input("Most lags of growth", 1, 8, 4, key="aa_p"))
             ov["models.auto_ardl.max_q"] = str(a3.number_input("Most lags of each driver", 0, 8, 4, key="aa_q"))
-            ov["models.auto_ardl.on"] = setup.yq(a4.multiselect("Driver sets", ["core", "screen_first", "en_first"],
+            ov["models.auto_ardl.on"] = setup.yq(a4.multiselect("Driver sets", ["core", "screen_first", "en_first", "bayes_first"],
                                                                 default=["core", "screen_first"], key="aa_on_sets",
                                                                 help="core = the literature core model's drivers"))
             ov["models.auto_ardl.levels"] = "true" if a5.checkbox("Levels ARDL + bounds test", True, key="aa_lv") else "false"
@@ -1077,7 +1081,7 @@ if mode == "New data set":
                         "single models; the AR(1) benchmark is always kept for the comparison.")
             from src.models.zoo import FAMILIES
             from src.models.ml import LABELS as ML_LABELS
-            only_opts = FAMILIES + ["Screen first", "Elastic Net first"] + [m["name"] for m in P["lit_models"]] \
+            only_opts = FAMILIES + ["Screen first", "Elastic Net first", "Bayesian first", "Bayesian model average"] + [m["name"] for m in P["lit_models"]] \
                 + [ML_LABELS[k] for k in ML if k in ML_LABELS] + ["Same growth as"]
             ov["models.only"] = setup.yq(st.multiselect("Models or families to run", list(dict.fromkeys(only_opts)),
                                                         default=[], key="m_only",

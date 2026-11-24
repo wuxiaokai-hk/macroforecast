@@ -35,7 +35,7 @@ from .ml import LABELS, MLModel
 from .simple import SameGrowth
 from . import autoardl
 
-APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first"}
+APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first", "bayes_first": "Bayesian first"}
 
 
 def selection_info(approach, result):
@@ -45,6 +45,8 @@ def selection_info(approach, result):
         result: the dict returned by the approach's run().
     """
     out = {"features": list(result["features"])}
+    if result.get("bma_models"):
+        out["bma_models"] = [(list(f), float(w)) for f, w in result["bma_models"]]
     t = result.get("tables", {})
     if "A4_shortlist" in t:
         out["shortlist"] = t["A4_shortlist"][["feature", "theme", "expected_sign"]].reset_index(drop=True)
@@ -195,6 +197,14 @@ def build(cfg, ctx, sel, log=print):
     for ap, info in sel.items():
         add(ARDL(APPROACH_NAMES[ap], info["features"], family="Data-driven"),
             "Selected from all candidates by the data (see the approach's folder)")
+    bm = (sel.get("bayes_first") or {}).get("bma_models")
+    if bm and (cfg.get("bayes_first") or {}).get("average", {}).get("enabled", True):
+        valid = [(f, w) for f, w in bm if not _valid(ctx, f)[1]]
+        if valid:
+            add(Combination("Bayesian model average", [ARDL(f"model {i + 1}", f) for i, (f, _) in enumerate(valid)],
+                            "fixed", family="Data-driven", weights=[w for _, w in valid]),
+                f"Average of the {len(valid)} most probable models of the Bayesian first approach, weighted by their "
+                "posterior probabilities (Fernandez-Ley-Steel g-prior, beta-binomial model prior, sign restrictions)")
     if (cfg["models"].get("same_growth") or []) and (not cfg["models"].get("only") or any(
             wanted(cfg, m_.name, m_.family) for m_, _ in same_growth_models(cfg, ctx, lambda *_: None))):
         for m_, how_ in same_growth_models(cfg, ctx, log):
@@ -241,7 +251,8 @@ def build(cfg, ctx, sel, log=print):
                "sample, as EViews' automatic ARDL; chosen again at every re-estimation")
         sets = {"core": ("Auto-ARDL: literature core", core, (core_spec or {}).get("signs") or {}),
                 "screen_first": ("Auto-ARDL: screen first drivers", sel.get("screen_first", {}).get("features", []), {}),
-                "en_first": ("Auto-ARDL: Elastic Net drivers", sel.get("en_first", {}).get("features", []), {})}
+                "en_first": ("Auto-ARDL: Elastic Net drivers", sel.get("en_first", {}).get("features", []), {}),
+                "bayes_first": ("Auto-ARDL: Bayesian drivers", sel.get("bayes_first", {}).get("features", []), {})}
         for key in acfg.get("on", ["core", "screen_first"]):
             if key not in sets or not sets[key][1]:
                 continue

@@ -357,6 +357,35 @@ def build(cfg, ctx, forms, F, results, models, notes, ev, comp):
                                               "src.selection.elastic_net.stability_selection", "src.selection.elastic_net._prepare"],
                       files=["en_first/B1_en_full_sample.csv", "en_first/B2_en_stability.csv", "en_first/B4_search.csv"]))
 
+    r_b = next((r for r in results if r["name"] == "Bayesian first"), None)
+    if r_b:
+        b = cfg["bayes_first"]
+        t = r_b["tables"]
+        tabs = [tbl(t["C2_bma_inclusion"][["feature", "inclusion_probability", "posterior_mean_std_coef", "description"]],
+                    "Inclusion probability of each candidate: the posterior probability of the models that contain it",
+                    12, highlight=("feature", fcode)),
+                tbl(t["C3_bma_top_models"][["drivers", "prob", "cumulative_prob"]], "The most probable models", 8),
+                tbl(t["C1_bma_settings"], "Prior and search", 3)]
+        S.append(step("10b · Bayesian", f"Approach C picks {', '.join(r_b['features'])} by Bayesian model averaging",
+                      ["Approach C, *Bayesian first*, weighs every combination of drivers by how well it explains the "
+                       "target, against a prior that favours small models. One form and lag per variable is kept, "
+                       "near-duplicates are grouped (so copies of a series do not split the probability), and models "
+                       "with a wrong-signed driver get no weight. A driver's inclusion probability is the total "
+                       f"probability of the models that contain it; those with at least {b['threshold']} form the median "
+                       "probability model, grouped by correlation and passed to the same final search. The averaged "
+                       "forecast of the most probable models is also a model: 'Bayesian model average'."],
+                      equation=["p(M | y) ∝ p(y | M) p(M)",
+                                "log p(y | M) = (n−1−k)/2 log(1+g) − (n−1)/2 log(1 + g(1 − R²_M)),  g = max(n, K²)",
+                                f"p(M) beta-binomial on the number of drivers, prior mean {b['model_size']}",
+                                "PIP_j = Σ_{M ∋ j} p(M | y)"],
+                      rules=[f"at most {b['max_vars']} drivers per model", f"{b['max_candidates']} candidates",
+                             f"near-duplicates grouped at |corr| ≥ {b.get('candidate_corr', 0.75)}",
+                             f"MC3: {b['iterations']} draws after {b['burn_in']}", f"threshold {b['threshold']}"],
+                      tables=tabs, functions=["src.selection.bayes.bma_select", "src.selection.bayes.mc3",
+                                              "src.selection.bayes.prepare"],
+                      files=["bayes_first/C2_bma_inclusion.csv", "bayes_first/C3_bma_top_models.csv",
+                             "bayes_first/C5_search.csv"]))
+
     # 11-14 ------------------------------------------------------------ the chosen model
     m = next((x for x in models if x.name == "Screen first"), None) or next((x for x in models if x.name == "Elastic Net first"), None)
     if m is not None:

@@ -28,6 +28,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/panel/reuse.py](#srcpanelreusepy)
 - [src/panel/run.py](#srcpanelrunpy)
 - [src/panel/select.py](#srcpanelselectpy)
+- [src/pipelines/bayes_first.py](#srcpipelinesbayesfirstpy)
 - [src/pipelines/en_first.py](#srcpipelinesenfirstpy)
 - [src/pipelines/screen_first.py](#srcpipelinesscreenfirstpy)
 - [src/reporting/formula.py](#srcreportingformulapy)
@@ -36,6 +37,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/reporting/story.py](#srcreportingstorypy)
 - [src/reporting/story_html.py](#srcreportingstoryhtmlpy)
 - [src/reporting/story_pptx.py](#srcreportingstorypptxpy)
+- [src/selection/bayes.py](#srcselectionbayespy)
 - [src/selection/clustering.py](#srcselectionclusteringpy)
 - [src/selection/elastic_net.py](#srcselectionelasticnetpy)
 - [src/selection/screening.py](#srcselectionscreeningpy)
@@ -295,7 +297,7 @@ sign_of() for a feature name.
 
 **Calls:** `parse_feature`, `sign_of`
 
-**Called by:** `_expected_sign`, `screen`, `run`, `_prepare`, `screen`
+**Called by:** `_expected_sign`, `screen`, `run`, `prepare`, `_prepare`, `screen`
 
 <sub>src/features/transforms.py:82</sub>
 
@@ -356,7 +358,7 @@ Split a feature name into its parts (inverse of feature_name).
 
 **Returns:** (code, transform, lag) with lag as int.
 
-**Called by:** `describe`, `feature_series`, `feature_sign`, `_driver_rows`, `base_of`, `core_plus_addons`, `write_workbook`, `_valid`, `screen`, `run`, `definition`, `terms`, `write_calculator`, `build`, `screen`, `drivers_of`, `bvarx_inputs`, `main`
+**Called by:** `describe`, `feature_series`, `feature_sign`, `_driver_rows`, `base_of`, `core_plus_addons`, `write_workbook`, `_valid`, `screen`, `run`, `definition`, `terms`, `write_calculator`, `build`, `prepare`, `screen`, `drivers_of`, `bvarx_inputs`, `main`
 
 <sub>src/features/transforms.py:145</sub>
 
@@ -1148,7 +1150,7 @@ F: candidate features on the history index; info: DataFrame indexed by feature w
 
 **Calls:** `ols_np`, `vif`, `backtest_origins`, `covid_mask`, `fast_backtest`, `refit_flags`
 
-**Called by:** `run`, `run`, `main`
+**Called by:** `run`, `run`, `run`, `main`
 
 <sub>src/modelling/search.py:95</sub>
 
@@ -1618,7 +1620,7 @@ Forecast combinations: an average of member models' forecasts.
 ### `Combination`
 
 ```python
-Combination(name, members, weighting='equal', family='Hybrid', note='', window=16, hmax=4, shrink=0.5)
+Combination(name, members, weighting='equal', family='Hybrid', note='', window=16, hmax=4, shrink=0.5, weights=None)
 ```
 
 Forecast combination: a weighted average of member models' forecasts.
@@ -1635,6 +1637,7 @@ weighting "equal" gives equal weights; "inv_mse" gives Bates-Granger weights fro
 | `window` | `16` | origins used for the weights. |
 | `hmax` | `4` | horizons used. |
 | `shrink` | `0.5` | share of the way back to equal weights (0 = pure inverse-MSE). |
+| `weights` | `None` |  |
 
 **Called by:** `build`
 
@@ -1643,7 +1646,7 @@ weighting "equal" gives equal weights; "inv_mse" gives Bates-Granger weights fro
 ### `Combination.__init__`
 
 ```python
-__init__(name, members, weighting='equal', family='Hybrid', note='', window=16, hmax=4, shrink=0.5)
+__init__(name, members, weighting='equal', family='Hybrid', note='', window=16, hmax=4, shrink=0.5, weights=None)
 ```
 
 Create a combination.
@@ -1658,6 +1661,7 @@ Create a combination.
 | `window` | `16` | origins used for the weights. |
 | `hmax` | `4` | horizons used. |
 | `shrink` | `0.5` | share of the way back to equal weights (0 = pure inverse-MSE). |
+| `weights` | `None` |  |
 
 <sub>src/models/combination.py:19</sub>
 
@@ -1671,7 +1675,7 @@ All drivers of the members, without duplicates.
 
 **Returns:** list of feature names.
 
-<sub>src/models/combination.py:34</sub>
+<sub>src/models/combination.py:38</sub>
 
 ### `Combination.spec`
 
@@ -1683,7 +1687,7 @@ Part of the model interface (see src/models/zoo.py): settings of the combination
 
 **Returns:** dict.
 
-<sub>src/models/combination.py:42</sub>
+<sub>src/models/combination.py:46</sub>
 
 ### `Combination.drivers`
 
@@ -1695,7 +1699,7 @@ Part of the model interface (see src/models/zoo.py): members with their current 
 
 **Returns:** list of str like "Screen first (40%)".
 
-<sub>src/models/combination.py:51</sub>
+<sub>src/models/combination.py:56</sub>
 
 ### `Combination.panel`
 
@@ -1712,7 +1716,7 @@ Part of the model interface (see src/models/zoo.py): one panel holding the colum
 
 **Returns:** DataFrame.
 
-<sub>src/models/combination.py:59</sub>
+<sub>src/models/combination.py:66</sub>
 
 ### `Combination.fit`
 
@@ -1732,7 +1736,7 @@ Part of the model interface (see src/models/zoo.py): estimate the weights (inv_m
 
 **Calls:** `Combination._weights`
 
-<sub>src/models/combination.py:74</sub>
+<sub>src/models/combination.py:81</sub>
 
 ### `Combination._weights`
 
@@ -1752,7 +1756,7 @@ Members' squared errors of cumulative growth, 1..hmax quarters ahead, over the l
 
 **Called by:** `Combination.fit`
 
-<sub>src/models/combination.py:89</sub>
+<sub>src/models/combination.py:96</sub>
 
 ### `Combination.forecast`
 
@@ -1770,7 +1774,7 @@ Part of the model interface (see src/models/zoo.py): weighted average of the mem
 
 **Returns:** array of forecasts.
 
-<sub>src/models/combination.py:116</sub>
+<sub>src/models/combination.py:123</sub>
 
 
 ## src/models/deep.py
@@ -4572,7 +4576,7 @@ Split features into those whose series exist in the macro data and those that do
 
 **Called by:** `build`, `literature_models`
 
-<sub>src/models/zoo.py:56</sub>
+<sub>src/models/zoo.py:58</sub>
 
 ### `literature_models`
 
@@ -4595,7 +4599,7 @@ Literature specifications with concepts resolved to series names through the lit
 
 **Called by:** `build`, `run`, `build_node`
 
-<sub>src/models/zoo.py:69</sub>
+<sub>src/models/zoo.py:71</sub>
 
 ### `_screen_tables`
 
@@ -4617,7 +4621,7 @@ Shortlist and per-variable screen results, from screen first if it ran, otherwis
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:97</sub>
+<sub>src/models/zoo.py:99</sub>
 
 ### `wanted`
 
@@ -4642,7 +4646,7 @@ Entries match a family name, a model name, or the start of a model name (case do
 
 **Called by:** `run`, `run`, `combine`, `scenarios`, `build`
 
-<sub>src/models/zoo.py:109</sub>
+<sub>src/models/zoo.py:111</sub>
 
 ### `same_growth_models`
 
@@ -4668,7 +4672,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:136</sub>
+<sub>src/models/zoo.py:138</sub>
 
 ### `build`
 
@@ -4685,13 +4689,13 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 | `sel` |  | selection results per approach. |
 | `log` | `print` | function used to print progress messages. |
 
-**Config:** `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
+**Config:** `bayes_first`, `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
 
 **Calls:** `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
 
 **Called by:** `run`, `models_at`
 
-<sub>src/models/zoo.py:179</sub>
+<sub>src/models/zoo.py:181</sub>
 
 
 ## src/panel/__init__.py
@@ -5804,7 +5808,7 @@ array(cols, nb=None)
 | `cols` |  |  |
 | `nb` | `None` |  |
 
-**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
+**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `mc3`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
 
 <sub>src/panel/select.py:43</sub>
 
@@ -6038,6 +6042,37 @@ Screen, shortlist and search on the window start..end.
 **Called by:** `run`, `run_oos`, `build_node`
 
 <sub>src/panel/select.py:260</sub>
+
+
+## src/pipelines/bayes_first.py
+
+Approach C - 'Bayesian first':
+one feature per variable -> Bayesian model averaging with sign restrictions (MC3) -> inclusion probabilities ->
+drivers with probability >= threshold (median probability model) -> group correlated picks -> shared final search.
+The averaged forecast of the top models is also built as its own model ('Bayesian model average').
+
+### `run`
+
+```python
+run(cfg, ctx, F, forms)
+```
+
+Bayesian first approach: BMA inclusion probabilities -> group correlated picks -> exhaustive search with the same rules as the other approaches.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration. |
+| `ctx` |  | Context. |
+| `F` |  | all candidate features. |
+| `forms` |  | transforms per series. |
+
+**Returns:** dict with the final features, the search table, the BMA tables (written to bayes_first/) and the averaged models.
+
+**Config:** `bayes_first.group_corr`, `bayes_first.iterations`, `bayes_first.primary_geography`, `bayes_first.rep_tolerance`, `bayes_first.threshold`
+
+**Calls:** `exhaustive_search`, `bma_select`, `cluster`, `representatives`, `log`
+
+<sub>src/pipelines/bayes_first.py:13</sub>
 
 
 ## src/pipelines/en_first.py
@@ -6546,7 +6581,7 @@ Reads a run and builds its sections.
 | `out` |  | the run's output folder. |
 | `charts` |  | folder for the PNGs. |
 
-**Config:** `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
+**Config:** `bayes_first`, `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
 
 **Called by:** `make`
 
@@ -6603,7 +6638,7 @@ add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), c
 | `table_note` | `''` |  |
 | `kind` | `'content'` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
 
 <sub>src/reporting/process_story.py:125</sub>
 
@@ -6619,7 +6654,7 @@ fig(name, w=9, h=4.4)
 | `w` | `9` |  |
 | `h` | `4.4` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
 
 <sub>src/reporting/process_story.py:132</sub>
 
@@ -6634,7 +6669,7 @@ save(f, path)
 | `f` |  |  |
 | `path` |  | file to write or read. |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
 
 <sub>src/reporting/process_story.py:136</sub>
 
@@ -6669,7 +6704,7 @@ short(f, n=46)
 
 **Calls:** `parse`, `tr_words`
 
-**Called by:** `Story._term`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
+**Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
 
 <sub>src/reporting/process_story.py:151</sub>
 
@@ -6697,7 +6732,7 @@ _n_vars(s)
 |---|---|---|
 | `s` |  |  |
 
-<sub>src/reporting/process_story.py:225</sub>
+<sub>src/reporting/process_story.py:228</sub>
 
 ### `Story.err`
 
@@ -6713,7 +6748,7 @@ err(v)
 
 **Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
 
-<sub>src/reporting/process_story.py:232</sub>
+<sub>src/reporting/process_story.py:235</sub>
 
 ### `Story.build`
 
@@ -6725,7 +6760,7 @@ build()
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:236</sub>
+<sub>src/reporting/process_story.py:239</sub>
 
 ### `Story.s_title`
 
@@ -6735,7 +6770,7 @@ s_title()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:254</sub>
+<sub>src/reporting/process_story.py:257</sub>
 
 ### `Story.s_question`
 
@@ -6747,7 +6782,7 @@ s_question()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:263</sub>
+<sub>src/reporting/process_story.py:266</sub>
 
 ### `Story.s_overview`
 
@@ -6757,7 +6792,7 @@ s_overview()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrap`, `num`, `Report.text`
 
-<sub>src/reporting/process_story.py:290</sub>
+<sub>src/reporting/process_story.py:293</sub>
 
 ### `Story.s_target`
 
@@ -6769,7 +6804,7 @@ s_target()
 
 **Calls:** `Story.add`, `Story.save`, `plural`
 
-<sub>src/reporting/process_story.py:324</sub>
+<sub>src/reporting/process_story.py:327</sub>
 
 ### `Story.s_events`
 
@@ -6781,7 +6816,7 @@ s_events()
 
 **Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
 
-<sub>src/reporting/process_story.py:363</sub>
+<sub>src/reporting/process_story.py:366</sub>
 
 ### `Story.s_macro`
 
@@ -6793,7 +6828,7 @@ s_macro()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:400</sub>
+<sub>src/reporting/process_story.py:403</sub>
 
 ### `Story.s_signs`
 
@@ -6803,7 +6838,7 @@ s_signs()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:430</sub>
+<sub>src/reporting/process_story.py:433</sub>
 
 ### `Story.s_literature`
 
@@ -6813,7 +6848,7 @@ s_literature()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:461</sub>
+<sub>src/reporting/process_story.py:464</sub>
 
 ### `Story.s_transforms`
 
@@ -6823,7 +6858,7 @@ s_transforms()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:485</sub>
+<sub>src/reporting/process_story.py:488</sub>
 
 ### `Story.s_stationarity`
 
@@ -6833,7 +6868,7 @@ s_stationarity()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
 
-<sub>src/reporting/process_story.py:503</sub>
+<sub>src/reporting/process_story.py:506</sub>
 
 ### `Story.s_lags`
 
@@ -6843,7 +6878,7 @@ s_lags()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:529</sub>
+<sub>src/reporting/process_story.py:532</sub>
 
 ### `Story.s_funnel`
 
@@ -6853,7 +6888,7 @@ s_funnel()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:545</sub>
+<sub>src/reporting/process_story.py:548</sub>
 
 ### `Story._rule`
 
@@ -6868,7 +6903,7 @@ _rule(T, key)
 
 **Called by:** `Story.s_funnel`, `Story.s_search_pick`
 
-<sub>src/reporting/process_story.py:584</sub>
+<sub>src/reporting/process_story.py:587</sub>
 
 ### `Story.s_screen`
 
@@ -6878,7 +6913,7 @@ s_screen()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:591</sub>
+<sub>src/reporting/process_story.py:594</sub>
 
 ### `Story.s_bestform`
 
@@ -6888,7 +6923,7 @@ s_bestform()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:625</sub>
+<sub>src/reporting/process_story.py:628</sub>
 
 ### `Story.s_clusters`
 
@@ -6900,7 +6935,7 @@ s_clusters()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:645</sub>
+<sub>src/reporting/process_story.py:648</sub>
 
 ### `Story.s_shortlist`
 
@@ -6910,7 +6945,7 @@ s_shortlist()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:668</sub>
+<sub>src/reporting/process_story.py:671</sub>
 
 ### `Story.s_en`
 
@@ -6922,7 +6957,7 @@ s_en()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:683</sub>
+<sub>src/reporting/process_story.py:686</sub>
 
 ### `Story.s_stability`
 
@@ -6934,7 +6969,19 @@ s_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:706</sub>
+<sub>src/reporting/process_story.py:709</sub>
+
+### `Story.s_bayes`
+
+```python
+s_bayes()
+```
+
+**Config:** `bayes_first`
+
+**Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:738</sub>
 
 ### `Story.s_search_rules`
 
@@ -6946,7 +6993,7 @@ s_search_rules()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
 
-<sub>src/reporting/process_story.py:736</sub>
+<sub>src/reporting/process_story.py:780</sub>
 
 ### `Story.s_search_rank`
 
@@ -6958,7 +7005,7 @@ s_search_rank()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:777</sub>
+<sub>src/reporting/process_story.py:821</sub>
 
 ### `Story.s_search_pick`
 
@@ -6970,7 +7017,7 @@ s_search_pick()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
 
-<sub>src/reporting/process_story.py:812</sub>
+<sub>src/reporting/process_story.py:856</sub>
 
 ### `Story.s_families`
 
@@ -6980,7 +7027,7 @@ s_families()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:843</sub>
+<sub>src/reporting/process_story.py:888</sub>
 
 ### `Story.s_backtest_design`
 
@@ -6992,7 +7039,7 @@ s_backtest_design()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:868</sub>
+<sub>src/reporting/process_story.py:913</sub>
 
 ### `Story.s_one_origin`
 
@@ -7002,7 +7049,7 @@ s_one_origin()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:906</sub>
+<sub>src/reporting/process_story.py:951</sub>
 
 ### `Story.s_all_origins`
 
@@ -7012,7 +7059,7 @@ s_all_origins()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:949</sub>
+<sub>src/reporting/process_story.py:994</sub>
 
 ### `Story.s_leaderboard`
 
@@ -7022,7 +7069,7 @@ s_leaderboard()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:980</sub>
+<sub>src/reporting/process_story.py:1025</sub>
 
 ### `Story.s_by_horizon`
 
@@ -7032,7 +7079,7 @@ s_by_horizon()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1012</sub>
+<sub>src/reporting/process_story.py:1057</sub>
 
 ### `Story.s_oos_design`
 
@@ -7044,7 +7091,7 @@ s_oos_design()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1050</sub>
+<sub>src/reporting/process_story.py:1095</sub>
 
 ### `Story.s_oos_gap`
 
@@ -7054,7 +7101,7 @@ s_oos_gap()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1072</sub>
+<sub>src/reporting/process_story.py:1117</sub>
 
 ### `Story.s_driver_stability`
 
@@ -7064,7 +7111,7 @@ s_driver_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1105</sub>
+<sub>src/reporting/process_story.py:1151</sub>
 
 ### `Story.s_holdout`
 
@@ -7076,7 +7123,7 @@ s_holdout()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1137</sub>
+<sub>src/reporting/process_story.py:1183</sub>
 
 ### `Story.s_rec_model`
 
@@ -7086,7 +7133,7 @@ s_rec_model()
 
 **Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1156</sub>
+<sub>src/reporting/process_story.py:1202</sub>
 
 ### `Story._term`
 
@@ -7102,7 +7149,7 @@ _term(t)
 
 **Called by:** `Story.s_rec_model`
 
-<sub>src/reporting/process_story.py:1187</sub>
+<sub>src/reporting/process_story.py:1233</sub>
 
 ### `Story.s_rec_effects`
 
@@ -7112,7 +7159,7 @@ s_rec_effects()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1196</sub>
+<sub>src/reporting/process_story.py:1242</sub>
 
 ### `Story.s_rec_fit`
 
@@ -7122,7 +7169,7 @@ s_rec_fit()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
 
-<sub>src/reporting/process_story.py:1217</sub>
+<sub>src/reporting/process_story.py:1263</sub>
 
 ### `Story.s_coef_paths`
 
@@ -7132,7 +7179,7 @@ s_coef_paths()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1241</sub>
+<sub>src/reporting/process_story.py:1287</sub>
 
 ### `Story.s_diagnostics`
 
@@ -7142,7 +7189,7 @@ s_diagnostics()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1271</sub>
+<sub>src/reporting/process_story.py:1317</sub>
 
 ### `Story.s_scen_inputs`
 
@@ -7152,7 +7199,7 @@ s_scen_inputs()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
 
-<sub>src/reporting/process_story.py:1303</sub>
+<sub>src/reporting/process_story.py:1349</sub>
 
 ### `Story.s_scen_forecast`
 
@@ -7162,7 +7209,7 @@ s_scen_forecast()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1328</sub>
+<sub>src/reporting/process_story.py:1374</sub>
 
 ### `Story.s_contrib`
 
@@ -7176,7 +7223,7 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 
 **Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1363</sub>
+<sub>src/reporting/process_story.py:1409</sub>
 
 ### `Story.s_scen_check`
 
@@ -7186,7 +7233,7 @@ s_scen_check()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1425</sub>
+<sub>src/reporting/process_story.py:1471</sub>
 
 ### `Story.s_limits`
 
@@ -7196,7 +7243,7 @@ s_limits()
 
 **Calls:** `Story.add`, `Story.err`
 
-<sub>src/reporting/process_story.py:1451</sub>
+<sub>src/reporting/process_story.py:1497</sub>
 
 ### `Story.s_recommend`
 
@@ -7206,7 +7253,7 @@ s_recommend()
 
 **Calls:** `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1470</sub>
+<sub>src/reporting/process_story.py:1516</sub>
 
 ### `Story.s_glossary`
 
@@ -7216,7 +7263,7 @@ s_glossary()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1484</sub>
+<sub>src/reporting/process_story.py:1530</sub>
 
 ### `Story.s_settings`
 
@@ -7226,7 +7273,7 @@ s_settings()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1504</sub>
+<sub>src/reporting/process_story.py:1550</sub>
 
 ### `_wrap`
 
@@ -7241,7 +7288,7 @@ _wrap(s, n)
 
 **Called by:** `Story.s_overview`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1521</sub>
+<sub>src/reporting/process_story.py:1567</sub>
 
 ### `_wrapl`
 
@@ -7258,7 +7305,7 @@ _wrapl(s, n)
 
 **Called by:** `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
 
-<sub>src/reporting/process_story.py:1532</sub>
+<sub>src/reporting/process_story.py:1578</sub>
 
 
 ## src/reporting/report.py
@@ -7652,7 +7699,7 @@ The story of one pipeline run.
 
 **Returns:** dict with the followed variable and the list of steps.
 
-**Config:** `data.bank.target_column`, `en_first.group_corr`, `en_first.l1_ratio`, `en_first.stability`, `en_first.target_n`, `features`, `final_model.max_vars`, `final_model.min_vars`, `final_model.one_per_theme`, `final_model.selection_tolerance`, `final_model.t_min`, `final_model.vif_max`, `sample`, `screen_first.cluster_corr`, `screen_first.primary_geography`, `screen_first.rep_tolerance`, `screen_first.screen_p`
+**Config:** `bayes_first.burn_in`, `bayes_first.candidate_corr`, `bayes_first.iterations`, `bayes_first.max_candidates`, `bayes_first.max_vars`, `bayes_first.model_size`, `bayes_first.threshold`, `data.bank.target_column`, `en_first.group_corr`, `en_first.l1_ratio`, `en_first.stability`, `en_first.target_n`, `features`, `final_model.max_vars`, `final_model.min_vars`, `final_model.one_per_theme`, `final_model.selection_tolerance`, `final_model.t_min`, `final_model.vif_max`, `sample`, `screen_first.cluster_corr`, `screen_first.primary_geography`, `screen_first.rep_tolerance`, `screen_first.screen_p`
 
 **Calls:** `feature_matrix`, `parse_feature`, `tr_desc`, `transform`, `_model_steps`, `_pick_follow`, `step`, `tbl`, `growth`, `is_log`, `level_after`, `per_year`
 
@@ -7684,7 +7731,7 @@ Steps 11-14 for the chosen model: estimation, one backtest origin worked through
 
 **Called by:** `build`
 
-<sub>src/reporting/story.py:381</sub>
+<sub>src/reporting/story.py:410</sub>
 
 ### `build_oos`
 
@@ -7711,7 +7758,7 @@ The story of the out-of-sample test (run_oos.py).
 
 **Called by:** `run`
 
-<sub>src/reporting/story.py:500</sub>
+<sub>src/reporting/story.py:529</sub>
 
 
 ## src/reporting/story_html.py
@@ -8029,6 +8076,141 @@ build(sections, path, footer)
 <sub>src/reporting/story_pptx.py:170</sub>
 
 
+## src/selection/bayes.py
+
+Bayesian model averaging over the candidate drivers (the 'Bayesian first' approach).
+
+### `prepare`
+
+```python
+prepare(cfg, ctx, F)
+```
+
+Partial the controls out of the target and of every feature; keep one feature per variable.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+
+**Returns:** (y residual, X residual of the kept features, table of candidates with correlation and sign).
+
+**Config:** `bayes_first.candidate_corr`, `bayes_first.max_candidates`, `bayes_first.primary_geography`, `bayes_first.rep_tolerance`
+
+**Calls:** `feature_sign`, `parse_feature`, `cluster`, `representatives`, `controls`
+
+**Called by:** `bma_select`
+
+<sub>src/selection/bayes.py:33</sub>
+
+### `_Space`
+
+```python
+_Space(y, X, signs, cfg, n_eff)
+```
+
+Marginal likelihood x prior of models (sets of candidate indices), cached.
+
+| argument | default | meaning |
+|---|---|---|
+| `y` |  |  |
+| `X` |  |  |
+| `signs` |  |  |
+| `cfg` |  | the run configuration (from load_config). |
+| `n_eff` |  |  |
+
+**Config:** `bayes_first.g`, `bayes_first.max_vars`, `bayes_first.model_size`
+
+**Called by:** `mc3`
+
+<sub>src/selection/bayes.py:74</sub>
+
+### `_Space.__init__`
+
+```python
+__init__(y, X, signs, cfg, n_eff)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `y` |  |  |
+| `X` |  |  |
+| `signs` |  |  |
+| `cfg` |  | the run configuration (from load_config). |
+| `n_eff` |  |  |
+
+**Config:** `bayes_first.g`, `bayes_first.max_vars`, `bayes_first.model_size`
+
+<sub>src/selection/bayes.py:77</sub>
+
+### `_Space.logpost`
+
+```python
+logpost(S)
+```
+
+log marginal likelihood + log prior of model S (a frozenset); -inf if it breaks a sign or the size cap.
+
+| argument | default | meaning |
+|---|---|---|
+| `S` |  |  |
+
+**Called by:** `mc3`
+
+<sub>src/selection/bayes.py:89</sub>
+
+### `mc3`
+
+```python
+mc3(y, X, signs, cfg, n_eff)
+```
+
+Search the model space with MC3; return the visited models with their posterior probabilities.
+
+| argument | default | meaning |
+|---|---|---|
+| `y` |  |  |
+| `X` |  |  |
+| `signs` |  |  |
+| `cfg` |  | the run configuration (from load_config). |
+| `n_eff` |  |  |
+
+**Returns:** (models DataFrame: drivers (tuple of indices), log_post, prob; acceptance rate).
+
+**Config:** `bayes_first.burn_in`, `bayes_first.iterations`, `bayes_first.seed`
+
+**Calls:** `BankFeatures.array`, `_Space`, `_Space.logpost`
+
+**Called by:** `bma_select`
+
+<sub>src/selection/bayes.py:116</sub>
+
+### `bma_select`
+
+```python
+bma_select(cfg, ctx, F)
+```
+
+The full BMA: candidates, MC3, inclusion probabilities and the top models.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+
+**Returns:** dict with tables: candidates (C1), inclusion (C2), top_models (C3); and 'models' as [(features, weight)] for the averaged forecast.
+
+**Config:** `bayes_first.average.mass`, `bayes_first.average.max_models`, `bayes_first.model_size`
+
+**Calls:** `mc3`, `prepare`
+
+**Called by:** `run`
+
+<sub>src/selection/bayes.py:152</sub>
+
+
 ## src/selection/clustering.py
 
 Group features whose |correlation| exceeds a threshold and keep one representative per group.
@@ -8046,7 +8228,7 @@ Average-linkage clustering on distance 1 - |corr|. Returns a Series of cluster l
 | `F` |  | candidate features (DataFrame, one column per feature). |
 | `corr_threshold` |  | \|correlation\| above which series join the same cluster. |
 
-**Called by:** `shortlist`, `run`, `run`, `main`
+**Called by:** `shortlist`, `run`, `run`, `run`, `prepare`, `main`
 
 <sub>src/selection/clustering.py:8</sub>
 
@@ -8065,7 +8247,7 @@ Within each cluster keep the highest score, unless a primary-geography member sc
 | `primary_geography` | `None` | preferred geography. |
 | `tolerance` | `0.75` | share of the best score a primary-geography member needs. |
 
-**Called by:** `shortlist`, `run`, `run`, `main`
+**Called by:** `shortlist`, `run`, `run`, `run`, `prepare`, `main`
 
 <sub>src/selection/clustering.py:22</sub>
 
@@ -8189,7 +8371,7 @@ Control variables in every screening regression: constant, lagged growth and COV
 
 **Returns:** DataFrame on ctx.idx.
 
-**Called by:** `_prepare`, `screen`, `main`
+**Called by:** `prepare`, `_prepare`, `screen`, `main`
 
 <sub>src/selection/screening.py:13</sub>
 
@@ -9923,7 +10105,7 @@ YAML turns the words true, yes, on (and ON, the Ontario code) into True, and fal
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:80</sub>
+<sub>src/utils/config.py:84</sub>
 
 ### `_merge`
 
@@ -9942,7 +10124,7 @@ Recursively merge a user config over the defaults (user values win).
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:114</sub>
+<sub>src/utils/config.py:118</sub>
 
 ### `_path`
 
@@ -9960,7 +10142,7 @@ Resolve a path relative to the project folder.
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:129</sub>
+<sub>src/utils/config.py:133</sub>
 
 ### `load_config`
 
@@ -9982,7 +10164,7 @@ Read a YAML config, fill defaults, check required keys and normalise values.
 
 **Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `main`, `build_deck`, `main`, `make`, `main`
 
-<sub>src/utils/config.py:143</sub>
+<sub>src/utils/config.py:147</sub>
 
 
 ## src/utils/docs.py
@@ -10690,7 +10872,7 @@ Print a progress message immediately (also captured by the trace).
 |---|---|---|
 | `msg` |  | text. |
 
-**Called by:** `run`, `run`, `run`, `run`, `Context.__init__`, `add_constructed`, `holdout`, `run_oos`
+**Called by:** `run`, `run`, `run`, `run`, `run`, `Context.__init__`, `add_constructed`, `holdout`, `run_oos`
 
 <sub>src/utils/io.py:8</sub>
 

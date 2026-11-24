@@ -36,7 +36,8 @@ _OFF = {"deep": {"enabled": False}, "foundation": {"enabled": False}}
 PRESETS = {
     "fast": {"models": {"machine_learning": [], "statistical": [], "regime": {"models": []}, **copy.deepcopy(_OFF),
                         "auto_ardl": {"levels": False}},
-             "en_first": {"stability": {"n_subsamples": 30}}, "oos": {"step": 8}},
+             "en_first": {"stability": {"n_subsamples": 30}}, "bayes_first": {"iterations": 8000, "burn_in": 1000},
+             "oos": {"step": 8}},
     "medium": {"models": {"machine_learning": ["ridge", "random_forest", "gradient_boosting"],
                           "statistical": ["arimax", "theta"], "regime": {"models": ["markov", "threshold"]},
                           **copy.deepcopy(_OFF)}},

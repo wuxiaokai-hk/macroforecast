@@ -111,7 +111,7 @@ features:                           # shared by both approaches
   volatility: []                    # e.g. [4, 8]: rolling std. dev. of q/q growth (change) over k quarters (vol4 / dvol4)
   volatility_sign: -1               # expected sign of every volatility feature (more uncertainty, less growth)
 
-approaches: [screen_first, en_first]   # run one or both
+approaches: [screen_first, en_first, bayes_first]   # any of the three
 
 # -----------------------------------------------------------------------------
 # Models from the literature: EVERYTHING is in the workbook (sheets models, concepts, settings, references).
@@ -231,6 +231,22 @@ en_first:                           # Elastic Net -> group correlated picks -> s
   group_corr: 0.75                  # selected features above this |correlation| are grouped
   primary_geography: Ontario
   rep_tolerance: 0.75
+
+
+bayes_first:                        # approach C: Bayesian model averaging over the candidates
+  g: bric                           # g-prior: bric = max(n, K^2) (Fernandez, Ley & Steel 2001), uip = n
+  model_size: 4                     # prior mean number of drivers (beta-binomial prior, Ley & Steel 2009)
+  max_vars: 6                       # no model with more drivers
+  max_candidates: 40                # one form and lag per variable, near-duplicates grouped, the strongest 40
+  candidate_corr: 0.75              # |corr| above which candidates are near-duplicates (one kept)
+  iterations: 20000                 # MC3 draws (after burn_in)
+  burn_in: 2000
+  seed: 42
+  threshold: 0.5                    # inclusion probability for the final search (median probability model)
+  group_corr: 0.75
+  primary_geography: null
+  rep_tolerance: 0.75
+  average: {enabled: true, mass: 0.9, max_models: 20}   # 'Bayesian model average': top models up to 90% probability
 
 final_model:                        # shared final step for both approaches
   min_vars: 1
