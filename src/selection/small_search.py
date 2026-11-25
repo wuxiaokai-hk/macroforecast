@@ -45,13 +45,20 @@ def subset_search(ctx, F, feats, max_vars=4, top=20):
     for k in range(1, min(max_vars, len(feats)) + 1):
         for S in itertools.combinations(feats, k):
             X = np.column_stack([W.values] + [Fw[f].values for f in S])
-            b, *_ = np.linalg.lstsq(X, y.values, rcond=None)
+            if not np.isfinite(X).all():
+                continue
+            try:
+                b, *_ = np.linalg.lstsq(X, y.values, rcond=None)
+            except np.linalg.LinAlgError:
+                continue
             e = y.values - X @ b
             rss = float(e @ e)
             bic = n * np.log(rss / n) + X.shape[1] * np.log(n)
             coefs = b[-k:]
             ok = all(sign[f] == 0 or np.sign(c) == sign[f] for f, c in zip(S, coefs))
             rows.append({"features": ", ".join(S), "n": k, "bic": bic, "signs_ok": ok})
+    if not rows:
+        return [], pd.DataFrame()
     T = pd.DataFrame(rows).sort_values("bic")
     good = T[T["signs_ok"]]
     best = good.iloc[0]["features"].split(", ") if len(good) else T[T["n"] == 1].iloc[0]["features"].split(", ")

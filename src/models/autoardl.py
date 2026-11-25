@@ -221,7 +221,7 @@ class LevelsARDL:
         P["__ys"] = P["__logL"] - P["__lcpi"]
         for item, n in zip(self.long_run, self.lr_names):
             P[n] = long_run_column(mdf, item, self.deflator).reindex(P.index)
-        return P
+        return P.replace([np.inf, -np.inf], np.nan)             # log of a zero or negative value: missing
 
     def spec(self):
         """Part of the model interface (see src/models/zoo.py)."""

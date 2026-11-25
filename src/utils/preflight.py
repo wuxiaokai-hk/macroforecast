@@ -245,6 +245,14 @@ def check(cfg):
             rep.add(OK if n_sign else ERROR, "data.metadata", f"{len(meta)} variables, {n_sign} with an expected sign",
                     "" if n_sign else "with features.require_sign_prior, variables need a +1/-1 sign to be selected")
             if base is not None:
+                lvl_codes = [c for c in meta.index[meta["transform"].astype(str).str.strip() == "dlog"]
+                             if c in base.columns]
+                nonpos = [c for c in lvl_codes if (pd.to_numeric(base[c], errors="coerce") <= 0).any()]
+                if nonpos:
+                    rep.add(WARN, "data.metadata",
+                            f"{len(nonpos)} series with transform dlog have zero or negative values, e.g. {nonpos[:4]}",
+                            "their log growth does not exist in those quarters: such forms are not offered as candidates "
+                            "and literature drivers using them are left out. Fix the values, or set the transform to diff")
                 no_meta = [c for c in base.columns if c not in meta.index]
                 no_data = [c for c in meta.index if c not in base.columns]
                 lvl = OK if len(no_meta) < 0.2 * base.shape[1] else WARN

@@ -21,10 +21,16 @@ def ols_np(X, y):
     Returns:
         (coefficients, standard errors, residuals). Standard errors are classical (not Newey-West).
     """
+    X, y = np.asarray(X, float), np.asarray(y, float)
+    ok = np.isfinite(X).all(axis=1) & np.isfinite(y)
+    if not ok.all():
+        # quarters with a missing or infinite value (e.g. the log of a zero) are left out of the fit: they get zero
+        # weight and a zero residual, instead of stopping the whole run with "SVD did not converge"
+        X, y = np.where(ok[:, None], X, 0.0), np.where(ok, y, 0.0)
     XtX_inv = np.linalg.pinv(X.T @ X)
     b = XtX_inv @ X.T @ y
     e = y - X @ b
-    s2 = e @ e / max(len(y) - X.shape[1], 1)
+    s2 = e @ e / max(int(ok.sum()) - X.shape[1], 1)
     return b, np.sqrt(np.clip(np.diag(XtX_inv) * s2, 1e-30, None)), e
 
 
@@ -53,7 +59,7 @@ def make_panel(ctx, mdf, features):
     for c in ctx.dummies.columns:
         P[c] = ctx.dummies[c].reindex(idx).fillna(0.0)
     F = feature_matrix(mdf, features, ctx.cfg["features"]["deflator"]).reindex(idx)
-    return pd.concat([P, F], axis=1)
+    return pd.concat([P, F], axis=1).replace([np.inf, -np.inf], np.nan)
 
 
 class ARDL:

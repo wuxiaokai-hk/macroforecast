@@ -59,7 +59,7 @@ def select(cfg, ctx, F, log=print):
     from sklearn.linear_model import lars_path
     st = settings(cfg)
     y, W, Fw = _window(ctx, F)
-    cols = [c for c in Fw.columns if Fw[c].notna().all() and Fw[c].std() > 0]
+    cols = [c for c in Fw.columns if np.isfinite(Fw[c].values).all() and Fw[c].std() > 0]
     Fw = Fw[cols]
     X = _partial(Fw.values, W)
     yv = _partial(y.values[:, None], W)[:, 0]

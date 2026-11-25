@@ -35,9 +35,9 @@
   "changed": ""
  },
  "src.features.transforms.feature_series": {
-  "hash": "8ab026c797f8",
+  "hash": "5fa748b2d692",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.features.transforms.feature_matrix": {
   "hash": "20538aa62fbf",
@@ -50,7 +50,7 @@
   "changed": "2026-11-25"
  },
  "src.features.transforms.candidate_forms": {
-  "hash": "04c7a89391ab",
+  "hash": "bac327a638ae",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -60,9 +60,9 @@
   "changed": "2026-11-25"
  },
  "src.modelling.ardl.ols_np": {
-  "hash": "9b05cc38e75e",
+  "hash": "03f34119ffc9",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.modelling.ardl.vif": {
   "hash": "bd7e20e5b80b",
@@ -70,9 +70,9 @@
   "changed": ""
  },
  "src.modelling.ardl.make_panel": {
-  "hash": "e410bd66301e",
+  "hash": "12bcf75f999f",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.modelling.ardl.ARDL": {
   "hash": "cc09614beaee",
@@ -360,9 +360,9 @@
   "changed": ""
  },
  "src.models.ecm.ECM": {
-  "hash": "61f638ba08c6",
+  "hash": "dbfac4afcfcb",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.models.ecm.ECM.__init__": {
   "hash": "e15fa1bbe7c6",
@@ -380,9 +380,9 @@
   "changed": ""
  },
  "src.models.ecm.ECM.panel": {
-  "hash": "81270dec3a29",
+  "hash": "8538a7aefb6c",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.models.ecm.ECM._lr": {
   "hash": "0d2f4b8c0441",
@@ -395,9 +395,9 @@
   "changed": ""
  },
  "src.models.ecm.ECM.fit": {
-  "hash": "995f84a2bad7",
+  "hash": "6f9b0edf9189",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.models.ecm.ECM.forecast": {
   "hash": "99061c45b9d4",
@@ -570,14 +570,14 @@
   "changed": "2026-11-24"
  },
  "src.models.zoo._valid": {
-  "hash": "f3603b80ba6f",
+  "hash": "a8f49b7ade60",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.models.zoo.literature_models": {
-  "hash": "fa8023debf7d",
+  "hash": "301b94432797",
   "added": "",
-  "changed": "2026-10-29"
+  "changed": "2026-11-25"
  },
  "src.models.zoo._screen_tables": {
   "hash": "03a2cbfe4be5",
@@ -1760,9 +1760,9 @@
   "changed": "2026-10-27"
  },
  "src.utils.preflight.check": {
-  "hash": "007b3118faf4",
+  "hash": "fa8216fb5325",
   "added": "2026-10-27",
-  "changed": "2026-11-18"
+  "changed": "2026-11-25"
  },
  "src.utils.preflight.preflight": {
   "hash": "b7ec2dcc9b15",
@@ -2215,9 +2215,9 @@
   "changed": "2026-10-31"
  },
  "src.models.autoardl.LevelsARDL": {
-  "hash": "13960fe95e05",
+  "hash": "ad7c742e543d",
   "added": "2026-10-31",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.models.autoardl.LevelsARDL.__init__": {
   "hash": "7ecc40ae18be",
@@ -2225,9 +2225,9 @@
   "changed": "2026-10-31"
  },
  "src.models.autoardl.LevelsARDL.panel": {
-  "hash": "592737142a60",
+  "hash": "7538b9a6b773",
   "added": "2026-10-31",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.models.autoardl.LevelsARDL.spec": {
   "hash": "771ab25e9198",
@@ -4175,19 +4175,19 @@
   "changed": "2026-11-24"
  },
  "src.selection.double_selection._window": {
-  "hash": "1ea4d870eaa6",
+  "hash": "8b96ead6789a",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.selection.double_selection._partial": {
-  "hash": "ee0ee1cb85ba",
+  "hash": "8885483a333c",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.selection.double_selection.single_t": {
-  "hash": "2fa595a3971c",
+  "hash": "6a442a00308b",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.selection.double_selection.rlasso": {
   "hash": "14ac92946265",
@@ -4490,7 +4490,7 @@
   "changed": "2026-11-25"
  },
  "src.features.factors.member_values": {
-  "hash": "79d3286cfd2a",
+  "hash": "28558240d6e1",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4510,17 +4510,17 @@
   "changed": "2026-11-25"
  },
  "src.features.factors._t_best_lag": {
-  "hash": "095c8c9ffb31",
+  "hash": "0d70780e5394",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
  "src.features.factors.build": {
-  "hash": "a49082d889e4",
+  "hash": "201c23373fb4",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
  "src.features.factors.attach": {
-  "hash": "be96dd1e4fe8",
+  "hash": "3b182a56b4d3",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4540,7 +4540,7 @@
   "changed": "2026-11-25"
  },
  "src.selection.small_search.subset_search": {
-  "hash": "689bbf181eb6",
+  "hash": "8845aff6dedb",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4555,7 +4555,7 @@
   "changed": "2026-11-25"
  },
  "src.selection.stability.select": {
-  "hash": "a052f962acc3",
+  "hash": "c11796c4adcc",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4590,7 +4590,7 @@
   "changed": "2026-11-25"
  },
  "src.models.tested.twin": {
-  "hash": "51872199aae5",
+  "hash": "07f990a000c3",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4600,7 +4600,7 @@
   "changed": "2026-11-25"
  },
  "src.models.tested._check": {
-  "hash": "355059b86c79",
+  "hash": "e5d447417539",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4609,127 +4609,12 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.features.factors._theme": {
+  "hash": "1a073bd3e406",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master.extract",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master._rename_plain",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.data.load_long",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.data.exited",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse._file_hash",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse._canon",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.code_hash",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse._settings",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse._bank_data",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.panel_components",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.bank_components",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.compare",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.save",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.panel_path",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.bank_path",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.own_run_banks",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.status",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.run._reused",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.run._summary",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.utils.master._sheets",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse.code_hash",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-23",
-   "id": "src.panel.reuse._settings",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.targets",
-   "what": "changed"
-  },
   {
    "date": "2026-11-24",
    "id": "src.utils.master._blank",
@@ -6109,6 +5994,126 @@
    "date": "2026-11-25",
    "id": "src.reporting.process_story.Story.s_twins",
    "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.member_values",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors._t_best_lag",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors._theme",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.attach",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.feature_series",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.candidate_forms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested._check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twin",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.double_selection._window",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.double_selection._partial",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.double_selection.single_t",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.small_search.subset_search",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.stability.select",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.modelling.ardl.ols_np",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.zoo._valid",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.zoo.literature_models",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.utils.preflight.check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.modelling.ardl.make_panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.autoardl.LevelsARDL",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.autoardl.LevelsARDL.panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.ecm.ECM",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.ecm.ECM.panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.ecm.ECM.fit",
+   "what": "changed"
   }
  ]
 }

@@ -170,7 +170,9 @@ def feature_series(mdf, name, deflator=None):
         Series indexed by quarter.
     """
     code, tr, lag = parse_feature(name)
-    return transform(mdf, code, tr, deflator).shift(lag)
+    s = transform(mdf, code, tr, deflator)
+    # log of a zero or negative value gives -inf/inf: treat it as missing so every later check sees it
+    return s.replace([np.inf, -np.inf], np.nan).shift(lag)
 
 
 def feature_matrix(mdf, names, deflator=None):
@@ -238,7 +240,7 @@ def candidate_forms(cfg, hist, meta):
         elif is_level and theme in (f["real_themes"] or []) and f["deflator"] in hist.columns:
             trs += ["rdlog"] if f.get("form_rule", "all") == "by_type" else ["rdlog", "ryoy"]
         for tr in trs:
-            s = transform(hist, code, tr, f["deflator"]).dropna()
+            s = transform(hist, code, tr, f["deflator"]).replace([np.inf, -np.inf], np.nan).dropna()
             try:
                 p = adfuller(s, autolag="AIC")[1] if (len(s) >= 30 and s.std() > 0) else 1.0
             except Exception:

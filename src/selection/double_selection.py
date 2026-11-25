@@ -39,15 +39,15 @@ def _window(ctx, F):
         d = ctx.dummies[c].iloc[rows]
         if d.std() > 0:
             W[c] = d
-    Fw = F.iloc[rows]
-    ok = y.notna() & W.notna().all(axis=1)
+    Fw = F.iloc[rows].replace([np.inf, -np.inf], np.nan)
+    ok = np.isfinite(y) & np.isfinite(W).all(axis=1)
     return y[ok], W[ok], Fw[ok]
 
 
 def _partial(M, W):
     """Residuals of every column of M on W (Frisch-Waugh-Lovell)."""
     Wv = W.values
-    B = np.linalg.lstsq(Wv, M, rcond=None)[0]
+    B = np.linalg.pinv(Wv) @ np.nan_to_num(M, nan=0.0, posinf=0.0, neginf=0.0)
     return M - Wv @ B
 
 
@@ -58,7 +58,7 @@ def single_t(ctx, F, features):
     out = {}
     for f in features:
         x = Fw[f].values
-        if np.isnan(x).any() or np.std(x) == 0:
+        if not np.isfinite(x).all() or np.std(x) == 0:
             continue
         rx = _partial(x[:, None], W)[:, 0]
         sxx = rx @ rx

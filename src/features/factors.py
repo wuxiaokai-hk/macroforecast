@@ -59,7 +59,9 @@ def member_kind(meta, hist, code):
 
 def member_values(mdf, code, kind):
     x = mdf[code].astype(float)
-    return np.log(x).diff() if kind == "dlog" else x.diff()
+    with np.errstate(divide="ignore", invalid="ignore"):
+        v = np.log(x).diff() if kind == "dlog" else x.diff()
+    return v.replace([np.inf, -np.inf], np.nan)
 
 
 def spec_for(mdf, code):
@@ -98,11 +100,14 @@ def _t_best_lag(ctx, x, max_lag):
     best = (0.0, 0.0, 0)
     for k in range(max_lag + 1):
         v = x.shift(k).reindex(ctx.idx).iloc[rows].values
-        ok = ~np.isnan(v) & ~np.isnan(W).any(axis=1) & ~np.isnan(y)
+        ok = np.isfinite(v) & np.isfinite(W).all(axis=1) & np.isfinite(y)
         if ok.sum() < 20 or np.std(v[ok]) == 0:
             continue
         X = np.column_stack([W[ok], v[ok]])
-        b, *_ = np.linalg.lstsq(X, y[ok], rcond=None)
+        try:
+            b, *_ = np.linalg.lstsq(X, y[ok], rcond=None)
+        except np.linalg.LinAlgError:
+            continue
         e = y[ok] - X @ b
         s2 = e @ e / max(ok.sum() - X.shape[1], 1)
         se = np.sqrt(max(np.linalg.pinv(X.T @ X)[-1, -1] * s2, 1e-30))
@@ -134,55 +139,65 @@ def build(cfg, ctx, log=print):
     for theme, grp in meta.loc[codes].groupby("theme"):
         if theme in blocked or theme in excluded or not str(theme).strip():
             continue
-        cand = []
-        for code in grp.index:
-            kind = member_kind(meta, hist, code)
-            v = member_values(hist, code, kind)
-            w = v.iloc[win]
-            if w.isna().any() or w.std() == 0 or len(w) < 20:
-                continue
-            at, t, k = _t_best_lag(ctx, v, max_lag) if st["targeted"] else (1.0, 1.0, 0)
-            cand.append({"code": code, "kind": kind, "abs_t": at, "t": t, "lag": k, "mean": float(w.mean()),
-                         "sd": float(w.std()), "expected_sign": int(np.sign(meta.loc[code, "expected_sign"] or 0))})
-        if len(cand) < st["min_members"]:
-            continue
-        cand.sort(key=lambda r: -r["abs_t"])
-        keep = [r for r in cand if r["abs_t"] >= st["t_threshold"]] if st["targeted"] else cand
-        how = "targeted" if st["targeted"] else "all members"
-        if len(keep) < st["min_members"]:
-            keep, how = cand[:st["min_members"]], f"the {st['min_members']} strongest (too few above the threshold)"
-        Z = np.column_stack([((member_values(hist, r["code"], r["kind"]).iloc[win] - r["mean"]) / r["sd"]).values
-                             for r in keep])
-        U, S, Vt = np.linalg.svd(Z - Z.mean(axis=0), full_matrices=False)
-        share = S ** 2 / np.sum(S ** 2)
-        for j in range(min(int(st["n_factors"]), len(keep) - 1 if len(keep) > 1 else 1)):
-            if j > 0 and share[j] < float(st["min_share"] or 0):
-                break
-            w = Vt[j].copy()
-            if w[np.argmax(np.abs(w))] < 0:                # rises when its main member rises
-                w = -w
-            code = f"FAC.{slug(theme)}" + ("" if j == 0 else f"_{j + 1}")
-            es = sum(wi * r["expected_sign"] for wi, r in zip(w, keep))
-            tot = sum(abs(wi) for wi, r in zip(w, keep) if r["expected_sign"])
-            sign = int(np.sign(es)) if tot and abs(es) >= 0.5 * tot else 0
-            members = [{"code": r["code"], "kind": r["kind"], "mean": r["mean"], "sd": r["sd"], "weight": float(wi)}
-                       for wi, r in zip(w, keep)]
-            specs[code] = {"theme": theme, "members": members, "share": float(share[j]), "how": how}
-            top = sorted(zip(w, keep), key=lambda p: -abs(p[0]))[:3]
-            lead = ", ".join(str(meta.loc[r["code"], "description"])[:40] if "description" in meta.columns
-                             else r["code"] for _, r in top)
-            mrows.append({"mnemonic": code, "description": f"{theme} index ({len(keep)} series"
-                                                           + (")" if j == 0 else f", component {j + 1})"),
-                          "main_series": lead,
-                          "theme": theme, "geography": "All", "transform": "factor", "expected_sign": sign,
-                          "members": len(keep), "of": len(cand), "variance_share": float(share[j]), "how": how})
-            for wi, r in zip(w, keep):
-                lrows.append({"factor": code, "theme": theme, "member": r["code"],
-                              "description": meta.loc[r["code"], "description"] if "description" in meta.columns
-                              else r["code"], "form": "growth" if r["kind"] == "dlog" else "change",
-                              "loading": float(wi), "t_alone": r["t"], "best_lag": r["lag"],
-                              "expected_sign": r["expected_sign"]})
+        try:
+            _theme(ctx, st, meta, hist, win, max_lag, theme, grp, specs, mrows, lrows)
+        except Exception as ex:                       # one theme's numerical trouble never stops the run
+            log(f"  theme factor for '{theme}' skipped ({type(ex).__name__}: {ex})")
     return specs, pd.DataFrame(mrows), pd.DataFrame(lrows)
+
+
+def _theme(ctx, st, meta, hist, win, max_lag, theme, grp, specs, mrows, lrows):
+    """Build the factor(s) of one theme into specs / mrows / lrows."""
+    cand = []
+    for code in grp.index:
+        kind = member_kind(meta, hist, code)
+        v = member_values(hist, code, kind)
+        w = v.iloc[win]
+        if w.isna().any() or not np.isfinite(w.values).all() or w.std() == 0 or len(w) < 20:
+            continue
+        at, t, k = _t_best_lag(ctx, v, max_lag) if st["targeted"] else (1.0, 1.0, 0)
+        cand.append({"code": code, "kind": kind, "abs_t": at, "t": t, "lag": k, "mean": float(w.mean()),
+                     "sd": float(w.std()), "expected_sign": int(np.sign(meta.loc[code, "expected_sign"] or 0))})
+    if len(cand) < st["min_members"]:
+        return
+    cand.sort(key=lambda r: -r["abs_t"])
+    keep = [r for r in cand if r["abs_t"] >= st["t_threshold"]] if st["targeted"] else cand
+    how = "targeted" if st["targeted"] else "all members"
+    if len(keep) < st["min_members"]:
+        keep, how = cand[:st["min_members"]], f"the {st['min_members']} strongest (too few above the threshold)"
+    Z = np.column_stack([((member_values(hist, r["code"], r["kind"]).iloc[win] - r["mean"]) / r["sd"]).values
+                         for r in keep])
+    if not np.isfinite(Z).all():
+        return
+    U, S, Vt = np.linalg.svd(Z - Z.mean(axis=0), full_matrices=False)
+    share = S ** 2 / np.sum(S ** 2)
+    for j in range(min(int(st["n_factors"]), len(keep) - 1 if len(keep) > 1 else 1)):
+        if j > 0 and share[j] < float(st["min_share"] or 0):
+            break
+        w = Vt[j].copy()
+        if w[np.argmax(np.abs(w))] < 0:                # rises when its main member rises
+            w = -w
+        code = f"FAC.{slug(theme)}" + ("" if j == 0 else f"_{j + 1}")
+        es = sum(wi * r["expected_sign"] for wi, r in zip(w, keep))
+        tot = sum(abs(wi) for wi, r in zip(w, keep) if r["expected_sign"])
+        sign = int(np.sign(es)) if tot and abs(es) >= 0.5 * tot else 0
+        members = [{"code": r["code"], "kind": r["kind"], "mean": r["mean"], "sd": r["sd"], "weight": float(wi)}
+                   for wi, r in zip(w, keep)]
+        specs[code] = {"theme": theme, "members": members, "share": float(share[j]), "how": how}
+        top = sorted(zip(w, keep), key=lambda p: -abs(p[0]))[:3]
+        lead = ", ".join(str(meta.loc[r["code"], "description"])[:40] if "description" in meta.columns
+                         else r["code"] for _, r in top)
+        mrows.append({"mnemonic": code, "description": f"{theme} index ({len(keep)} series"
+                                                       + (")" if j == 0 else f", component {j + 1})"),
+                      "main_series": lead,
+                      "theme": theme, "geography": "All", "transform": "factor", "expected_sign": sign,
+                      "members": len(keep), "of": len(cand), "variance_share": float(share[j]), "how": how})
+        for wi, r in zip(w, keep):
+            lrows.append({"factor": code, "theme": theme, "member": r["code"],
+                          "description": meta.loc[r["code"], "description"] if "description" in meta.columns
+                          else r["code"], "form": "growth" if r["kind"] == "dlog" else "change",
+                          "loading": float(wi), "t_alone": r["t"], "best_lag": r["lag"],
+                          "expected_sign": r["expected_sign"]})
 
 
 def attach(cfg, ctx, log=print):
@@ -195,7 +210,11 @@ def attach(cfg, ctx, log=print):
         activate({})
         ctx.factor_specs = {}
         return pd.DataFrame(), pd.DataFrame()
-    specs, mrows, lrows = build(cfg, ctx, log)
+    try:
+        specs, mrows, lrows = build(cfg, ctx, log)
+    except Exception as ex:
+        log(f"  theme factors skipped ({type(ex).__name__}: {ex})")
+        specs, mrows, lrows = {}, pd.DataFrame(), pd.DataFrame()
     activate(specs)
     ctx.factor_specs = specs
     drop = [c for c in ctx.base.columns if str(c).startswith("FAC.")]

@@ -217,7 +217,7 @@ slug(theme)
 |---|---|---|
 | `theme` |  |  |
 
-**Called by:** `build`
+**Called by:** `_theme`
 
 <sub>src/features/factors.py:50</sub>
 
@@ -235,7 +235,7 @@ member_kind(meta, hist, code)
 | `hist` |  |  |
 | `code` |  |  |
 
-**Called by:** `build`
+**Called by:** `_theme`
 
 <sub>src/features/factors.py:54</sub>
 
@@ -251,7 +251,7 @@ member_values(mdf, code, kind)
 | `code` |  |  |
 | `kind` |  |  |
 
-**Called by:** `build`, `values`
+**Called by:** `_theme`, `values`
 
 <sub>src/features/factors.py:60</sub>
 
@@ -270,7 +270,7 @@ The definition of factor `code` for this frame (its own, else the active ones), 
 
 **Called by:** `transform`, `apply_shocks`
 
-<sub>src/features/factors.py:65</sub>
+<sub>src/features/factors.py:67</sub>
 
 ### `values`
 
@@ -289,7 +289,7 @@ The factor on mdf's quarters, from its members (NaN where a member is missing).
 
 **Called by:** `attach`, `transform`
 
-<sub>src/features/factors.py:72</sub>
+<sub>src/features/factors.py:74</sub>
 
 ### `activate`
 
@@ -303,7 +303,7 @@ activate(specs)
 
 **Called by:** `attach`, `truncated`
 
-<sub>src/features/factors.py:83</sub>
+<sub>src/features/factors.py:85</sub>
 
 ### `_t_best_lag`
 
@@ -319,9 +319,9 @@ Largest |t| (and its signed value and lag) of x at lags 0..max_lag added to y ~ 
 | `x` |  |  |
 | `max_lag` |  |  |
 
-**Called by:** `build`
+**Called by:** `_theme`
 
-<sub>src/features/factors.py:88</sub>
+<sub>src/features/factors.py:90</sub>
 
 ### `build`
 
@@ -341,11 +341,39 @@ Factor definitions from the data up to ctx.end.
 
 **Config:** `features.max_lag`
 
-**Calls:** `_t_best_lag`, `member_kind`, `member_values`, `settings`, `slug`, `outcome_themes`
+**Calls:** `_theme`, `settings`, `outcome_themes`
 
 **Called by:** `attach`
 
-<sub>src/features/factors.py:115</sub>
+<sub>src/features/factors.py:120</sub>
+
+### `_theme`
+
+```python
+_theme(ctx, st, meta, hist, win, max_lag, theme, grp, specs, mrows, lrows)
+```
+
+Build the factor(s) of one theme into specs / mrows / lrows.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `st` |  |  |
+| `meta` |  | variable metadata indexed by mnemonic. |
+| `hist` |  |  |
+| `win` |  |  |
+| `max_lag` |  |  |
+| `theme` |  |  |
+| `grp` |  |  |
+| `specs` |  |  |
+| `mrows` |  |  |
+| `lrows` |  |  |
+
+**Calls:** `_t_best_lag`, `member_kind`, `member_values`, `slug`
+
+**Called by:** `build`
+
+<sub>src/features/factors.py:149</sub>
 
 ### `attach`
 
@@ -369,7 +397,7 @@ Build the factors on ctx's window and add them to ctx (scenarios, base, history,
 
 **Called by:** `Context.__init__`, `truncated`
 
-<sub>src/features/factors.py:188</sub>
+<sub>src/features/factors.py:203</sub>
 
 
 ## src/features/transforms.py
@@ -620,9 +648,9 @@ Compute several features side by side.
 
 **Calls:** `feature_series`
 
-**Called by:** `all_features`, `make_panel`, `_arrays`, `twin`, `_oos_origin`, `run`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
+**Called by:** `all_features`, `make_panel`, `_arrays`, `twin`, `_valid`, `_oos_origin`, `run`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
 
-<sub>src/features/transforms.py:176</sub>
+<sub>src/features/transforms.py:178</sub>
 
 ### `describe`
 
@@ -643,7 +671,7 @@ Plain-language label of a feature for tables and charts.
 
 **Called by:** `_describe_term`, `_driver_rows`, `main`
 
-<sub>src/features/transforms.py:188</sub>
+<sub>src/features/transforms.py:190</sub>
 
 ### `candidate_forms`
 
@@ -665,7 +693,7 @@ Relevance filter + every transformation of every variable + ADF test. One row pe
 
 **Called by:** `run`, `_screen_tables`, `run`, `build_node`, `select_at`, `main`
 
-<sub>src/features/transforms.py:204</sub>
+<sub>src/features/transforms.py:206</sub>
 
 ### `all_features`
 
@@ -687,7 +715,7 @@ All stationary (variable, transform) pairs at every lag, with no gaps in the est
 
 **Called by:** `run`, `_screen_tables`, `run`, `build_node`, `select_at`, `main`
 
-<sub>src/features/transforms.py:251</sub>
+<sub>src/features/transforms.py:253</sub>
 
 
 ## src/impact/__init__.py
@@ -1372,7 +1400,7 @@ Variance inflation factors of the columns of F (multicollinearity check).
 
 **Called by:** `reliability`, `diagnostics`, `exhaustive_search`, `core_plus_addons`, `_check`, `search`, `main`
 
-<sub>src/modelling/ardl.py:31</sub>
+<sub>src/modelling/ardl.py:37</sub>
 
 ### `make_panel`
 
@@ -1394,7 +1422,7 @@ Quarterly panel for one scenario: target, dummies and features (history + scenar
 
 **Called by:** `ARDL.panel`, `AutoARDL.panel`, `LevelsARDL.panel`, `ARIMAX.panel`, `DeepModel.panel`, `Theta.panel`, `ECM.panel`, `FoundationModel.panel`, `MLModel.panel`, `_Regime.panel`, `SameGrowth.panel`, `main`
 
-<sub>src/modelling/ardl.py:48</sub>
+<sub>src/modelling/ardl.py:54</sub>
 
 ### `ARDL`
 
@@ -1414,7 +1442,7 @@ Every model type (ARDL, ECM, machine learning, combinations, foundation models) 
 
 **Called by:** `build`, `rebuild`, `models_at`, `main`
 
-<sub>src/modelling/ardl.py:59</sub>
+<sub>src/modelling/ardl.py:65</sub>
 
 ### `ARDL.__init__`
 
@@ -1432,7 +1460,7 @@ Create an ARDL specification (nothing is estimated yet).
 | `family` | `''` | model family for the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
-<sub>src/modelling/ardl.py:65</sub>
+<sub>src/modelling/ardl.py:71</sub>
 
 ### `ARDL.panel`
 
@@ -1451,7 +1479,7 @@ Part of the model interface (see src/models/zoo.py): build the model's data pane
 
 **Calls:** `make_panel`
 
-<sub>src/modelling/ardl.py:76</sub>
+<sub>src/modelling/ardl.py:82</sub>
 
 ### `ARDL.spec`
 
@@ -1463,7 +1491,7 @@ Part of the model interface (see src/models/zoo.py): the settings that define th
 
 **Returns:** dict.
 
-<sub>src/modelling/ardl.py:87</sub>
+<sub>src/modelling/ardl.py:93</sub>
 
 ### `ARDL.drivers`
 
@@ -1475,7 +1503,7 @@ Part of the model interface (see src/models/zoo.py): the model's drivers for tab
 
 **Returns:** list of feature names.
 
-<sub>src/modelling/ardl.py:98</sub>
+<sub>src/modelling/ardl.py:104</sub>
 
 ### `ARDL._X`
 
@@ -1493,7 +1521,7 @@ Regressor matrix: constant, lagged growth, drivers and dummies.
 
 **Called by:** `ARDL.fit`
 
-<sub>src/modelling/ardl.py:106</sub>
+<sub>src/modelling/ardl.py:112</sub>
 
 ### `ARDL.fit`
 
@@ -1512,7 +1540,7 @@ fast=True: plain least squares, no standard errors (used inside combinations' we
 
 **Calls:** `ARDL._X`
 
-<sub>src/modelling/ardl.py:124</sub>
+<sub>src/modelling/ardl.py:130</sub>
 
 ### `ARDL.forecast`
 
@@ -1532,7 +1560,7 @@ Lagged growth is replaced by the model's own forecast after the first quarter; d
 
 **Returns:** array of up to H forecasts of quarterly log growth.
 
-<sub>src/modelling/ardl.py:142</sub>
+<sub>src/modelling/ardl.py:148</sub>
 
 
 ## src/modelling/evaluate.py
@@ -5481,7 +5509,7 @@ twin(cfg, ctx, m, log=print)
 
 **Called by:** `twins`
 
-<sub>src/models/tested.py:94</sub>
+<sub>src/models/tested.py:99</sub>
 
 ### `twins`
 
@@ -5504,7 +5532,7 @@ Tested twins of a list of models: [(twin, how)] plus a table of what happened to
 
 **Called by:** `build`
 
-<sub>src/models/tested.py:155</sub>
+<sub>src/models/tested.py:160</sub>
 
 
 ## src/models/zoo.py
@@ -5526,7 +5554,7 @@ What the zoo needs from one approach's result (kept small so it can be cached at
 
 **Called by:** `run`, `select_at`
 
-<sub>src/models/zoo.py:44</sub>
+<sub>src/models/zoo.py:45</sub>
 
 ### `_valid`
 
@@ -5534,20 +5562,22 @@ What the zoo needs from one approach's result (kept small so it can be cached at
 _valid(ctx, features)
 ```
 
-Split features into those whose series exist in the macro data and those that do not.
+Split features into usable ones and the rest: the series must exist in the macro data, and the feature must have a finite value in every quarter of the estimation window (the log growth of a series that is zero or negative in some quarter does not exist there).
 
 | argument | default | meaning |
 |---|---|---|
 | `ctx` |  | Context. |
 | `features` |  | feature names. |
 
-**Returns:** (available, missing) lists.
+**Returns:** (available, missing or unusable) lists.
 
-**Calls:** `parse_feature`
+**Config:** `features`
+
+**Calls:** `feature_matrix`, `parse_feature`
 
 **Called by:** `build`, `literature_models`
 
-<sub>src/models/zoo.py:63</sub>
+<sub>src/models/zoo.py:64</sub>
 
 ### `literature_models`
 
@@ -5570,7 +5600,7 @@ Literature specifications with concepts resolved to series names through the lit
 
 **Called by:** `build`, `run`, `build_node`
 
-<sub>src/models/zoo.py:76</sub>
+<sub>src/models/zoo.py:84</sub>
 
 ### `_screen_tables`
 
@@ -5592,7 +5622,7 @@ Shortlist and per-variable screen results, from screen first if it ran, otherwis
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:104</sub>
+<sub>src/models/zoo.py:113</sub>
 
 ### `wanted`
 
@@ -5617,7 +5647,7 @@ Entries match a family name, a model name, or the start of a model name (case do
 
 **Called by:** `run`, `run`, `combine`, `scenarios`, `build`
 
-<sub>src/models/zoo.py:116</sub>
+<sub>src/models/zoo.py:125</sub>
 
 ### `same_growth_models`
 
@@ -5643,7 +5673,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:143</sub>
+<sub>src/models/zoo.py:152</sub>
 
 ### `build`
 
@@ -5666,7 +5696,7 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 
 **Called by:** `run`, `models_at`
 
-<sub>src/models/zoo.py:186</sub>
+<sub>src/models/zoo.py:195</sub>
 
 
 ## src/panel/__init__.py
@@ -14049,7 +14079,7 @@ Run the check at the start of a run: print problems and stop on errors.
 
 **Called by:** `main`, `main`
 
-<sub>src/utils/preflight.py:486</sub>
+<sub>src/utils/preflight.py:494</sub>
 
 
 ## src/utils/saved.py

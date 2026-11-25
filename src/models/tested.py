@@ -68,7 +68,12 @@ def _check(ctx, F, feats, signs, themes, fm):
     Dr = D[rows][:, D[rows].std(axis=0) > 0] if D.shape[1] else np.zeros((len(rows), 0))
     Fk = F[feats].values[rows]
     X = np.column_stack([np.ones(len(rows)), y[rows - 1], Dr, Fk])
-    b, se, _ = ols_np(X, y[rows])
+    if not (np.isfinite(X).all() and np.isfinite(y[rows]).all()):
+        return False, {f: ("missing or infinite values", 0.0) for f in feats}, dict.fromkeys(feats, 0.0)
+    try:
+        b, se, _ = ols_np(X, y[rows])
+    except np.linalg.LinAlgError:
+        return False, {f: ("could not be estimated", 0.0) for f in feats}, dict.fromkeys(feats, 0.0)
     k = len(feats)
     t = b[-k:] / se[-k:]
     v = vif(Fk) if k > 1 else np.ones(1)
@@ -105,7 +110,7 @@ def twin(cfg, ctx, m, log=print):
     pool = list(dict.fromkeys(pool))
     F = feature_matrix(ctx.hist, pool, cfg["features"]["deflator"]).reindex(ctx.idx)
     win = F.iloc[ctx.est0:ctx.end + 1]
-    F = F.loc[:, win.notna().all() & (win.std() > 0)]
+    F = F.loc[:, np.isfinite(win).all() & (win.std() > 0)]
     signs = {f: feature_sign(ctx.meta, f) for f in F.columns}
     themes = {f: (ctx.meta.loc[parse_feature(f)[0], "theme"] if parse_feature(f)[0] in ctx.meta.index else "")
               for f in F.columns}

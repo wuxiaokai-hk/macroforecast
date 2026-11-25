@@ -84,7 +84,7 @@ class ECM(ARDL):
         P["__lcpi"] = tg.target_deflator(mdf, self.deflator, P.index)
         for item, n in zip(self.long_run, self.lr_names):
             P[n] = long_run_column(mdf, item, self.deflator).reindex(P.index)
-        return P
+        return P.replace([np.inf, -np.inf], np.nan)             # log of a zero or negative value: missing
 
     def _lr(self, P):
         """Long-run regressors as a numpy array.
@@ -123,7 +123,7 @@ class ECM(ARDL):
         W = P.loc[start:end]
         lrL = (W["__logL"] - W["__lcpi"]).values
         Z = np.column_stack([np.ones(len(W)), W[self.lr_names].values])
-        ok = ~np.isnan(lrL) & ~np.isnan(Z).any(axis=1)
+        ok = np.isfinite(lrL) & np.isfinite(Z).all(axis=1)
         self.beta = np.linalg.lstsq(Z[ok], lrL[ok], rcond=None)[0]
         P = P.copy()
         Zall = np.column_stack([np.ones(len(P)), self._lr(P)])

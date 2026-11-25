@@ -22,6 +22,7 @@ models.only (config) limits the run to the listed models or families; the AR(1) 
 The same function is used for the full-sample evaluation and, with data truncated at each origin, for the
 out-of-sample test, so every model is re-selected with the information available at the time.
 """
+import numpy as np
 import pandas as pd
 
 from ..features.transforms import all_features, candidate_forms, parse_feature
@@ -61,15 +62,22 @@ def selection_info(approach, result):
 
 
 def _valid(ctx, features):
-    """Split features into those whose series exist in the macro data and those that do not.
+    """Split features into usable ones and the rest: the series must exist in the macro data, and the feature must
+    have a finite value in every quarter of the estimation window (the log growth of a series that is zero or
+    negative in some quarter does not exist there).
 
     Args:
         ctx: Context. features: feature names.
 
     Returns:
-        (available, missing) lists.
+        (available, missing or unusable) lists.
     """
-    ok = [f for f in features if parse_feature(f)[0] in ctx.hist.columns]
+    from ..features.transforms import feature_matrix
+    have = [f for f in features if parse_feature(f)[0] in ctx.hist.columns]
+    ok = []
+    if have:
+        W = feature_matrix(ctx.hist, have, ctx.cfg["features"].get("deflator")).iloc[ctx.est0:ctx.end + 1]
+        ok = [f for f in have if np.isfinite(W[f].values).all()]
     return ok, [f for f in features if f not in ok]
 
 
@@ -92,7 +100,8 @@ def literature_models(cfg, ctx, log, used=None):
         if dropped:
             log(f"  literature model '{spec['name']}': {dropped} switched off or not mapped in the literature table")
         if missing:
-            log(f"  literature model '{spec['name']}': {missing} not in the macro data - left out")
+            log(f"  literature model '{spec['name']}': {missing} not in the macro data, or with missing or invalid "
+                "values in the estimation window (e.g. the log growth of a zero or negative value) - left out")
         if used is not None:
             for f in spec["features"]:
                 used.setdefault(f.split("|")[0], []).append(spec["name"])
