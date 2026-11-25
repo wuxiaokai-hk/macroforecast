@@ -275,10 +275,16 @@ panel:
   - panel
   - core
   banks: []
+  sample: auto                      # which credit unions to estimate on: auto (compare the four below and keep
+                                    # the one that forecasts the active credit unions best), all, weighted (all,
+                                    # weighted by size), comparable (active + exited of comparable size), active
+  sample_tolerance: 0.02            # auto keeps all unless another sample is more than 2% better
+  comparable_pct: 25                # comparable: exited banks at least as large as the 25th percentile of active ones
+  workers: auto                     # out-of-sample origins in parallel: auto (CPU cores, up to 8) or a number
   evaluation:                       # how the models are compared (redone from the saved errors in the app
                                     # or with tools/panel_compare.py, no re-estimation)
     metric: mape                    # mape | rmse | p90 | cvar (average of the worst tail_share) | worst | combined
-    banks: all                      # all, or a list: the credit unions in the average comparison
+    banks: active                   # active (still reporting, the default), all, or a list of credit unions
     horizon: null                   # quarters 1..h (null: all)
     tail_share: 0.10
     penalty: 0.5                    # combined = mape + penalty x (cvar - mape)

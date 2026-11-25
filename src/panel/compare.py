@@ -16,7 +16,8 @@ horizons 1..h, so the naturally larger long-horizon errors do not dominate):
     combined  mape + penalty x (cvar - mape): the average, plus a charge for the bad forecasts
     bias      average signed error, forecast / actual - 1 (positive = the model over-forecasts); shown, not ranked
 
-Across banks: the score of a model is the average of its bank scores (equal weights, or by size with
+Which banks: by default the ACTIVE ones (still reporting at the end of history; the ones you forecast), or all,
+or a list. Across banks: the score of a model is the average of its bank scores (equal weights, or by size with
 weighting: size), so every bank counts; 'pooled' also gives the metric over all banks' errors together.
 """
 import numpy as np
@@ -27,7 +28,7 @@ METRICS = {"mape": "MAPE", "rmse": "RMSE", "p90": "90th percentile", "cvar": "Wo
 LONG = {"mape": "average absolute error (MAPE)", "rmse": "root mean squared error",
         "p90": "90th percentile of the absolute errors", "cvar": "average of the worst {tail:.0%} of errors",
         "worst": "largest single error", "combined": "MAPE + {pen:g} x (worst-{tail:.0%} average - MAPE)"}
-DEFAULTS = {"metric": "mape", "banks": "all", "horizon": None, "tail_share": 0.10, "penalty": 0.5,
+DEFAULTS = {"metric": "mape", "banks": "active", "horizon": None, "tail_share": 0.10, "penalty": 0.5,
             "weighting": "equal", "benchmark": None, "exclude_covid": True}
 
 
@@ -68,12 +69,13 @@ def load_errors(pdir, oos=False):
 
 
 def evaluate(E, metric="mape", banks=None, horizon=None, tail_share=0.10, penalty=0.5, weighting="equal",
-             benchmark=None, exclude_covid=True, **_):
+             benchmark=None, exclude_covid=True, active=None, **_):
     """Compare the models on a metric, for some or all banks.
 
     Args:
         E: error rows (model, kind, bank, origin, horizon_q, error_pct, covid_window, level_at_origin).
-        metric: one of METRICS (the ranking). banks: list of banks, or None / 'all'. horizon: 1..h (default: all).
+        metric: one of METRICS (the ranking). banks: list of banks, 'active' (the banks still reporting at the end of
+            history, given in `active`; all banks if not given), or None / 'all'. horizon: 1..h (default: all).
         tail_share, penalty: for cvar and combined. weighting: equal or size (latest level at origin).
         benchmark: model name for the 'vs' columns (default: the AR(1) benchmark).
 
@@ -84,6 +86,8 @@ def evaluate(E, metric="mape", banks=None, horizon=None, tail_share=0.10, penalt
     if metric not in METRICS:
         raise ValueError(f"metric must be one of {list(METRICS)}")
     E = E.copy()
+    if isinstance(banks, str) and banks.lower() == "active":
+        banks = [b for b in (active or []) if b in set(E["bank"].astype(str))] or None
     if exclude_covid and "covid_window" in E:
         E = E[~E["covid_window"].astype(bool)]
     if banks not in (None, "all", []):

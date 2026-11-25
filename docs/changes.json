@@ -2600,14 +2600,14 @@
   "changed": "2026-11-04"
  },
  "src.panel.estimate.driscoll_kraay": {
-  "hash": "3e28f64be12a",
+  "hash": "c329fe766b97",
   "added": "2026-11-04",
-  "changed": "2026-11-04"
+  "changed": "2026-11-24"
  },
  "src.panel.estimate.PanelModel": {
-  "hash": "c522437b1bdb",
+  "hash": "69481cc2e0fa",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.estimate.PanelModel.__init__": {
   "hash": "eca030b8877a",
@@ -2625,9 +2625,9 @@
   "changed": "2026-11-04"
  },
  "src.panel.estimate.PanelModel._pooled": {
-  "hash": "7f0be19c3cff",
+  "hash": "1672d43e2bb8",
   "added": "2026-11-04",
-  "changed": "2026-11-04"
+  "changed": "2026-11-24"
  },
  "src.panel.estimate.PanelModel._shrink": {
   "hash": "55bbfe8a77fd",
@@ -2700,9 +2700,9 @@
   "changed": "2026-11-12"
  },
  "src.panel.run.run_oos": {
-  "hash": "42bb04fe0a88",
+  "hash": "dcf1cf33e79c",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.run._charts": {
   "hash": "0239d9aad6f1",
@@ -2710,12 +2710,12 @@
   "changed": "2026-11-04"
  },
  "src.panel.run.run": {
-  "hash": "3559e39117bd",
+  "hash": "c4c95aa04fa8",
   "added": "2026-11-04",
   "changed": "2026-11-24"
  },
  "src.panel.run._summary": {
-  "hash": "0fbd2fba4454",
+  "hash": "83a0bc8a3bc4",
   "added": "2026-11-04",
   "changed": "2026-11-24"
  },
@@ -2725,9 +2725,9 @@
   "changed": "2026-11-04"
  },
  "src.panel.select.screen": {
-  "hash": "801912815b2f",
+  "hash": "c93bfcb308a2",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.select.shortlist": {
   "hash": "370b9f1a5431",
@@ -2735,19 +2735,19 @@
   "changed": "2026-11-12"
  },
  "src.panel.select.pooled_fit": {
-  "hash": "e516ab229ce4",
+  "hash": "c3d804e9d7c7",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.select.search": {
-  "hash": "2db29fdd78a1",
+  "hash": "9babb4611b48",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.select.quick_error": {
-  "hash": "de642af951df",
+  "hash": "5a999c7e2f90",
   "added": "2026-11-04",
-  "changed": "2026-11-12"
+  "changed": "2026-11-24"
  },
  "src.panel.select.select": {
   "hash": "5bc89487d997",
@@ -4025,7 +4025,7 @@
   "changed": "2026-11-24"
  },
  "src.panel.compare.evaluate": {
-  "hash": "5d37da7db1a8",
+  "hash": "48242160c98d",
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
@@ -4040,12 +4040,12 @@
   "changed": "2026-11-24"
  },
  "src.panel.run._re_evaluate": {
-  "hash": "86d7111dbf1c",
+  "hash": "b018e0b61d41",
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
  "tools.panel_compare.main": {
-  "hash": "a28fa71785b7",
+  "hash": "2dfb29e5bd3e",
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
@@ -4054,142 +4054,77 @@
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
+ "src.panel.estimate.sqrt_w": {
+  "hash": "b660bce33c66",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.run._workers": {
+  "hash": "fe92e63f6175",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.run._oos_origin": {
+  "hash": "94191840ae04",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.run._sample_lines": {
+  "hash": "54e9655fd36a",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.sample.describe": {
+  "hash": "cb5167b44084",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.sample.candidates": {
+  "hash": "58de9a81a4c7",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.sample.weights": {
+  "hash": "8713458eabec",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.sample.restrict": {
+  "hash": "c10691a4f8d3",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.sample.choose": {
+  "hash": "2041e1eca324",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.select._FastPooled": {
+  "hash": "e3b778c9d602",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.select._FastPooled.__init__": {
+  "hash": "7d5afc284c8c",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.select._FastPooled._sample": {
+  "hash": "fd0cfc419916",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.select._FastPooled.slopes": {
+  "hash": "da781de55fb1",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.panel.select._FastPooled.tstats": {
+  "hash": "1185bd084664",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
  "_log": [
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.__init__",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM._ect",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.forecast",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.VECM.table",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-04",
-   "id": "src.system.joint.cointegration_tests",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.stacked",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.of_bank",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.PanelModel",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.PanelModel.fit",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.PanelModel.forecast",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.estimate.PanelModel.fitted",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.run._arr",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.run.backtest",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.run.fitted_values",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.run.run_oos",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures.array",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures.stacked",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures.frame",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.BankFeatures.meta",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select._fs",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.screen",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.shortlist",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.pooled_fit",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.search",
-   "what": "changed"
-  },
   {
    "date": "2026-11-12",
    "id": "src.panel.select.quick_error",
@@ -5553,6 +5488,141 @@
   {
    "date": "2026-11-24",
    "id": "src.panel.run._summary",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.compare.evaluate",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.estimate.driscoll_kraay",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.estimate.sqrt_w",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.estimate.PanelModel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.estimate.PanelModel._pooled",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._workers",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._oos_origin",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._re_evaluate",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._sample_lines",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.run._summary",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.sample.describe",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.sample.candidates",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.sample.weights",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.sample.restrict",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.sample.choose",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select.screen",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select.pooled_fit",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select._FastPooled",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select._FastPooled.__init__",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select._FastPooled._sample",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select._FastPooled.slopes",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select._FastPooled.tstats",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select.search",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.panel.select.quick_error",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.panel_compare.main",
    "what": "changed"
   }
  ]

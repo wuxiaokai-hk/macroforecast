@@ -35,7 +35,8 @@ from .select import select
 
 PANEL_DEFAULTS = {"min_obs": 20, "dk_lags": 4, "n_search_candidates": 20,
                   "models": ["separate", "pooled", "partial", "topdown"], "driver_sets": ["panel", "core"],
-                  "banks": [], "per_bank_full": False, "drop_exited": False, "exited_after_missing": 2}
+                  "banks": [], "per_bank_full": False, "drop_exited": False, "exited_after_missing": 2,
+                  "sample": "auto", "sample_tolerance": 0.02, "comparable_pct": 25, "workers": "auto"}
 
 
 def settings(cfg):
@@ -221,29 +222,62 @@ def run_oos(cfg, pn, F, core, log=print):
     first = pd.Period(o_["first_origin"], freq="Q")
     end = pn.pos(cfg["sample"]["hist_end"])
     origins = [i for i, q in enumerate(pn.dates) if q >= first and i < end][::int(o_.get("step", 4))]
+    workers = _workers(cfg, len(origins))
+    if workers > 1:
+        from joblib import Parallel, delayed
+        log(f"  {len(origins)} origins on {workers} processes ...")
+        parts = Parallel(n_jobs=workers, backend="loky")(delayed(_oos_origin)(cfg, pn, F, core, o, H, None, tg.form())
+                                                         for o in origins)
+    else:
+        parts = [_oos_origin(cfg, pn, F, core, o, H, log) for o in origins]
     rows, picks, at = [], [], {}
-    defl = cfg["features"].get("deflator")
-    for o in origins:
-        lab = pn.dates[o]
-        sel = select(cfg, pn, F, cfg["sample"]["estimation_start"], lab, log)
-        sets = {"panel drivers": sel["features"], "literature core": core}
-        models = build_models(cfg, pn, sets)
-        picks.append({"origin": str(lab), "panel drivers": ", ".join(sel["features"]) or "(none)"})
-        cols = list(dict.fromkeys(sel["features"] + core))
-        FF = F.reindex(columns=[c for c in cols if c in F.columns])
-        if any(c not in F.columns for c in cols):
-            FF = pd.concat([FF, feature_matrix(pn.base.hist, [c for c in cols if c not in F.columns], defl)], axis=1)
-        for m in models:
-            X = _arr(FF, m.features, pn)
-            try:
-                m.fit(pn, X, cfg["sample"]["estimation_start"], lab)
-            except Exception as ex:
-                log(f"  oos {lab}: {m.name} not estimated ({ex})")
-                continue
-            at.setdefault(str(lab), {})[m.name] = pickle.dumps(m)
-            forecast_rows(cfg, pn, m, X, o, H, rows, "oos")
-        log(f"  oos origin {lab}: panel drivers {sel['features']}")
+    for r, pick, a, msgs in parts:                   # in origin order, whatever order they finished in
+        rows += r
+        picks.append(pick)
+        at.update(a)
+        if workers > 1:
+            for m in msgs:
+                log(m)
     return pd.DataFrame(rows), pd.DataFrame(picks), at
+
+
+def _workers(cfg, n):
+    """panel.workers: 'auto' (the CPU cores, at most one per origin), or a number (1 = no parallel processes)."""
+    w = (cfg.get("panel") or {}).get("workers", "auto")
+    if str(w).lower() == "auto":
+        w = max(1, min(os.cpu_count() or 1, n, 8))
+    return max(1, int(w))
+
+
+def _oos_origin(cfg, pn, F, core, o, H, log=None, form=None):
+    """One origin of the out-of-sample test: re-select, re-estimate, forecast. Returns (rows, pick, models, log).
+    In a separate process the target form (a module setting) is set again from `form`."""
+    if form is not None:
+        tg.set_form(form)
+    msgs = []
+    say = log or msgs.append
+    lab = pn.dates[o]
+    defl = cfg["features"].get("deflator")
+    sel = select(cfg, pn, F, cfg["sample"]["estimation_start"], lab, lambda *_: None)
+    sets = {"panel drivers": sel["features"], "literature core": core}
+    models = build_models(cfg, pn, sets)
+    pick = {"origin": str(lab), "panel drivers": ", ".join(sel["features"]) or "(none)"}
+    cols = list(dict.fromkeys(sel["features"] + core))
+    FF = F.reindex(columns=[c for c in cols if c in F.columns])
+    if any(c not in F.columns for c in cols):
+        FF = pd.concat([FF, feature_matrix(pn.base.hist, [c for c in cols if c not in F.columns], defl)], axis=1)
+    rows, at = [], {}
+    for m in models:
+        X = _arr(FF, m.features, pn)
+        try:
+            m.fit(pn, X, cfg["sample"]["estimation_start"], lab)
+        except Exception as ex:
+            say(f"  oos {lab}: {m.name} not estimated ({ex})")
+            continue
+        at.setdefault(str(lab), {})[m.name] = pickle.dumps(m)
+        forecast_rows(cfg, pn, m, X, o, H, rows, "oos")
+    say(f"  oos origin {lab}: panel drivers {sel['features']}")
+    return rows, pick, at, msgs
 
 
 def _charts(out, O, scen, pn, best_by_bank, col):
@@ -321,6 +355,20 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
     log("Panel: selecting drivers on all banks together ...")
     sel = select(cfg, pn, F, cfg["sample"]["estimation_start"], cfg["sample"]["hist_end"], log)
     log(f"  panel drivers: {sel['features'] or '(none passed the rules)'}")
+    # ---- which credit unions to estimate on (panel.sample: auto compares all / weighted / comparable / active)
+    from . import sample as smp
+    s_name, s_banks, s_w, s_tab, s_info = smp.choose(cfg, pn, F, sel["features"], out, log)
+    s_tab.round(4).to_csv(os.path.join(out, "0_sample_choice.csv"), index=False)
+    s_info.round(6).to_csv(os.path.join(out, "0_banks.csv"), index=False)
+    active_banks = list(s_info.loc[s_info["active"], "bank"])
+    log(f"Panel: estimation sample: {smp.LABELS[s_name]} ({len(s_banks)} of {len(pn.banks)} banks; "
+        f"{s_tab.loc[s_tab['chosen'], 'reason'].iloc[0]})")
+    if s_name != "all":
+        if set(s_banks) != set(pn.banks):
+            pn = Panel(smp.restrict(cfg, s_banks), out, log)
+        pn.wrow = smp.weights(pn, s_info) if s_w else None
+        sel = select(cfg, pn, F, cfg["sample"]["estimation_start"], cfg["sample"]["hist_end"], log)
+        log(f"  panel drivers on the chosen sample: {sel['features'] or '(none passed the rules)'}")
     core = []
     if "core" in p["driver_sets"]:
         from ..models import zoo
@@ -371,7 +419,7 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
             pickle.dump(at, f)
     from . import compare
     ev_cfg = compare.settings(cfg)
-    ev = compare.evaluate(E, **ev_cfg) if len(E) else None
+    ev = compare.evaluate(E, **ev_cfg, active=active_banks) if len(E) else None
     if ev is not None:
         compare.write(ev, out)
     best_by_bank = (ev["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict() if ev is not None
@@ -391,7 +439,7 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
             pickle.dump(at_o, f)
         res.update(oos_overall=Oo, oos_by_bank=LBo)
         if len(Eo):
-            evo = compare.evaluate(Eo, **ev_cfg)
+            evo = compare.evaluate(Eo, **ev_cfg, active=active_banks)
             compare.write(evo, od)
             res["oos_evaluation"] = evo["overall"]
             res["best_by_bank"] = evo["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict()
@@ -399,10 +447,12 @@ def run(cfg, out_dir, oos=True, log=print, force=False):
     if ev is not None:
         res["evaluation"] = ev["overall"]
     _charts(out, res.get("oos_overall", O) if len(res.get("oos_overall", [])) else O, scen, pn, res["best_by_bank"], col)
+    res["sample"] = {"name": s_name, "table": s_tab, "active": active_banks}
     _summary(out, cfg, pn, res, col)
     with open(os.path.join(fdir, "manifest.json"), "w", encoding="utf-8") as f:
         from .data import DROPPED
-        json.dump({"banks": pn.banks, "left_out_exited": dict(DROPPED), "target_form": tg.form(),
+        json.dump({"banks": pn.banks, "active_banks": active_banks, "sample": s_name, "sample_weighted": bool(s_w),
+                   "left_out_exited": dict(DROPPED), "target_form": tg.form(),
                    "panel_drivers": sel["features"], "core": core,
                    "models": [m.name for m in models], "best_by_bank": res["best_by_bank"],
                    "backtest_origins": sorted(at), "oos": bool(oos)}, f, indent=1)
@@ -415,12 +465,17 @@ def _re_evaluate(cfg, out, res, log=print):
     """The evaluation is cheap and depends only on the saved errors: redo it with the current settings."""
     from . import compare
     ev_cfg = compare.settings(cfg)
+    act = None
+    try:
+        act = json.load(open(os.path.join(out, "fitted", "manifest.json"), encoding="utf-8")).get("active_banks")
+    except Exception:
+        pass
     for sub, key in (("", "evaluation"), ("oos", "oos_evaluation")):
         try:
             E = compare.load_errors(out, oos=bool(sub))
         except FileNotFoundError:
             continue
-        ev = compare.evaluate(E, **ev_cfg)
+        ev = compare.evaluate(E, **ev_cfg, active=act)
         compare.write(ev, os.path.join(out, sub) if sub else out)
         res[key] = ev["overall"]
         res["best_by_bank"] = ev["by_bank"].groupby("bank").head(1).set_index("bank")["model"].to_dict()
@@ -455,6 +510,23 @@ def _reused(out, oos):
     return res
 
 
+def _sample_lines(smp):
+    """The estimation-sample block of summary.md."""
+    if not smp:
+        return []
+    from .sample import LABELS
+    T = smp["table"]
+    L = [f"Estimation sample: **{LABELS[smp['name']]}**. {T.loc[T['chosen'], 'reason'].iloc[0]}.", ""]
+    if len(T) > 1:
+        L += ["| Sample | Banks | Exited included | Weighted | Error for the active banks |", "|---|---|---|---|---|"]
+        for r in T.itertuples():
+            L.append(f"| {r.label}{' (chosen)' if r.chosen else ''} | {r.banks} | {getattr(r, 'exited_included', '')} | "
+                     f"{'yes' if getattr(r, 'weighted', False) else 'no'} | {getattr(r, 'score_active', float('nan')):.3f} |")
+        L.append("")
+    L += [f"Active banks (reporting at the end of history): {len(smp['active'])}.", ""]
+    return L
+
+
 def _eval_lines(cfg, ev, basis):
     """The 'Ranked on ...' block of summary.md."""
     if ev is None or not len(ev):
@@ -480,7 +552,8 @@ def _summary(out, cfg, pn, res, col):
          *(["Left out because they stopped reporting (panel.drop_exited): "
             + ", ".join(f"{k} (last {v})" for k, v in __import__('src.panel.data', fromlist=['DROPPED']).DROPPED.items()), ""]
            if (cfg.get("panel") or {}).get("drop_exited") else []),
-         f"Panel drivers (chosen on all banks): {', '.join(res['panel_drivers']) or 'none'}",
+         *_sample_lines(res.get("sample")),
+         f"Panel drivers (chosen on the estimation sample): {', '.join(res['panel_drivers']) or 'none'}",
          f"Literature core: {', '.join(res['core']) or 'none'}", "",
          f"## Models ({basis}; average error over 1-{col.split('_')[2]} quarters, mean across banks)", "",
          "| Rank | Model | Mean | Banks won | Better than AR(1) |", "|---|---|---|---|---|"]

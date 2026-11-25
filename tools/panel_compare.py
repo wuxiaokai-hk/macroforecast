@@ -28,7 +28,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", required=True, help="outputs/<run> (or its panel/ folder)")
     ap.add_argument("--metric", default="mape", choices=list(compare.METRICS))
-    ap.add_argument("--banks", nargs="*", help="banks to include (default: all)")
+    ap.add_argument("--banks", nargs="*", help="banks to include (default: the active ones, still reporting)")
+    ap.add_argument("--all-banks", action="store_true", help="include the banks that stopped reporting too")
     ap.add_argument("--bank", help="also show this bank's comparison")
     ap.add_argument("--oos", action="store_true", help="the out-of-sample test instead of the backtest")
     ap.add_argument("--horizon", type=int, help="quarters 1..h (default: all)")
@@ -41,8 +42,14 @@ def main(argv=None):
     a = ap.parse_args(argv)
     pdir = a.run if os.path.basename(os.path.normpath(a.run)) == "panel" else os.path.join(a.run, "panel")
     E = compare.load_errors(pdir, a.oos)
-    res = compare.evaluate(E, a.metric, a.banks, a.horizon, a.tail_share, a.penalty, a.weighting, a.benchmark,
-                           exclude_covid=not a.include_covid)
+    import json
+    try:
+        act = json.load(open(os.path.join(pdir, "fitted", "manifest.json"), encoding="utf-8")).get("active_banks")
+    except Exception:
+        act = None
+    banks = a.banks if a.banks else ("all" if a.all_banks else "active")
+    res = compare.evaluate(E, a.metric, banks, a.horizon, a.tail_share, a.penalty, a.weighting, a.benchmark,
+                           exclude_covid=not a.include_covid, active=act)
     st = res["settings"]
     pd.set_option("display.width", 200)
     print(f"{'Out-of-sample test' if a.oos else 'Backtest'}: {len(st['banks'])} bank(s), quarters 1-{st['horizon']}, "

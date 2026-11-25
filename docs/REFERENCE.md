@@ -28,6 +28,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/panel/estimate.py](#srcpanelestimatepy)
 - [src/panel/reuse.py](#srcpanelreusepy)
 - [src/panel/run.py](#srcpanelrunpy)
+- [src/panel/sample.py](#srcpanelsamplepy)
 - [src/panel/select.py](#srcpanelselectpy)
 - [src/pipelines/bayes_first.py](#srcpipelinesbayesfirstpy)
 - [src/pipelines/en_first.py](#srcpipelinesenfirstpy)
@@ -404,7 +405,7 @@ Compute several features side by side.
 
 **Calls:** `feature_series`
 
-**Called by:** `all_features`, `make_panel`, `_arrays`, `run`, `run_oos`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
+**Called by:** `all_features`, `make_panel`, `_arrays`, `_oos_origin`, `run`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
 
 <sub>src/features/transforms.py:171</sub>
 
@@ -4723,9 +4724,9 @@ panel.evaluation with the defaults filled in.
 
 **Config:** `panel`
 
-**Called by:** `_eval_lines`, `_re_evaluate`, `run`
+**Called by:** `_eval_lines`, `_re_evaluate`, `run`, `choose`
 
-<sub>src/panel/compare.py:34</sub>
+<sub>src/panel/compare.py:35</sub>
 
 ### `describe`
 
@@ -4741,7 +4742,7 @@ describe(metric, tail_share=0.1, penalty=0.5)
 
 **Called by:** `evaluate`, `_eval_lines`, `_re_evaluate`
 
-<sub>src/panel/compare.py:43</sub>
+<sub>src/panel/compare.py:44</sub>
 
 ### `_one`
 
@@ -4757,9 +4758,9 @@ Metrics of one set of signed errors.
 | `tail` |  |  |
 | `pen` |  |  |
 
-**Called by:** `evaluate`
+**Called by:** `evaluate`, `quick_error`
 
-<sub>src/panel/compare.py:47</sub>
+<sub>src/panel/compare.py:48</sub>
 
 ### `load_errors`
 
@@ -4776,12 +4777,12 @@ The saved forecast errors of a panel run (backtest, or the out-of-sample test).
 
 **Called by:** `_re_evaluate`, `main`
 
-<sub>src/panel/compare.py:61</sub>
+<sub>src/panel/compare.py:62</sub>
 
 ### `evaluate`
 
 ```python
-evaluate(E, metric='mape', banks=None, horizon=None, tail_share=0.1, penalty=0.5, weighting='equal', benchmark=None, exclude_covid=True, **_)
+evaluate(E, metric='mape', banks=None, horizon=None, tail_share=0.1, penalty=0.5, weighting='equal', benchmark=None, exclude_covid=True, active=None, **_)
 ```
 
 Compare the models on a metric, for some or all banks.
@@ -4790,13 +4791,14 @@ Compare the models on a metric, for some or all banks.
 |---|---|---|
 | `E` |  | error rows (model, kind, bank, origin, horizon_q, error_pct, covid_window, level_at_origin). |
 | `metric` | `'mape'` | one of METRICS (the ranking). |
-| `banks` | `None` | list of banks, or None / 'all'. |
+| `banks` | `None` | list of banks, 'active' (the banks still reporting at the end of history, given in `active`; all banks if not given), or None / 'all'. |
 | `horizon` | `None` | 1..h (default: all). |
 | `tail_share` | `0.1` | for cvar and combined. |
 | `penalty` | `0.5` | for cvar and combined. |
 | `weighting` | `'equal'` | equal or size (latest level at origin). |
 | `benchmark` | `None` | model name for the 'vs' columns (default: the AR(1) benchmark). |
 | `exclude_covid` | `True` |  |
+| `active` | `None` |  |
 | `**_` |  |  |
 
 **Returns:** dict with overall (one row per model), by_bank (bank x model), by_horizon (model x horizon, averaged across banks), and the settings used.
@@ -4805,7 +4807,7 @@ Compare the models on a metric, for some or all banks.
 
 **Called by:** `_re_evaluate`, `run`, `main`
 
-<sub>src/panel/compare.py:70</sub>
+<sub>src/panel/compare.py:71</sub>
 
 ### `one_bank`
 
@@ -4822,7 +4824,7 @@ The comparison for one bank, ranked.
 
 **Called by:** `main`
 
-<sub>src/panel/compare.py:151</sub>
+<sub>src/panel/compare.py:155</sub>
 
 ### `write`
 
@@ -4840,7 +4842,7 @@ Write the evaluation tables next to the leaderboards.
 
 **Called by:** `_re_evaluate`, `run`, `main`
 
-<sub>src/panel/compare.py:157</sub>
+<sub>src/panel/compare.py:161</sub>
 
 
 ## src/panel/data.py
@@ -4968,7 +4970,7 @@ Attributes: cfg, banks (names), levels / ys (per bank), base (Context of the tot
 
 **Config:** `form`, `sample.estimation_start`, `sample.hist_end`, `transform`
 
-**Called by:** `run`, `build_node`
+**Called by:** `run`, `choose`, `build_node`
 
 <sub>src/panel/data.py:149</sub>
 
@@ -5042,7 +5044,7 @@ Mask of stacked rows inside [start, end] (labels or positions) with complete fea
 
 **Calls:** `Panel.pos`
 
-**Called by:** `PanelModel.fit`, `pooled_fit`, `screen`
+**Called by:** `PanelModel.fit`, `_FastPooled.__init__`, `pooled_fit`, `screen`
 
 <sub>src/panel/data.py:233</sub>
 
@@ -5087,7 +5089,7 @@ Least squares: (coefficients, residuals, (X'X)^-1 or None when singular).
 ### `driscoll_kraay`
 
 ```python
-driscoll_kraay(X, e, T, XtXi, lags=4)
+driscoll_kraay(X, e, T, XtXi, lags=4, p=None)
 ```
 
 Driscoll-Kraay covariance: scores summed over banks in each quarter, then Newey-West (Bartlett) over quarters. Robust to heteroskedasticity, autocorrelation and correlation across banks in the same quarter. With one bank it is the Newey-West covariance.
@@ -5099,14 +5101,32 @@ Driscoll-Kraay covariance: scores summed over banks in each quarter, then Newey-
 | `T` |  | quarter of each row (int). |
 | `XtXi` |  | (X'X)^-1. |
 | `lags` | `4` | Bartlett lags. |
+| `p` | `None` | number of regressors for the small-sample correction (default: X's columns; give the full count when X holds only the drivers after the controls were partialled out - the slope covariance is then identical). |
 
 **Returns:** covariance matrix of the coefficients.
 
 **Calls:** `BankFeatures.array`
 
-**Called by:** `PanelModel._own`, `PanelModel._pooled`, `PanelModel._topdown`, `pooled_fit`
+**Called by:** `PanelModel._own`, `PanelModel._pooled`, `PanelModel._topdown`, `_FastPooled.tstats`, `pooled_fit`
 
 <sub>src/panel/estimate.py:33</sub>
+
+### `sqrt_w`
+
+```python
+sqrt_w(pn, m)
+```
+
+Square roots of the row weights on the rows in mask m (size weighting, panel.sample), or None (unweighted). Rows are multiplied by them: weighted least squares, with Driscoll-Kraay on the weighted scores.
+
+| argument | default | meaning |
+|---|---|---|
+| `pn` |  |  |
+| `m` |  |  |
+
+**Called by:** `PanelModel._pooled`, `_FastPooled._sample`, `pooled_fit`, `screen`
+
+<sub>src/panel/estimate.py:64</sub>
 
 ### `stacked`
 
@@ -5123,7 +5143,7 @@ Feature values for the stacked bank-quarter rows. X: (dates, k) when every bank 
 
 **Called by:** `PanelModel.fit`, `BankFeatures.stacked`
 
-<sub>src/panel/estimate.py:62</sub>
+<sub>src/panel/estimate.py:71</sub>
 
 ### `of_bank`
 
@@ -5141,7 +5161,7 @@ One bank's (dates, k) feature values.
 
 **Called by:** `PanelModel.fitted`, `PanelModel.forecast`
 
-<sub>src/panel/estimate.py:70</sub>
+<sub>src/panel/estimate.py:79</sub>
 
 ### `PanelModel`
 
@@ -5163,7 +5183,7 @@ Attributes after fit: coef[bank] = dict(a, rho, beta (array), delta (array)); se
 
 **Called by:** `build_models`, `quick_error`, `build_node`
 
-<sub>src/panel/estimate.py:75</sub>
+<sub>src/panel/estimate.py:84</sub>
 
 ### `PanelModel.__init__`
 
@@ -5179,7 +5199,7 @@ __init__(kind, features, name=None, min_obs=20, dk_lags=4)
 | `min_obs` | `20` |  |
 | `dk_lags` | `4` |  |
 
-<sub>src/panel/estimate.py:83</sub>
+<sub>src/panel/estimate.py:92</sub>
 
 ### `PanelModel.fit`
 
@@ -5198,7 +5218,7 @@ Estimate on the quarters start..end (labels) of panel pn. X: feature values on p
 
 **Calls:** `Panel.window`, `PanelModel._own`, `PanelModel._pooled`, `PanelModel._shrink`, `PanelModel._topdown`, `stacked`
 
-<sub>src/panel/estimate.py:91</sub>
+<sub>src/panel/estimate.py:100</sub>
 
 ### `PanelModel._own`
 
@@ -5218,7 +5238,7 @@ One bank's own regression: [1, y_lag, x, dummies that vary in its window].
 
 **Called by:** `PanelModel._shrink`, `PanelModel.fit`
 
-<sub>src/panel/estimate.py:115</sub>
+<sub>src/panel/estimate.py:124</sub>
 
 ### `PanelModel._pooled`
 
@@ -5234,11 +5254,11 @@ Fixed effects: a bank intercept for every bank with enough rows, common rho, bet
 | `m` |  |  |
 | `Xr` |  |  |
 
-**Calls:** `driscoll_kraay`, `ols`
+**Calls:** `driscoll_kraay`, `ols`, `sqrt_w`
 
 **Called by:** `PanelModel.fit`
 
-<sub>src/panel/estimate.py:129</sub>
+<sub>src/panel/estimate.py:138</sub>
 
 ### `PanelModel._shrink`
 
@@ -5260,7 +5280,7 @@ For each coefficient: tau^2 = max(0, mean_i (b_i - b_pooled)^2 - mean_i se_i^2);
 
 **Called by:** `PanelModel.fit`
 
-<sub>src/panel/estimate.py:157</sub>
+<sub>src/panel/estimate.py:170</sub>
 
 ### `PanelModel._topdown`
 
@@ -5282,7 +5302,7 @@ The total from the drivers; each bank's share change as AR(1) around its own ave
 
 **Called by:** `PanelModel.fit`
 
-<sub>src/panel/estimate.py:201</sub>
+<sub>src/panel/estimate.py:214</sub>
 
 ### `PanelModel.forecast`
 
@@ -5305,7 +5325,7 @@ Changes for quarters origin+1 .. origin+H for one bank (dummies 0).
 
 **Calls:** `of_bank`
 
-<sub>src/panel/estimate.py:240</sub>
+<sub>src/panel/estimate.py:253</sub>
 
 ### `PanelModel.fitted`
 
@@ -5326,7 +5346,7 @@ In-sample one-step fit at position t of pn.dates (actual lag and dummies).
 
 **Called by:** `fitted_values`
 
-<sub>src/panel/estimate.py:273</sub>
+<sub>src/panel/estimate.py:286</sub>
 
 ### `PanelModel.coefficient_rows`
 
@@ -5338,7 +5358,7 @@ Every bank's equation as rows: model, bank, term, coef (and std_err where estima
 
 **Called by:** `backtest`, `run`, `build_node`
 
-<sub>src/panel/estimate.py:293</sub>
+<sub>src/panel/estimate.py:306</sub>
 
 
 ## src/panel/reuse.py
@@ -5591,7 +5611,7 @@ panel: block with defaults.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:41</sub>
+<sub>src/panel/run.py:42</sub>
 
 ### `_arr`
 
@@ -5609,9 +5629,9 @@ Feature values for a model: (dates, k) for common drivers, (banks, dates, k) wit
 
 **Calls:** `BankFeatures.array`
 
-**Called by:** `backtest`, `fitted_values`, `run`, `run_oos`
+**Called by:** `_oos_origin`, `backtest`, `fitted_values`, `run`
 
-<sub>src/panel/run.py:49</sub>
+<sub>src/panel/run.py:50</sub>
 
 ### `build_models`
 
@@ -5631,9 +5651,9 @@ The competing panel models for each driver set, plus the AR(1) benchmark.
 
 **Calls:** `PanelModel`, `is_log`
 
-**Called by:** `run`, `run_oos`
+**Called by:** `_oos_origin`, `run`
 
-<sub>src/panel/run.py:57</sub>
+<sub>src/panel/run.py:58</sub>
 
 ### `_hist`
 
@@ -5651,7 +5671,7 @@ Last actual change of a bank and of the total at position o.
 
 **Called by:** `forecast_rows`
 
-<sub>src/panel/run.py:71</sub>
+<sub>src/panel/run.py:72</sub>
 
 ### `_covid`
 
@@ -5670,7 +5690,7 @@ _covid(cfg, dates, o, h)
 
 **Called by:** `forecast_rows`
 
-<sub>src/panel/run.py:77</sub>
+<sub>src/panel/run.py:78</sub>
 
 ### `forecast_rows`
 
@@ -5693,9 +5713,9 @@ Forecast every active bank from position o and append error rows.
 
 **Calls:** `Panel.active`, `_covid`, `_hist`, `error`, `growth_display`, `level_after`
 
-**Called by:** `backtest`, `run_oos`
+**Called by:** `_oos_origin`, `backtest`
 
-<sub>src/panel/run.py:85</sub>
+<sub>src/panel/run.py:86</sub>
 
 ### `summarise`
 
@@ -5714,7 +5734,7 @@ Errors -> by-horizon table, leaderboard by bank, overall leaderboard.
 
 **Called by:** `run`, `build_node`
 
-<sub>src/panel/run.py:115</sub>
+<sub>src/panel/run.py:116</sub>
 
 ### `backtest`
 
@@ -5738,7 +5758,7 @@ Rolling backtest of every panel model (same origins and re-estimation schedule a
 
 **Called by:** `run`, `build_node`
 
-<sub>src/panel/run.py:150</sub>
+<sub>src/panel/run.py:151</sub>
 
 ### `scenarios`
 
@@ -5761,7 +5781,7 @@ Forecast every scenario with every model estimated on all history.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:173</sub>
+<sub>src/panel/run.py:174</sub>
 
 ### `fitted_values`
 
@@ -5784,7 +5804,7 @@ In-sample one-step fit of every bank in every model estimated on all history.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:197</sub>
+<sub>src/panel/run.py:198</sub>
 
 ### `run_oos`
 
@@ -5802,13 +5822,59 @@ Out-of-sample test: at every origin the drivers are re-selected on all banks wit
 | `core` |  |  |
 | `log` | `print` | function used to print progress messages. |
 
-**Config:** `features`, `oos.first_origin`, `oos.horizon`, `oos.step`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`
+**Config:** `oos.first_origin`, `oos.horizon`, `oos.step`, `sample.hist_end`, `sample.horizon`
 
-**Calls:** `feature_matrix`, `Panel.pos`, `_arr`, `build_models`, `forecast_rows`, `select`
+**Calls:** `Panel.pos`, `_oos_origin`, `_workers`, `form`
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:216</sub>
+<sub>src/panel/run.py:217</sub>
+
+### `_workers`
+
+```python
+_workers(cfg, n)
+```
+
+panel.workers: 'auto' (the CPU cores, at most one per origin), or a number (1 = no parallel processes).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `n` |  |  |
+
+**Config:** `panel`
+
+**Called by:** `run_oos`
+
+<sub>src/panel/run.py:244</sub>
+
+### `_oos_origin`
+
+```python
+_oos_origin(cfg, pn, F, core, o, H, log=None, form=None)
+```
+
+One origin of the out-of-sample test: re-select, re-estimate, forecast. Returns (rows, pick, models, log). In a separate process the target form (a module setting) is set again from `form`.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `pn` |  |  |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `core` |  |  |
+| `o` |  |  |
+| `H` |  | forecast horizon in quarters. |
+| `log` | `None` | function used to print progress messages. |
+| `form` | `None` |  |
+
+**Config:** `features`, `sample.estimation_start`
+
+**Calls:** `feature_matrix`, `_arr`, `build_models`, `forecast_rows`, `select`, `set_form`
+
+**Called by:** `run_oos`
+
+<sub>src/panel/run.py:252</sub>
 
 ### `_charts`
 
@@ -5829,7 +5895,7 @@ _charts(out, O, scen, pn, best_by_bank, col)
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:249</sub>
+<sub>src/panel/run.py:283</sub>
 
 ### `run`
 
@@ -5851,9 +5917,9 @@ The whole panel analysis.
 
 **Config:** `features`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `sample.report_horizons`
 
-**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `evaluate`, `settings`, `write`, `Panel`, `bank_events`, `load_long`, `PanelModel.coefficient_rows`, `compare`, `panel_components`, `panel_path`, `save`, `_arr`, `_charts`, `_re_evaluate`, `_reused`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `select`, `form`
+**Calls:** `all_features`, `candidate_forms`, `feature_matrix`, `literature_models`, `evaluate`, `settings`, `write`, `Panel`, `bank_events`, `load_long`, `PanelModel.coefficient_rows`, `compare`, `panel_components`, `panel_path`, `save`, `_arr`, `_charts`, `_re_evaluate`, `_reused`, `_summary`, `backtest`, `build_models`, `fitted_values`, `run_oos`, `scenarios`, `settings`, `summarise`, `choose`, `restrict`, `weights`, `select`, `form`
 
-<sub>src/panel/run.py:286</sub>
+<sub>src/panel/run.py:320</sub>
 
 ### `_re_evaluate`
 
@@ -5876,7 +5942,7 @@ The evaluation is cheap and depends only on the saved errors: redo it with the c
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:414</sub>
+<sub>src/panel/run.py:464</sub>
 
 ### `_reused`
 
@@ -5893,7 +5959,23 @@ The results of an earlier, still valid, panel run.
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:440</sub>
+<sub>src/panel/run.py:495</sub>
+
+### `_sample_lines`
+
+```python
+_sample_lines(smp)
+```
+
+The estimation-sample block of summary.md.
+
+| argument | default | meaning |
+|---|---|---|
+| `smp` |  |  |
+
+**Called by:** `_summary`
+
+<sub>src/panel/run.py:513</sub>
 
 ### `_eval_lines`
 
@@ -5913,7 +5995,7 @@ The 'Ranked on ...' block of summary.md.
 
 **Called by:** `_re_evaluate`, `_summary`
 
-<sub>src/panel/run.py:458</sub>
+<sub>src/panel/run.py:530</sub>
 
 ### `_summary`
 
@@ -5931,11 +6013,113 @@ _summary(out, cfg, pn, res, col)
 
 **Config:** `panel`, `run_name`
 
-**Calls:** `_eval_lines`, `describe`
+**Calls:** `_eval_lines`, `_sample_lines`, `describe`
 
 **Called by:** `run`
 
-<sub>src/panel/run.py:475</sub>
+<sub>src/panel/run.py:547</sub>
+
+
+## src/panel/sample.py
+
+Which credit unions the panel is estimated on, chosen by the data (panel.sample: auto).
+
+### `describe`
+
+```python
+describe(levels, end)
+```
+
+Per bank: active (reports at `end`), first and last quarter, relative size, size share (weight).
+
+| argument | default | meaning |
+|---|---|---|
+| `levels` |  |  |
+| `end` |  | last quarter of the estimation window (Period). |
+
+**Called by:** `choose`
+
+<sub>src/panel/sample.py:33</sub>
+
+### `candidates`
+
+```python
+candidates(info, pc)
+```
+
+The candidate samples that differ from each other: {name: (banks, weighted)}.
+
+| argument | default | meaning |
+|---|---|---|
+| `info` |  |  |
+| `pc` |  |  |
+
+**Called by:** `choose`
+
+<sub>src/panel/sample.py:46</sub>
+
+### `weights`
+
+```python
+weights(pn, info)
+```
+
+Row weights of a panel: each bank-quarter gets its bank's size share, scaled to mean 1 over the rows.
+
+| argument | default | meaning |
+|---|---|---|
+| `pn` |  |  |
+| `info` |  |  |
+
+**Calls:** `BankFeatures.array`
+
+**Called by:** `run`, `choose`
+
+<sub>src/panel/sample.py:63</sub>
+
+### `restrict`
+
+```python
+restrict(cfg, banks)
+```
+
+A config whose panel holds only these banks.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `banks` |  |  |
+
+**Called by:** `run`, `choose`
+
+<sub>src/panel/sample.py:70</sub>
+
+### `choose`
+
+```python
+choose(cfg, pn, F, feats, out, log=print)
+```
+
+Compare the samples and return (name, banks, weighted, table).
+
+pn: the panel of all credit unions; feats: the drivers chosen on it.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `pn` |  |  |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `feats` |  |  |
+| `out` |  |  |
+| `log` | `print` | function used to print progress messages. |
+
+**Config:** `panel`, `sample.estimation_start`, `sample.hist_end`
+
+**Calls:** `settings`, `Panel`, `candidates`, `describe`, `restrict`, `weights`, `quick_error`, `select`
+
+**Called by:** `run`
+
+<sub>src/panel/sample.py:78</sub>
 
 
 ## src/panel/select.py
@@ -5991,7 +6175,7 @@ array(cols, nb=None)
 | `cols` |  |  |
 | `nb` | `None` |  |
 
-**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `mc3`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
+**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `weights`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `mc3`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
 
 <sub>src/panel/select.py:43</sub>
 
@@ -6008,7 +6192,7 @@ stacked(pn, cols)
 
 **Calls:** `stacked`, `BankFeatures.array`
 
-**Called by:** `pooled_fit`, `screen`
+**Called by:** `_FastPooled.__init__`, `pooled_fit`, `screen`
 
 <sub>src/panel/select.py:54</sub>
 
@@ -6071,7 +6255,7 @@ Bank intercepts, every bank's lagged change and the dummies, for the rows in mas
 | `pn` |  |  |
 | `m` |  |  |
 
-**Called by:** `pooled_fit`, `screen`
+**Called by:** `_FastPooled._sample`, `pooled_fit`, `screen`
 
 <sub>src/panel/select.py:77</sub>
 
@@ -6093,7 +6277,7 @@ Univariate pooled screen of every candidate feature.
 
 **Returns:** DataFrame: feature, mnemonic, transform, lag, coef, t_dk, p_dk, expected_sign, sign_ok, theme, geography.
 
-**Calls:** `feature_sign`, `parse_feature`, `Panel.window`, `BankFeatures.array`, `BankFeatures.meta`, `BankFeatures.stacked`, `_controls`, `_fs`
+**Calls:** `feature_sign`, `parse_feature`, `Panel.window`, `sqrt_w`, `BankFeatures.array`, `BankFeatures.meta`, `BankFeatures.stacked`, `_controls`, `_fs`
 
 **Called by:** `select`
 
@@ -6122,7 +6306,7 @@ Best form of each variable among those that pass, grouped by correlation, one pe
 
 **Called by:** `select`
 
-<sub>src/panel/select.py:141</sub>
+<sub>src/panel/select.py:144</sub>
 
 ### `pooled_fit`
 
@@ -6141,11 +6325,99 @@ Pooled FE regression of the combination: (beta, Driscoll-Kraay t, BIC, n).
 | `end` |  | last quarter of the estimation window (Period). |
 | `lags` | `4` |  |
 
-**Calls:** `Panel.window`, `driscoll_kraay`, `ols`, `BankFeatures.stacked`, `_controls`, `_fs`
+**Calls:** `Panel.window`, `driscoll_kraay`, `ols`, `sqrt_w`, `BankFeatures.stacked`, `_controls`, `_fs`
+
+<sub>src/panel/select.py:158</sub>
+
+### `_FastPooled`
+
+```python
+_FastPooled(pn, F, feats, start, end)
+```
+
+Pooled FE regressions of many driver combinations on the same window, fast and with identical results.
+
+The stacked data are built once. The controls (bank intercepts, lagged change, dummies) are partialled out of the target and of every driver once per estimation sample (Frisch-Waugh), so each combination is a small regression of residuals on residuals: the same slopes, residuals, BIC and Driscoll-Kraay covariance as the full regression (the small-sample correction is given the full number of regressors).
+
+| argument | default | meaning |
+|---|---|---|
+| `pn` |  |  |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `feats` |  |  |
+| `start` |  | first quarter of the estimation window (Period). |
+| `end` |  | last quarter of the estimation window (Period). |
 
 **Called by:** `search`
 
-<sub>src/panel/select.py:155</sub>
+<sub>src/panel/select.py:177</sub>
+
+### `_FastPooled.__init__`
+
+```python
+__init__(pn, F, feats, start, end)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `pn` |  |  |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `feats` |  |  |
+| `start` |  | first quarter of the estimation window (Period). |
+| `end` |  | last quarter of the estimation window (Period). |
+
+**Calls:** `Panel.window`, `BankFeatures.stacked`
+
+<sub>src/panel/select.py:186</sub>
+
+### `_FastPooled._sample`
+
+```python
+_sample(idx)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `idx` |  |  |
+
+**Calls:** `sqrt_w`, `_controls`
+
+**Called by:** `_FastPooled.slopes`
+
+<sub>src/panel/select.py:194</sub>
+
+### `_FastPooled.slopes`
+
+```python
+slopes(combo)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `combo` |  |  |
+
+**Calls:** `_FastPooled._sample`
+
+**Called by:** `search`
+
+<sub>src/panel/select.py:210</sub>
+
+### `_FastPooled.tstats`
+
+```python
+tstats(combo, got, lags)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `combo` |  |  |
+| `got` |  |  |
+| `lags` |  |  |
+
+**Calls:** `driscoll_kraay`
+
+**Called by:** `search`
+
+<sub>src/panel/select.py:219</sub>
 
 ### `search`
 
@@ -6169,19 +6441,19 @@ Every valid combination of shortlisted drivers, ranked by pooled BIC, then the b
 
 **Config:** `final_model.max_vars`, `final_model.min_vars`, `final_model.one_per_theme`, `final_model.required_themes`, `final_model.selection_tolerance`, `final_model.t_min`, `final_model.vif_max`, `panel`
 
-**Calls:** `vif`, `BankFeatures.array`, `BankFeatures.frame`, `_fs`, `pooled_fit`, `quick_error`
+**Calls:** `vif`, `BankFeatures.array`, `BankFeatures.frame`, `_FastPooled`, `_FastPooled.slopes`, `_FastPooled.tstats`, `_fs`, `quick_error`
 
 **Called by:** `check_package`, `select`, `target_names_sheet`, `find_date_column`, `guess_transform`, `match_concepts`, `read_bank`, `scenario_name`, `yq`
 
-<sub>src/panel/select.py:170</sub>
+<sub>src/panel/select.py:231</sub>
 
 ### `quick_error`
 
 ```python
-quick_error(cfg, pn, F, feats, end)
+quick_error(cfg, pn, F, feats, end, banks=None, metric=None)
 ```
 
-Average absolute level error over 1..H quarters, all banks and backtest origins up to `end`, of the pooled model with these drivers (dummy windows left out).
+Average absolute level error over 1..H quarters, all banks and backtest origins up to `end`, of the pooled model with these drivers (dummy windows left out). banks: only these banks' forecasts are scored; metric: a panel.evaluation metric instead of the average (src.panel.compare).
 
 | argument | default | meaning |
 |---|---|---|
@@ -6190,14 +6462,16 @@ Average absolute level error over 1..H quarters, all banks and backtest origins 
 | `F` |  | candidate features (DataFrame, one column per feature). |
 | `feats` |  |  |
 | `end` |  | last quarter of the estimation window (Period). |
+| `banks` | `None` |  |
+| `metric` | `None` |  |
 
 **Config:** `panel`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.horizon`
 
-**Calls:** `backtest_origins`, `refit_flags`, `Panel.active`, `Panel.pos`, `PanelModel`, `BankFeatures.array`, `_fs`, `error`
+**Calls:** `backtest_origins`, `refit_flags`, `_one`, `Panel.active`, `Panel.pos`, `PanelModel`, `BankFeatures.array`, `_fs`, `error`
 
-**Called by:** `search`
+**Called by:** `choose`, `search`
 
-<sub>src/panel/select.py:224</sub>
+<sub>src/panel/select.py:294</sub>
 
 ### `select`
 
@@ -6222,9 +6496,9 @@ Screen, shortlist and search on the window start..end.
 
 **Calls:** `screen`, `search`, `shortlist`
 
-**Called by:** `run`, `run_oos`, `build_node`
+**Called by:** `_oos_origin`, `run`, `choose`, `build_node`
 
-<sub>src/panel/select.py:260</sub>
+<sub>src/panel/select.py:338</sub>
 
 
 ## src/pipelines/bayes_first.py
@@ -12229,7 +12503,7 @@ Set the target form for this run ('dlog' or 'diff').
 |---|---|---|
 | `form` |  |  |
 
-**Called by:** `Panel.__init__`, `_err_rows`, `chain_forecast`, `run`, `Member.__init__`, `_bvarx_rows`, `_rows`, `joint_forecast`, `joint_oos`, `scenario_paths`, `Context.__init__`
+**Called by:** `Panel.__init__`, `_oos_origin`, `_err_rows`, `chain_forecast`, `run`, `Member.__init__`, `_bvarx_rows`, `_rows`, `joint_forecast`, `joint_oos`, `scenario_paths`, `Context.__init__`
 
 <sub>src/utils/target.py:22</sub>
 
@@ -12241,7 +12515,7 @@ form()
 
 The current target form.
 
-**Called by:** `Panel.__init__`, `run`, `Node.__init__`, `build_node`, `save_all`
+**Called by:** `Panel.__init__`, `run`, `run_oos`, `Node.__init__`, `build_node`, `save_all`
 
 <sub>src/utils/target.py:29</sub>
 

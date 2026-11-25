@@ -257,8 +257,20 @@ def panel_results(out, cfg):
     except Exception:
         pass
     unit = "%" if man.get("target_form", "dlog") == "dlog" else " (target units)"
-    st.caption(f"Panel drivers (chosen on all banks together): {', '.join(man.get('panel_drivers') or []) or 'none'}. "
+    st.caption(f"Panel drivers (chosen on the estimation sample): {', '.join(man.get('panel_drivers') or []) or 'none'}. "
                f"Literature core: {', '.join(man.get('core') or []) or 'none'}.")
+    scf = os.path.join(pdir, "0_sample_choice.csv")
+    if os.path.exists(scf):
+        sc_ = pd.read_csv(scf)
+        ch = sc_[sc_["chosen"]].iloc[0]
+        st.info(f"**Estimation sample: {ch['label']}** ({int(ch['banks'])} credit unions). {ch['reason']}.")
+        if len(sc_) > 1:
+            with st.expander("How the sample was chosen"):
+                st.caption("Each sample chooses its own drivers; the pooled model is then backtested and only the "
+                           "credit unions still reporting are scored (they are the ones to forecast).")
+                st.dataframe(sc_.drop(columns=[c for c in ("reason",) if c in sc_]).rename(columns={
+                    "score_active": "Error for the active credit unions", "exited_included": "Exited included"}),
+                    hide_index=True, use_container_width=True)
 
     # ---- how to compare: metric, test, horizon, which credit unions
     ev0 = compare.settings(cfg)
@@ -277,7 +289,15 @@ def panel_results(out, cfg):
     Hmax = int(E["horizon_q"].max())
     H = k3.slider("Quarters ahead (1..h)", 1, Hmax, min(int(ev0.get("horizon") or Hmax), Hmax), key="pe_h")
     all_banks = sorted(E["bank"].astype(str).unique())
-    pick = st.multiselect("Credit unions in the comparison (empty = all)", all_banks, default=[], key="pe_banks")
+    act = [b for b in (man.get("active_banks") or []) if b in all_banks]
+    inc_exit = False
+    if act and len(act) < len(all_banks):
+        inc_exit = st.checkbox(f"Include the {len(all_banks) - len(act)} credit unions that stopped reporting",
+                               False, key="pe_exit",
+                               help="By default only the credit unions still reporting are compared: they are the "
+                                    "ones you forecast. Their earlier forecasts are in the backtest either way.")
+    pool = all_banks if (inc_exit or not act) else act
+    pick = st.multiselect(f"Credit unions in the comparison (empty = all {len(pool)})", pool, default=[], key="pe_banks")
     with st.expander("More settings"):
         q1, q2, q3, q4 = st.columns(4)
         tail = q1.number_input("Worst share (tail)", 0.02, 0.5, float(ev0["tail_share"]), 0.01, key="pe_tail")
@@ -289,7 +309,7 @@ def panel_results(out, cfg):
         bm0 = next((m for m in mods if m.startswith("AR(1)")), mods[0])
         bench = q4.selectbox("Benchmark", mods, index=mods.index(bm0), key="pe_bench")
         cov = st.checkbox("Leave out the dummy (COVID) windows", bool(ev0["exclude_covid"]), key="pe_cov")
-    res = compare.evaluate(E, metric, pick or None, H, tail, pen, wgt, bench, exclude_covid=cov)
+    res = compare.evaluate(E, metric, pick or pool, H, tail, pen, wgt, bench, exclude_covid=cov)
     O, used = res["overall"], res["settings"]
     b0 = O.iloc[0]
     st.success(f"**Most accurate {'out of sample' if use_oos else 'in the backtest'} on the {used['metric_long']}: "
@@ -315,7 +335,7 @@ def panel_results(out, cfg):
     g2.line_chart(hz[hz["model"].isin(top)].pivot_table(index="horizon_q", columns="model", values="score"))
 
     st.subheader("One credit union")
-    banks = pick or all_banks
+    banks = pick or pool
     b = st.selectbox("Credit union", banks, key="panel_bank")
     lb = compare.one_bank(res, b)
     best = lb["model"].iloc[0] if len(lb) else None

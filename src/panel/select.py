@@ -19,7 +19,7 @@ from ..modelling.ardl import vif
 from ..modelling.search import backtest_origins, refit_flags
 from ..selection.clustering import cluster, representatives
 from ..utils import target as tg
-from .estimate import PanelModel, driscoll_kraay, ols
+from .estimate import PanelModel, driscoll_kraay, ols, sqrt_w
 
 
 class BankFeatures:
@@ -99,8 +99,11 @@ def screen(pn, F, start, end, lags=4):
     rows = []
     C = _controls(pn, m)
     y = pn.Y[m]
-    yr = y - C @ np.linalg.lstsq(C, y, rcond=None)[0]
     X = Xall[m]
+    sw = sqrt_w(pn, m)
+    if sw is not None:                                # size-weighted rows
+        C, y, X = C * sw[:, None], y * sw, X * sw[:, None]
+    yr = y - C @ np.linalg.lstsq(C, y, rcond=None)[0]
     okc = ~np.isnan(X).any(axis=0) & (np.nanstd(X, axis=0) > 0)
     cols = np.where(okc)[0]
     Xr = X[:, cols] - C @ np.linalg.lstsq(C, X[:, cols], rcond=None)[0]
@@ -158,13 +161,71 @@ def pooled_fit(pn, F, feats, start, end, lags=4):
     m = pn.window(start, end, X)
     C = _controls(pn, m)
     Z = np.column_stack([C, X[m]])
-    b, e, XtXi = ols(Z, pn.Y[m])
+    yv = pn.Y[m]
+    sw = sqrt_w(pn, m)
+    if sw is not None:
+        Z, yv = Z * sw[:, None], yv * sw
+    b, e, XtXi = ols(Z, yv)
     V = driscoll_kraay(Z, e, pn.T[m], XtXi, lags)
     k = len(feats)
     se = np.sqrt(np.clip(np.diag(V)[-k:], 0, None))
     n = int(m.sum())
     bic = n * np.log(max(e @ e, 1e-300) / n) + Z.shape[1] * np.log(n)
     return b[-k:], b[-k:] / np.where(se > 0, se, np.nan), bic, n
+
+
+class _FastPooled:
+    """Pooled FE regressions of many driver combinations on the same window, fast and with identical results.
+
+    The stacked data are built once. The controls (bank intercepts, lagged change, dummies) are partialled out of
+    the target and of every driver once per estimation sample (Frisch-Waugh), so each combination is a small
+    regression of residuals on residuals: the same slopes, residuals, BIC and Driscoll-Kraay covariance as the full
+    regression (the small-sample correction is given the full number of regressors).
+    """
+
+    def __init__(self, pn, F, feats, start, end):
+        self.pn, self.feats = pn, list(feats)
+        self.col = {f: j for j, f in enumerate(self.feats)}
+        self.X = F.stacked(pn, self.feats)
+        self.base = pn.window(start, end)
+        self.valid = ~np.isnan(self.X)
+        self.cache = {}
+
+    def _sample(self, idx):
+        m = self.base & self.valid[:, idx].all(axis=1)
+        key = np.packbits(m).tobytes()
+        if key not in self.cache:
+            ok = self.valid[m].all(axis=0)              # drivers complete on this sample
+            C = _controls(self.pn, m)
+            Xm = np.where(ok[None, :], self.X[m], 0.0)
+            YX = np.column_stack([self.pn.Y[m], Xm])
+            sw = sqrt_w(self.pn, m)
+            if sw is not None:                        # size-weighted rows
+                C, YX = C * sw[:, None], YX * sw[:, None]
+            B = np.linalg.lstsq(C, YX, rcond=None)[0]
+            R = YX - C @ B
+            self.cache[key] = (R[:, 0], R[:, 1:], self.pn.T[m], C.shape[1], int(m.sum()))
+        return self.cache[key]
+
+    def slopes(self, combo):
+        idx = [self.col[f] for f in combo]
+        ry, RX, T, pc, n = self._sample(idx)
+        Xt = RX[:, idx]
+        if n <= pc + len(idx):
+            return None
+        b, *_ = np.linalg.lstsq(Xt, ry, rcond=None)
+        return b, Xt, ry - Xt @ b, T, pc, n
+
+    def tstats(self, combo, got, lags):
+        b, Xt, e, T, pc, n = got
+        try:
+            XtXi = np.linalg.inv(Xt.T @ Xt)
+        except np.linalg.LinAlgError:
+            XtXi = np.linalg.pinv(Xt.T @ Xt)
+        V = driscoll_kraay(Xt, e, T, XtXi, lags, p=pc + len(combo))
+        se = np.sqrt(np.clip(np.diag(V), 0, None))
+        bic = n * np.log(max(e @ e, 1e-300) / n) + (pc + len(combo)) * np.log(n)
+        return b / np.where(se > 0, se, np.nan), bic, n
 
 
 def search(cfg, pn, F, short, start, end, log=print):
@@ -182,6 +243,9 @@ def search(cfg, pn, F, short, start, end, log=print):
     signs = short.set_index("feature")["expected_sign"].to_dict()
     F = _fs(F)
     W = F.frame(feats).loc[pd.Period(start, freq="Q"):pd.Period(end, freq="Q")]
+    lags = int(pc.get("dk_lags", 4))
+    fit = _FastPooled(pn, F, feats, start, end)
+    t_min, vif_max = float(fm.get("t_min", 1.96)), float(fm.get("vif_max", 5))
     rows = []
     for k in range(int(fm.get("min_vars", 1)), int(fm.get("max_vars", 3)) + 1):
         for combo in itertools.combinations(feats, k):
@@ -189,12 +253,18 @@ def search(cfg, pn, F, short, start, end, log=print):
                 continue
             if fm.get("required_themes") and not set(fm["required_themes"]) <= {themes[f] for f in combo}:
                 continue
-            if k > 1 and np.nanmax(vif(W[list(combo)])) > float(fm.get("vif_max", 5)):
+            # cheapest checks first: the slopes and their signs (plain least squares), then the VIF, then the
+            # Driscoll-Kraay t statistics only for the combinations still in (the same rules, in a cheaper order)
+            got = fit.slopes(combo)
+            if got is None:
                 continue
-            b, t, bic, n = pooled_fit(pn, F, list(combo), start, end, int(pc.get("dk_lags", 4)))
-            if np.any(np.abs(t) < float(fm.get("t_min", 1.96))) or np.any(~np.isfinite(t)):
-                continue
+            b = got[0]
             if any(signs[f] != 0 and np.sign(bv) != signs[f] for f, bv in zip(combo, b)):
+                continue
+            if k > 1 and np.nanmax(vif(W[list(combo)])) > vif_max:
+                continue
+            t, bic, n = fit.tstats(combo, got, lags)
+            if np.any(np.abs(t) < t_min) or np.any(~np.isfinite(t)):
                 continue
             rows.append({"features": list(combo), "k": k, "bic": bic, "min_abs_t": float(np.min(np.abs(t))), "n": n})
     if not rows:
@@ -221,9 +291,10 @@ def search(cfg, pn, F, short, start, end, log=print):
     return chosen, R
 
 
-def quick_error(cfg, pn, F, feats, end):
+def quick_error(cfg, pn, F, feats, end, banks=None, metric=None):
     """Average absolute level error over 1..H quarters, all banks and backtest origins up to `end`, of the
-    pooled model with these drivers (dummy windows left out)."""
+    pooled model with these drivers (dummy windows left out). banks: only these banks' forecasts are scored;
+    metric: a panel.evaluation metric instead of the average (src.panel.compare)."""
     H = int(cfg["sample"]["horizon"])
     X = _fs(F).array(feats)
     origins = [o for o in backtest_origins(pn.base) if o + 1 < len(pn.dates) and pn.dates[o] <= pd.Period(end, freq="Q")]
@@ -240,6 +311,8 @@ def quick_error(cfg, pn, F, feats, end):
         if fl:
             m.fit(pn, X, start, pn.dates[o])
         for b in pn.active(pn.dates[o]):
+            if banks is not None and b not in banks:
+                continue
             y = pn.ys[b]
             q0 = pn.dates[o]
             if b not in m.coef or pd.isna(y.get(q0, np.nan)):
@@ -253,8 +326,13 @@ def quick_error(cfg, pn, F, feats, end):
                     continue
                 if np.isnan(act[:h]).any():
                     break
-                errs.append(abs(float(tg.error(fc[:h].sum(), act[:h].sum()))))
-    return float(np.mean(errs)) if errs else np.nan
+                errs.append(float(tg.error(fc[:h].sum(), act[:h].sum())))
+    if not errs:
+        return np.nan
+    if metric:
+        from .compare import _one
+        return _one(np.array(errs), 0.10, 0.5)[metric]
+    return float(np.mean(np.abs(errs)))
 
 
 def select(cfg, pn, F, start, end, log=print):

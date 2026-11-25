@@ -30,13 +30,15 @@ def ols(X, y):
     return b, e, XtXi
 
 
-def driscoll_kraay(X, e, T, XtXi, lags=4):
+def driscoll_kraay(X, e, T, XtXi, lags=4, p=None):
     """Driscoll-Kraay covariance: scores summed over banks in each quarter, then Newey-West (Bartlett) over
     quarters. Robust to heteroskedasticity, autocorrelation and correlation across banks in the same quarter.
     With one bank it is the Newey-West covariance.
 
     Args:
         X: stacked regressors. e: residuals. T: quarter of each row (int). XtXi: (X'X)^-1. lags: Bartlett lags.
+        p: number of regressors for the small-sample correction (default: X's columns; give the full count when X
+           holds only the drivers after the controls were partialled out - the slope covariance is then identical).
 
     Returns:
         covariance matrix of the coefficients.
@@ -54,9 +56,16 @@ def driscoll_kraay(X, e, T, XtXi, lags=4):
         if k.any():
             A = G[k].T @ G[j[k]]
             S += (1 - l / (lags + 1)) * (A + A.T)
-    n, p = X.shape
+    n, p = X.shape[0], (X.shape[1] if p is None else p)
     G_ = len(ut)                                  # small-sample correction as statsmodels (hac-groupsum)
     return XtXi @ S @ XtXi * ((n - 1) / max(n - p, 1)) * (G_ / max(G_ - 1, 1))
+
+
+def sqrt_w(pn, m):
+    """Square roots of the row weights on the rows in mask m (size weighting, panel.sample), or None (unweighted).
+    Rows are multiplied by them: weighted least squares, with Driscoll-Kraay on the weighted scores."""
+    w = getattr(pn, "wrow", None)
+    return None if w is None else np.sqrt(w[m])
 
 
 def stacked(pn, X):
@@ -138,7 +147,11 @@ class PanelModel:
         dk = D.std(axis=0) > 0 if D.shape[1] else np.zeros(0, bool)
         k = Xr.shape[1]
         Z = np.column_stack([F, pn.YL[m], Xr[m], D[:, dk]])
-        b, e, XtXi = ols(Z, pn.Y[m])
+        yv = pn.Y[m]
+        sw = sqrt_w(pn, m)
+        if sw is not None:                            # size-weighted: every row scaled by sqrt(weight)
+            Z, yv = Z * sw[:, None], yv * sw
+        b, e, XtXi = ols(Z, yv)
         V = driscoll_kraay(Z, e, pn.T[m], XtXi, self.dk_lags)
         nb = len(ok)
         rho, beta = b[nb], b[nb + 1:nb + 1 + k]
