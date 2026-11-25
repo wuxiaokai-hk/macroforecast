@@ -442,6 +442,49 @@ def replace_block(lines, path, block):
     lines[start:end] = block
 
 
+def single_bank(P):
+    """The one bank chosen from a panel file, or None (no bank column, or several banks chosen).
+
+    One credit union is not a panel: it is run as a single series (the full project), from its own rows."""
+    if not (P.get("bank") or {}).get("panel_column"):
+        return None
+    chosen = P.get("panel_banks") or []
+    return chosen[0] if len(chosen) == 1 else None
+
+
+def extract_single_bank(P, bank, name):
+    """Write the chosen bank's rows (and its own events) to their own files for a single-series run.
+
+    Returns:
+        (target file, events file or None).
+    """
+    import re as _re
+    bk = P["bank"]
+    df = read_table(bk["file"], bk["sheet"])
+    pc = bk["panel_column"]
+    rows = df[df[pc].astype(str).str.strip() == str(bank).strip()]
+    folder = os.path.join(os.path.dirname(os.path.abspath(bk["file"])), "single_bank")
+    os.makedirs(folder, exist_ok=True)
+    tag = _re.sub(r"[^A-Za-z0-9]+", "_", f"{name}_{bank}").strip("_")
+    f = os.path.join(folder, f"{tag}.csv")
+    rows[[bk["date_column"], bk["target_column"]]].to_csv(f, index=False)
+    ef = None
+    if P.get("events"):
+        from src.panel.data import bank_events
+        c = {"data": {"events": {"file": P["events"], "sheet": None, "date_column": "date", "series_column": "series",
+                                 "amount_column": "amount", "bank_column": _events_bank_column(P)},
+                      "bank": {"target_column": bk["target_column"], "panel_column": pc}}}
+        try:
+            ev = bank_events(c, str(bank).strip())
+        except Exception:
+            ev = {}
+        if ev:
+            ef = os.path.join(folder, f"{tag}_events.csv")
+            pd.DataFrame({"date": [str(q) for q in ev], "series": bk["target_column"],
+                          "amount": list(ev.values())}).to_csv(ef, index=False)
+    return f, ef
+
+
 def _events_bank_column(P):
     """The events file's bank column for a panel (the same name as the target file's, if it has it)."""
     pc = (P.get("bank") or {}).get("panel_column")
@@ -611,6 +654,12 @@ def write_config(P, name, overrides=None, fast=False, log=print):
         "screen_first.primary_geography": yq(P["primary"]), "en_first.primary_geography": yq(P["primary"]),
         "oos.first_origin": d["oos_first"],
     }
+    one = single_bank(P)
+    if one is not None:                                   # one credit union: a single-series run, not a panel
+        bf, ef = extract_single_bank(P, one, name)
+        sets.update({"data.bank.file": yq(rel(bf)), "data.bank.sheet": "null", "data.bank.panel_column": "null",
+                     "data.events.file": yq(rel(ef) if ef else None), "data.events.bank_column": "null"})
+        overrides = {k: v for k, v in (overrides or {}).items() if not k.startswith("panel.")}
     sets.update(overrides or {})
     for k, v in sets.items():
         if not set_key(lines, k, v):
@@ -632,6 +681,9 @@ def write_config(P, name, overrides=None, fast=False, log=print):
         log("  (could not switch off the deep models: set models.deep.enabled: false by hand)")
     lines[0:0] = [f"# Written by the set-up from {rel(bk['file'])} and {len(mc['files'])} scenario file(s). Review the",
                   "# literature table and metadata it points to, then: python run_pipeline.py --config " + rel(cfg_path), ""]
+    if one is not None:
+        lines[0:0] = [f"# One credit union ('{one}') chosen from the panel file: it runs as a single series (the full",
+                      "# project); choose two or more in the app to run the panel instead."]
     with open(cfg_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     return cfg_path, lit_path

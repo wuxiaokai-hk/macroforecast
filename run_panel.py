@@ -69,6 +69,19 @@ def main():
     cfg = load_config(a.config)
     if not cfg["data"]["bank"].get("panel_column"):
         raise SystemExit("data.bank.panel_column is not set: name the column that holds the bank")
+    from macroforecast.api import _only_bank
+    one = _only_bank(cfg)
+    if one is not None:                                  # one bank is not a panel: run it as a single series
+        log(f"Only one bank ('{one}') in the panel file or in panel.banks: running it as a single series (the full "
+            "project), not as a panel. Choose two or more banks for the panel.")
+        import macroforecast as mf
+        from macroforecast.api import _single_bank_inputs
+        o, series, ef = _single_bank_inputs(cfg, cfg, one, cfg["out_dir"])
+        mf.run(series.rename_axis("date"), o["data"]["metadata"]["file"], (o.get("literature") or {}).get("workbook"),
+               target_column=cfg["data"]["bank"]["target_column"], events=ef, options=o,
+               run_name=os.path.basename(cfg["out_dir"]), output_dir=os.path.dirname(cfg["out_dir"]),
+               oos=not a.no_oos, check=not a.skip_check, force=a.force)
+        return
     if a.status:
         from src.panel.reuse import status
         print(status(cfg, oos=not a.no_oos).to_string(index=False))

@@ -1004,6 +1004,10 @@ if mode == "New data set":
                     P["panel_banks"], P["own_banks"] = chosen, own
                     if not chosen:
                         st.error("Tick at least one bank to estimate.")
+                    elif len(chosen) == 1:
+                        st.info(f"One credit union selected (**{chosen[0]}**): it runs as a single series - the "
+                                "full project with every model family - not as a panel. Tick two or more to run "
+                                "the panel.")
                     else:
                         st.caption(f"Estimating {len(chosen)} of {len(summ)} banks"
                                    + (f"; own full run for {', '.join(own)}" if own else "")
@@ -1186,7 +1190,10 @@ if mode == "New data set":
             ov["oos.step"] = str(c3.selectbox("Out-of-sample origins every", [1, 2, 4], index=2, format_func=lambda x: f"{x} quarter(s)"))
             d["dummies"] = st.multiselect("One-off quarters (each gets a dummy and is left out of error measures)", allq, default=d["dummies"])
 
-            if P["bank"].get("panel_column"):
+            if P["bank"].get("panel_column") and len(P.get("panel_banks") or []) == 1:
+                st.caption(f"One credit union selected ({P['panel_banks'][0]}): the settings below are for its "
+                           "single-series run. Tick two or more in ② for the panel.")
+            if P["bank"].get("panel_column") and len(P.get("panel_banks") or []) > 1:
                 st.subheader("Panel: several banks")
                 st.caption("Drivers are chosen on all banks together (a pooled screen and search with Driscoll–Kraay "
                            "standard errors); then each bank is forecast by the panel models below and an AR(1) "

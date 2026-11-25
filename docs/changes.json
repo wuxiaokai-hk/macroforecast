@@ -1905,9 +1905,9 @@
   "changed": "2026-11-18"
  },
  "tools.new_data_setup.write_config": {
-  "hash": "3ec793b31b3f",
+  "hash": "3b823dc8f11e",
   "added": "2026-10-28",
-  "changed": "2026-11-12"
+  "changed": "2026-11-25"
  },
  "src.modelling.evaluate.driver_sensitivity": {
   "hash": "32a737d6dfe0",
@@ -4614,22 +4614,17 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "tools.new_data_setup.single_bank": {
+  "hash": "45597300d5d1",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "tools.new_data_setup.extract_single_bank": {
+  "hash": "3caea06b4352",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master._blank",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.target_rows",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.new_macro",
-   "what": "added"
-  },
   {
    "date": "2026-11-24",
    "id": "src.utils.master._sign_for",
@@ -6113,6 +6108,21 @@
   {
    "date": "2026-11-25",
    "id": "src.models.ecm.ECM.fit",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "tools.new_data_setup.single_bank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "tools.new_data_setup.extract_single_bank",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "tools.new_data_setup.write_config",
    "what": "changed"
   }
  ]

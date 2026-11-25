@@ -5906,7 +5906,7 @@ One-off events of one bank: {quarter: amount}. The events file may have the pane
 
 **Calls:** `read_table`, `to_quarters`
 
-**Called by:** `Panel.__init__`, `status`, `run`
+**Called by:** `Panel.__init__`, `status`, `run`, `extract_single_bank`
 
 <sub>src/panel/data.py:89</sub>
 
@@ -13166,7 +13166,7 @@ Read a CSV or Excel file.
 
 **Returns:** DataFrame.
 
-**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_rename_plain`, `columns`, `_read`, `names_sheet`, `_events_bank_column`, `build_metadata`, `propose`, `read_bank`, `read_macro`, `main`
+**Called by:** `bank_events`, `load_long`, `Story.s_events`, `_augment`, `run`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `_rename_plain`, `columns`, `_read`, `names_sheet`, `_events_bank_column`, `build_metadata`, `extract_single_bank`, `propose`, `read_bank`, `read_macro`, `main`
 
 <sub>src/utils/io.py:17</sub>
 
@@ -16289,6 +16289,46 @@ Replace a key's nested block (the lines indented below it) with new lines.
 
 <sub>tools/new_data_setup.py:422</sub>
 
+### `single_bank`
+
+```python
+single_bank(P)
+```
+
+The one bank chosen from a panel file, or None (no bank column, or several banks chosen).
+
+One credit union is not a panel: it is run as a single series (the full project), from its own rows.
+
+| argument | default | meaning |
+|---|---|---|
+| `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
+
+**Called by:** `write_config`
+
+<sub>tools/new_data_setup.py:445</sub>
+
+### `extract_single_bank`
+
+```python
+extract_single_bank(P, bank, name)
+```
+
+Write the chosen bank's rows (and its own events) to their own files for a single-series run.
+
+| argument | default | meaning |
+|---|---|---|
+| `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
+| `bank` |  |  |
+| `name` |  | display name. |
+
+**Returns:** (target file, events file or None).
+
+**Calls:** `bank_events`, `read_table`, `_events_bank_column`
+
+**Called by:** `write_config`
+
+<sub>tools/new_data_setup.py:455</sub>
+
 ### `_events_bank_column`
 
 ```python
@@ -16303,9 +16343,9 @@ The events file's bank column for a panel (the same name as the target file's, i
 
 **Calls:** `read_table`
 
-**Called by:** `write_config`
+**Called by:** `extract_single_bank`, `write_config`
 
-<sub>tools/new_data_setup.py:445</sub>
+<sub>tools/new_data_setup.py:488</sub>
 
 ### `yq`
 
@@ -16325,7 +16365,7 @@ A value as YAML text (strings quoted when needed).
 
 **Called by:** `write_config`, `write_config`
 
-<sub>tools/new_data_setup.py:456</sub>
+<sub>tools/new_data_setup.py:499</sub>
 
 ### `rel`
 
@@ -16343,7 +16383,7 @@ Path relative to the project folder when inside it.
 
 **Called by:** `main`, `propose`, `write_config`
 
-<sub>tools/new_data_setup.py:474</sub>
+<sub>tools/new_data_setup.py:517</sub>
 
 ### `propose`
 
@@ -16373,7 +16413,7 @@ Read the files and propose every data-dependent setting (used by this command an
 
 **Called by:** `write_config`, `main`
 
-<sub>tools/new_data_setup.py:488</sub>
+<sub>tools/new_data_setup.py:531</sub>
 
 ### `write_config`
 
@@ -16393,11 +16433,11 @@ Write config/<name>.yaml (a copy of the example config, comments kept) and its l
 
 **Returns:** (config path, literature table path).
 
-**Calls:** `write_workbook`, `Story.read`, `_events_bank_column`, `rel`, `replace_block`, `set_key`, `yq`
+**Calls:** `write_workbook`, `Story.read`, `_events_bank_column`, `extract_single_bank`, `rel`, `replace_block`, `set_key`, `single_bank`, `yq`
 
 **Called by:** `main`
 
-<sub>tools/new_data_setup.py:576</sub>
+<sub>tools/new_data_setup.py:619</sub>
 
 ### `main`
 
@@ -16409,7 +16449,7 @@ Command line entry: detect, suggest, write the config and run the pre-flight che
 
 **Calls:** `load_config`, `Report.text`, `check`, `propose`, `rel`, `scenario_name`, `write_config`
 
-<sub>tools/new_data_setup.py:640</sub>
+<sub>tools/new_data_setup.py:692</sub>
 
 
 ## tools/panel_compare.py

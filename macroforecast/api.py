@@ -403,6 +403,16 @@ def run(target, metadata, literature=None, *, target_column=None, date_column=No
                            skip_check=not check, no_trace=not trace)
     if cfg["data"]["bank"].get("panel_column"):      # several banks: the panel run
         c = load_config(cfg_file)
+        one = _only_bank(c)
+        if one is not None:                           # one bank is not a panel: its single-series run
+            log(f"Only one bank ('{one}') in the panel file or in panel.banks: running it as a single series "
+                "(the full project), not as a panel")
+            o, series, ef = _single_bank_inputs(c, cfg, one, out_dir)
+            return run(series.rename_axis("date"), o["data"]["metadata"]["file"],
+                       (o.get("literature") or {}).get("workbook"), target_column=c["data"]["bank"]["target_column"],
+                       events=ef, options=o, run_name=os.path.basename(out_dir),
+                       output_dir=os.path.dirname(out_dir), oos=oos, deck=deck, approach=approach, force=force,
+                       cache=cache, trace=trace, check=check)
         _script("run_panel").check(c, strict=check)
         from src.panel import run as panel_run
         panel_run.run(c, out_dir, oos=oos, log=log, force=force)
@@ -427,6 +437,46 @@ def run(target, metadata, literature=None, *, target_column=None, date_column=No
     with open(os.path.join(out_dir, "macroforecast_result.json"), "w", encoding="utf-8") as f:
         json.dump({"config": cfg_file, "best": res.best, "oos": bool(oos)}, f, indent=1)
     return res
+
+
+def _only_bank(c):
+    """The bank's name when the panel file (after panel.banks) holds just one bank, else None."""
+    from src.panel.data import load_long
+    try:
+        levels = load_long(c)
+    except Exception:
+        return None
+    return next(iter(levels)) if len(levels) == 1 else None
+
+
+def _single_bank_inputs(c, cfg, b, out_dir):
+    """Options, series and events file for bank b's single-series run (no panel settings).
+
+    Returns:
+        (options dict, level series indexed by quarter string, events file or None).
+    """
+    import copy as _copy
+    from src.panel.data import bank_events, load_long
+    lvl = load_long(c)[b]
+    ev = bank_events(c, b)
+    o = _copy.deepcopy(cfg)
+    for k in ("out_dir", "config_file"):
+        o.pop(k, None)
+    o["data"]["bank"].pop("panel_column", None)
+    o.pop("panel", None)
+    inp = os.path.join(out_dir, "banks", "_inputs")
+    os.makedirs(inp, exist_ok=True)
+    ef = None
+    if ev:
+        ef = os.path.join(inp, f"{b}_events.csv".replace(" ", "_"))
+        pd.DataFrame({"date": [str(q) for q in ev], "series": c["data"]["bank"]["target_column"],
+                      "amount": list(ev.values())}).to_csv(ef, index=False)
+    series = lvl.rename(c["data"]["bank"]["target_column"])
+    series.index = series.index.astype(str)
+    for k in ("hist_end", "estimation_start", "backtest_start", "backtest_end"):
+        o["sample"].pop(k, None)
+    o.setdefault("oos", {})["first_origin"] = None
+    return o, series, ef
 
 
 def _per_bank_full(c, cfg, out_dir, oos, check, force=False):
