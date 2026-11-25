@@ -129,10 +129,20 @@ def run(cfg, args):
         log(f"\nHoldout (selected and estimated to {hold['train_end'].iloc[0]}, error after {cfg['oos']['holdout_quarters']} quarters):")
         for _, r in last.iterrows():
             log(f"  {r['model']:<46s} {r['error_pct']:+.2f}%")
-    fitted = {k: m for k, m in saved.load_models(cfg["out_dir"]).items() if formula.has_formula(m)}
+    all_fitted = saved.load_models(cfg["out_dir"])
+    order, why_rec = None, None
+    try:
+        from src.selection import scorecard
+        log("\nThe recommended model, scored out of sample (forecasting, interpretation, sensitivity):")
+        S = scorecard.score(cfg, all_fitted, summ, cfg["out_dir"], "out of sample", log)
+        if S is not None:
+            order, why_rec = list(S["model"]), scorecard.why_text(S.iloc[0], S.attrs["weights"], S.attrs["col"])
+    except Exception as ex:
+        log(f"  scorecard not written ({type(ex).__name__}: {ex})")
+    fitted = {k: m for k, m in all_fitted.items() if formula.has_formula(m)}
     if fitted:
         try:
-            formula.write(cfg, ctx, fitted, summ, "out of sample", log)
+            formula.write(cfg, ctx, fitted, summ, "out of sample", log, order=order, why_rec=why_rec)
         except Exception as ex:
             log(f"  formula: not written ({type(ex).__name__}: {ex})")
     else:

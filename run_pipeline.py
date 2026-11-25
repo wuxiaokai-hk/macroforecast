@@ -242,33 +242,34 @@ def run(cfg, args):
         log(f"  {r['model']:<44s} {r['family']:<20s} " + " ".join(f"{r[f'avg_1_{h}_pct']:6.2f}%" for h in hz))
     if cfg["save"].get("fitted_models", True):
         saved.save_all(out, ev, ctx, log)
-    fitted = {}
-    for k, v in ev.items():                                   # formula models only: cheap to rebuild
+    all_fitted = {}
+    for k, v in ev.items():
         if v.get("fitted") is not None:
             try:
-                m_ = pickle.loads(v["fitted"])
-                if formula.has_formula(m_):
-                    fitted[k] = m_
+                all_fitted[k] = pickle.loads(v["fitted"])
             except Exception:
                 pass
-    try:
-        formula.write(cfg, ctx, fitted, comp, "backtest", log)
-    except Exception as ex:
-        log(f"  formula: not written ({type(ex).__name__}: {ex})")
     if (cfg.get("impact") or {}).get("enabled", True):
         log("\nHow the economy affects the target (impact/) ...")
         try:
             from src.impact import analysis as impact
-            all_fitted = {}
-            for k, v in ev.items():
-                if v.get("fitted") is not None:
-                    try:
-                        all_fitted[k] = pickle.loads(v["fitted"])
-                    except Exception:
-                        pass
             impact.run(cfg, ctx, all_fitted, out, log)
         except Exception as ex:
             log(f"  impact analysis not written ({type(ex).__name__}: {ex})")
+    log("\nThe recommended model: every model scored on forecasting, interpretation and sensitivity ...")
+    order, why_rec = None, None
+    try:
+        from src.selection import scorecard
+        S = scorecard.score(cfg, all_fitted, comp, out, "backtest", log)
+        if S is not None:
+            order, why_rec = list(S["model"]), scorecard.why_text(S.iloc[0], S.attrs["weights"], S.attrs["col"])
+    except Exception as ex:
+        log(f"  scorecard not written ({type(ex).__name__}: {ex})")
+    fitted = {k: m_ for k, m_ in all_fitted.items() if formula.has_formula(m_)}
+    try:
+        formula.write(cfg, ctx, fitted, comp, "backtest", log, order=order, why_rec=why_rec)
+    except Exception as ex:
+        log(f"  formula: not written ({type(ex).__name__}: {ex})")
     steps = cache.write_manifest(out, log)
     report.write_tables(os.path.join(out, "comparison"), {"8_run_steps": steps})
     saved.snapshot(cfg, "pipeline", log)

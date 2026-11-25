@@ -5,9 +5,9 @@
   "changed": "2026-11-24"
  },
  "run_pipeline.run": {
-  "hash": "faa6f3899b4e",
+  "hash": "7e45c39443f0",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "run_oos.main": {
   "hash": "212a37736a46",
@@ -15,9 +15,9 @@
   "changed": "2026-11-24"
  },
  "run_oos.run": {
-  "hash": "a69832c7f59d",
+  "hash": "9d025d0081cf",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.features.transforms.transform": {
   "hash": "567e52adbc5a",
@@ -2060,9 +2060,9 @@
   "changed": "2026-10-29"
  },
  "src.reporting.formula.choose": {
-  "hash": "4deb3de91aaf",
+  "hash": "659d17a32bbb",
   "added": "2026-10-29",
-  "changed": "2026-10-29"
+  "changed": "2026-11-25"
  },
  "src.reporting.formula._x": {
   "hash": "41a73c845d17",
@@ -2110,9 +2110,9 @@
   "changed": "2026-11-03"
  },
  "src.reporting.formula.write": {
-  "hash": "03823fb4af2c",
+  "hash": "d0ffbdefe2cc",
   "added": "2026-10-29",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.utils.saved.save_fitted": {
   "hash": "914c8b6eb6ae",
@@ -3285,9 +3285,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "1162967db043",
+  "hash": "315c3a4a178e",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story.__init__": {
   "hash": "c145cee124cb",
@@ -3325,9 +3325,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.load": {
-  "hash": "8d3a8d76c33e",
+  "hash": "009ac2a4432b",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story._n_vars": {
   "hash": "17e5a66aab1b",
@@ -3340,9 +3340,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.build": {
-  "hash": "3c63fe3eb32f",
+  "hash": "ceb51a0dfa4d",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story.s_title": {
   "hash": "13ff62fcb0d8",
@@ -3505,9 +3505,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_rec_model": {
-  "hash": "0b5a6697a8e1",
+  "hash": "1d951fae7f08",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story._term": {
   "hash": "fc8295fb6590",
@@ -4310,9 +4310,9 @@
   "changed": "2026-11-24"
  },
  "src.impact.analysis.run": {
-  "hash": "53ed50dcf55e",
+  "hash": "633228e01dce",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.impact.analysis._u": {
   "hash": "e63b19017be8",
@@ -4419,127 +4419,62 @@
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
+ "src.impact.analysis.all_model_responses": {
+  "hash": "4bd706b51820",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard.settings": {
+  "hash": "f95207676fb6",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard._transparency": {
+  "hash": "3a99a19d4bb6",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard._n_drivers": {
+  "hash": "38855a65caa5",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard.score": {
+  "hash": "faa8b22f32d1",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard.why_text": {
+  "hash": "50aa2d993aa6",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard.write": {
+  "hash": "a7fce962b8c2",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard.chart": {
+  "hash": "ff1f3b8eeaf4",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard._outcome_codes": {
+  "hash": "1e3e18510488",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.scorecard._codes": {
+  "hash": "253541965d16",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story.s_scorecard": {
+  "hash": "3551ead59e04",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story._wrapl",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._img",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._s",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._slug",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._list",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._table",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html._tiles",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_html.build",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.rgb",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.box",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.text",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx._fit",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.table",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.notes",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.chrome",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.tiles",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.points",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story_pptx.build",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.process_story.make",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.process_story.main",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.load",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_target",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_signs",
-   "what": "changed"
-  },
   {
    "date": "2026-11-18",
    "id": "src.reporting.process_story.Story.s_one_origin",
@@ -5918,6 +5853,126 @@
   {
    "date": "2026-11-25",
    "id": "src.system.run.joint_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_pipeline.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_oos.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.all_model_responses",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.formula.choose",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.formula.write",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard._transparency",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard._n_drivers",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.score",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.why_text",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.write",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.chart",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard._outcome_codes",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard._codes",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.score",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.write",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.chart",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.load",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_rec_model",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_scorecard",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.score",
    "what": "changed"
   }
  ]

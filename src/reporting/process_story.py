@@ -244,6 +244,14 @@ class Story:
         self.rank = rank.sort_values(f"avg_1_{self.HM}_pct").reset_index(drop=True)
         within = self.rank[self.rank["single_equation"] & self.rank["n_vars"].between(1, self.MAXV)]
         self.REC = (within.iloc[0] if len(within) else self.rank.iloc[0])
+        self.SC = R("recommendation", "1_scorecard.csv")
+        self.SCJ = {}
+        rj = os.path.join(self.out, "recommendation", "recommended.json")
+        if os.path.exists(rj):                     # the model scorecard decides (src/selection/scorecard.py)
+            self.SCJ = json.load(open(rj, encoding="utf-8"))
+            hit = self.rank[self.rank["model"] == self.SCJ.get("model")]
+            if len(hit):
+                self.REC = hit.iloc[0]
         self.AR = self.rank.set_index("model").loc["AR(1) benchmark"] if "AR(1) benchmark" in set(self.rank["model"]) else None
         self.basis = ("out of sample (drivers re-chosen at every origin)" if self.HAVE_OOS
                       else "rolling backtest (drivers chosen on all the data)")
@@ -271,7 +279,7 @@ class Story:
                   self.s_stability, self.s_bayes, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
                   self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
-                  self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
+                  self.s_scorecard, self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
                   self.s_scen_inputs, self.s_scen_forecast, self.s_contrib, self.s_scen_check,
                   self.s_impact_responses, self.s_impact_reliability, self.s_impact_attribution, self.s_impact_whatif,
                   self.s_limits,
@@ -1244,10 +1252,17 @@ class Story:
             if j.get("formula_model") == rec:
                 eq = j.get("equation")
         ar = self.AR[col] if self.AR is not None else np.nan
+        sc = self.SCJ
+        rule = (f"Choice rule: every model competes; the one with the best balance of forecasting accuracy, "
+                f"interpretation and sensitivity to the economy (model scorecard, previous page), {self.basis}."
+                if sc else
+                f"Choice rule: among single-equation models (data-driven, literature, hybrid) with 1 to {self.MAXV} "
+                f"drivers, the one with the lowest average error over 1-{self.HM} quarters, {self.basis}.")
         self.add("9. The recommended model", f"Recommended: {rec}",
-                 f"The most accurate model with at most {self.MAXV} drivers and a written equation, judged {self.basis}.",
-                 what=[f"Choice rule: among single-equation models (data-driven, literature, hybrid) with 1 to {self.MAXV} "
-                       f"drivers, the one with the lowest average error over 1-{self.HM} quarters, {self.basis}.",
+                 ("The best balance of accuracy, interpretation and sensitivity among all models, judged "
+                  f"{self.basis}." if sc else
+                  f"The most accurate model with at most {self.MAXV} drivers and a written equation, judged {self.basis}."),
+                 what=[rule,
                        "Drivers: " + "; ".join(self.label(d) for d in self.rec_drivers) + "." if self.rec_drivers else ""],
                  why=["A single equation can be written down, checked by hand, put in a spreadsheet and explained to a "
                       "committee; a forest of trees cannot. When the most accurate model overall has no equation, the "
@@ -1542,6 +1557,54 @@ class Story:
         T = pd.DataFrame(items, columns=["Limitation", "What it means and how it is managed"])
         self.add("12. Conclusion", "Known limitations and how they are managed",
                  "No model is perfect; these are the points to keep in mind when using the forecast.", table=T)
+
+    def s_scorecard(self):
+        S = self.SC
+        if S.empty:
+            return
+        W = self.SCJ.get("weights") or {"accuracy": 0.5, "interpretation": 0.25, "sensitivity": 0.25}
+        d = S.head(12).iloc[::-1]
+        f, ax, p = self.fig("scorecard", 9, 0.42 * len(d) + 1.5)
+        left = np.zeros(len(d))
+        for k, c in (("accuracy", C["teal"]), ("interpretation", C["gold"]), ("sensitivity", C["green"])):
+            v = d[k].values * W[k]
+            ax.barh(range(len(d)), v, left=left, color=c, label=f"{k} ({W[k]:.0%})")
+            left += v
+        ax.set_yticks(range(len(d)))
+        ax.set_yticklabels([("" if e else "(not eligible) ") + self.short(m, 44) for m, e in zip(d["model"], d["eligible"])],
+                           fontsize=8.5)
+        ax.set_xlim(0, 1)
+        ax.legend(fontsize=8, loc="lower right")
+        ax.set_title("Weighted score of each model", loc="left")
+        T = pd.DataFrame({"Model": S["model"].head(8), "Error": [self.err(v) for v in S["error_pct"].head(8)],
+                          "Accuracy": S["accuracy"].head(8).map("{:.2f}".format),
+                          "Interpretation": S["interpretation"].head(8).map("{:.2f}".format),
+                          "Sensitivity": S["sensitivity"].head(8).map("{:.2f}".format),
+                          "Score": S["score"].head(8).map("{:.2f}".format),
+                          "Eligible": ["yes" if e else "no" for e in S["eligible"].head(8)]})
+        out_ = S[~S["eligible"]]
+        top_out = out_[out_["score"] > S.iloc[0]["score"]]
+        self.add("9. The recommended model", f"All {len(S)} models scored: {S.iloc[0]['model']} balances best",
+                 "No family is preferred: every model competes on forecasting, interpretation and sensitivity.",
+                 what=["Accuracy: the best average error divided by the model's (1 = the most accurate).",
+                       "Interpretation: how transparent the model type is (a written equation scores 1, machine "
+                       "learning 0.2), times the average of three checks: coefficients with the expected sign, at most "
+                       f"{int((self.cfg.get('recommend') or {}).get('max_drivers', 5))} drivers, and drivers that are "
+                       "not other outcomes of the economy (credit, deposits).",
+                       "Sensitivity: does the model respond to the focus drivers, in the expected direction, and do its "
+                       "scenarios move the same way as the explanatory model's?",
+                       f"To be recommended, a model must be within {self.SCJ.get('max_error_ratio', 1.5):g}x the best "
+                       "error and respond to at least one focus driver."],
+                 why=["The most accurate model is not always the most useful: a model that cannot say how the economy "
+                      "moves the target, or whose drivers cannot be explained, is hard to defend and cannot answer "
+                      "what-if questions."],
+                 result=[f"Recommended: {S.iloc[0]['model']} (score {S.iloc[0]['score']:.2f}); most accurate: "
+                         f"{self.SCJ.get('most_accurate', '')}."] +
+                        [f"{r['model']} scores higher but is not eligible: {r['not_eligible_because']}."
+                         for _, r in top_out.head(2).iterrows()],
+                 read=f"Weights: accuracy {W['accuracy']:.0%}, interpretation {W['interpretation']:.0%}, sensitivity "
+                      f"{W['sensitivity']:.0%} (config recommend.weights).",
+                 chart=self.save(f, p), table=T)
 
     def s_recommend(self):
         rec = self.REC["model"]

@@ -48,6 +48,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/selection/clustering.py](#srcselectionclusteringpy)
 - [src/selection/double_selection.py](#srcselectiondoubleselectionpy)
 - [src/selection/elastic_net.py](#srcselectionelasticnetpy)
+- [src/selection/scorecard.py](#srcselectionscorecardpy)
 - [src/selection/screening.py](#srcselectionscreeningpy)
 - [src/system/__init__.py](#srcsysteminitpy)
 - [src/system/joint.py](#srcsystemjointpy)
@@ -114,7 +115,7 @@ The full pipeline: data -> features -> both selection approaches -> model zoo ->
 
 **Config:** `approaches`, `cache.dir`, `cache.enabled`, `data.bank.target_column`, `en_first.stability.threshold`, `features.deflator`, `impact`, `literature`, `models.horizon_combination`, `out_dir`, `run_name`, `sample.horizon`, `sample.report_horizons`, `save`
 
-**Calls:** `all_features`, `candidate_forms`, `run`, `evaluate`, `horizon_summary`, `buckets`, `by_horizon`, `combine`, `describe`, `final_choice`, `scenarios`, `build`, `selection_info`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_family_bars`, `chart_horizon`, `chart_regimes`, `chart_scenarios`, `chart_stability`, `scenario_models`, `summary_md`, `write_tables`, `build`, `StepCache`, `StepCache.write_manifest`, `hash_code`, `hash_frame`, `hash_obj`, `Context`, `log`, `save_all`, `snapshot`, `add_story`
+**Calls:** `all_features`, `candidate_forms`, `run`, `evaluate`, `horizon_summary`, `buckets`, `by_horizon`, `combine`, `describe`, `final_choice`, `scenarios`, `build`, `selection_info`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_family_bars`, `chart_horizon`, `chart_regimes`, `chart_scenarios`, `chart_stability`, `scenario_models`, `summary_md`, `write_tables`, `build`, `score`, `why_text`, `StepCache`, `StepCache.write_manifest`, `hash_code`, `hash_frame`, `hash_obj`, `Context`, `log`, `save_all`, `snapshot`, `add_story`
 
 **Called by:** `main`
 
@@ -154,7 +155,7 @@ Out-of-sample test with re-selection at every origin, Diebold-Mariano tests, hol
 
 **Config:** `approaches`, `cache.dir`, `cache.enabled`, `oos.holdout_quarters`, `out_dir`, `sample.report_horizons`, `save`
 
-**Calls:** `combine`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_driver_timeline`, `chart_family_bars`, `chart_holdout`, `chart_oos`, `write_tables`, `build_oos`, `StepCache`, `Context`, `log`, `load_models`, `save_origin_models`, `snapshot`, `add_story`, `holdout`, `run_oos`, `select_at`, `summarise`
+**Calls:** `combine`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_driver_timeline`, `chart_family_bars`, `chart_holdout`, `chart_oos`, `write_tables`, `build_oos`, `score`, `why_text`, `StepCache`, `Context`, `log`, `load_models`, `save_origin_models`, `snapshot`, `add_story`, `holdout`, `run_oos`, `select_at`, `summarise`
 
 **Called by:** `main`
 
@@ -307,7 +308,7 @@ sign_of() for a feature name.
 
 **Calls:** `parse_feature`, `sign_of`
 
-**Called by:** `focus_table`, `_expected_sign`, `screen`, `run`, `prepare`, `resolve_focus`, `_prepare`, `screen`
+**Called by:** `all_model_responses`, `focus_table`, `_expected_sign`, `screen`, `run`, `prepare`, `resolve_focus`, `_prepare`, `screen`
 
 <sub>src/features/transforms.py:82</sub>
 
@@ -645,7 +646,7 @@ A copy of the macro frame with the shocks added in the forecast quarters.
 
 **Calls:** `is_level`, `lookalikes`, `resolve_variable`
 
-**Called by:** `responses`
+**Called by:** `all_model_responses`, `responses`
 
 <sub>src/impact/analysis.py:111</sub>
 
@@ -664,7 +665,7 @@ Quarterly changes of the target (model form) over H quarters from the end of his
 | `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
 | `H` |  | forecast horizon in quarters. |
 
-**Called by:** `attribution`, `responses`, `run`
+**Called by:** `all_model_responses`, `attribution`, `responses`, `run`
 
 <sub>src/impact/analysis.py:144</sub>
 
@@ -684,7 +685,7 @@ Growth effect (pp per quarter or target units) and balance effect (% or target u
 
 **Calls:** `is_log`, `path`
 
-**Called by:** `attribution`, `responses`, `run`
+**Called by:** `all_model_responses`, `attribution`, `responses`, `run`
 
 <sub>src/impact/analysis.py:150</sub>
 
@@ -700,7 +701,7 @@ False for models without macro drivers (benchmarks, own-history models).
 |---|---|---|
 | `model` |  | a model following the model interface. |
 
-**Called by:** `tied_models`
+**Called by:** `all_model_responses`, `tied_models`
 
 <sub>src/impact/analysis.py:163</sub>
 
@@ -929,11 +930,38 @@ Everything in this module for a finished run; writes outputs/<run>/impact/.
 
 **Config:** `impact`, `sample.horizon`
 
-**Calls:** `_u`, `attribution`, `describe`, `effect`, `episode_macro`, `explanatory`, `focus_table`, `forecast`, `lookalikes`, `reliability`, `responses`, `tied_models`, `typical_size`, `unit_label`, `write_summary`, `all`
+**Calls:** `_u`, `all_model_responses`, `attribution`, `describe`, `effect`, `episode_macro`, `explanatory`, `focus_table`, `forecast`, `lookalikes`, `reliability`, `responses`, `tied_models`, `typical_size`, `unit_label`, `write_summary`, `all`
 
 **Called by:** `run`, `make`
 
 <sub>src/impact/analysis.py:522</sub>
+
+### `all_model_responses`
+
+```python
+all_model_responses(cfg, ctx, models, shocks_typ, hz, resp, set_names, H)
+```
+
+Response of every model with drivers to a typical rise in each focus driver (for the model scorecard).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `models` |  |  |
+| `shocks_typ` |  |  |
+| `hz` |  |  |
+| `resp` |  |  |
+| `set_names` |  |  |
+| `H` |  | forecast horizon in quarters. |
+
+**Returns:** DataFrame: model, shock, series, expected_sign, horizon, balance_effect.
+
+**Calls:** `feature_sign`, `apply_shocks`, `effect`, `forecast`, `has_drivers`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:646</sub>
 
 ### `_u`
 
@@ -945,7 +973,7 @@ _u()
 
 **Called by:** `run`, `sentence`, `write_summary`
 
-<sub>src/impact/analysis.py:645</sub>
+<sub>src/impact/analysis.py:683</sub>
 
 ### `sentence`
 
@@ -966,7 +994,7 @@ sentence(ctx, row, h, unit_name='the balance')
 
 **Called by:** `write_summary`, `Story.s_impact_headline`
 
-<sub>src/impact/analysis.py:649</sub>
+<sub>src/impact/analysis.py:687</sub>
 
 ### `write_summary`
 
@@ -992,7 +1020,7 @@ Plain-language summary of the impact analysis.
 
 **Called by:** `run`
 
-<sub>src/impact/analysis.py:665</sub>
+<sub>src/impact/analysis.py:703</sub>
 
 
 ## src/impact/charts.py
@@ -1093,7 +1121,7 @@ Draw every impact chart that has data.
 
 **Calls:** `attribution`, `response_paths`, `sensitivity`
 
-**Called by:** `card_text`, `run`, `scenarios`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL.fit`, `build`, `Story.s_scen_check`, `_split_args`, `_write_if_changed`, `find_member`, `main`
+**Called by:** `card_text`, `run`, `scenarios`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL.fit`, `build`, `Story.s_scen_check`, `score`, `_split_args`, `_write_if_changed`, `find_member`, `main`
 
 <sub>src/impact/charts.py:120</sub>
 
@@ -7267,23 +7295,26 @@ True when the model is an explicit equation (ARDL, error-correction model, same-
 
 **Returns:** bool.
 
-**Called by:** `run`, `run`, `choose`
+**Called by:** `run`, `run`, `choose`, `_transparency`
 
 <sub>src/reporting/formula.py:30</sub>
 
 ### `choose`
 
 ```python
-choose(ranking, models, col)
+choose(ranking, models, col, order=None)
 ```
 
-The most accurate model overall and the most accurate model with a formula.
+The recommended model and the best model with a formula.
+
+With `order` (model names, best first: the scorecard, src/selection/scorecard.py) the first is the recommended model and the first with a formula is the formula model; without it, the most accurate ones.
 
 | argument | default | meaning |
 |---|---|---|
 | `ranking` |  | table with model, family and the error column. |
 | `models` |  | dict name -> fitted model. |
 | `col` |  | error column (lower is better), e.g. avg_1_12_pct. |
+| `order` | `None` |  |
 
 **Returns:** (best overall row, best formula row or None) as Series.
 
@@ -7308,7 +7339,7 @@ Symbol of a series k quarters back, e.g. FHPI.ION(t-2).
 
 **Called by:** `_window_def`, `definition`
 
-<sub>src/reporting/formula.py:61</sub>
+<sub>src/reporting/formula.py:67</sub>
 
 ### `definition`
 
@@ -7329,7 +7360,7 @@ What a feature is, as a formula in the raw series.
 
 **Called by:** `terms`
 
-<sub>src/reporting/formula.py:66</sub>
+<sub>src/reporting/formula.py:72</sub>
 
 ### `_window_def`
 
@@ -7350,7 +7381,7 @@ Definition of a moving-window transform (ma, vol, dma, dvol).
 
 **Called by:** `definition`
 
-<sub>src/reporting/formula.py:86</sub>
+<sub>src/reporting/formula.py:92</sub>
 
 ### `_lr_def`
 
@@ -7367,7 +7398,7 @@ Definition of an error-correction long-run regressor.
 
 **Called by:** `terms`, `terms_levels`
 
-<sub>src/reporting/formula.py:97</sub>
+<sub>src/reporting/formula.py:103</sub>
 
 ### `terms`
 
@@ -7388,7 +7419,7 @@ The equation term by term.
 
 **Called by:** `write`
 
-<sub>src/reporting/formula.py:104</sub>
+<sub>src/reporting/formula.py:110</sub>
 
 ### `n_ylags`
 
@@ -7404,7 +7435,7 @@ Number of lagged-growth terms in a parameter vector (y_lag1, y_lag2, ...).
 
 **Called by:** `terms`, `worked`, `write_calculator`
 
-<sub>src/reporting/formula.py:146</sub>
+<sub>src/reporting/formula.py:152</sub>
 
 ### `terms_levels`
 
@@ -7424,7 +7455,7 @@ The terms of an ARDL in levels: y*(t) = c + sum a_i y*(t-i) + sum b_jk z_j(t-k).
 
 **Called by:** `terms`
 
-<sub>src/reporting/formula.py:152</sub>
+<sub>src/reporting/formula.py:158</sub>
 
 ### `equation_text`
 
@@ -7445,7 +7476,7 @@ The equation in one line plus the balance identity.
 
 **Called by:** `write`, `write_calculator`
 
-<sub>src/reporting/formula.py:177</sub>
+<sub>src/reporting/formula.py:183</sub>
 
 ### `worked`
 
@@ -7467,7 +7498,7 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Called by:** `write`
 
-<sub>src/reporting/formula.py:215</sub>
+<sub>src/reporting/formula.py:221</sub>
 
 ### `worked_levels`
 
@@ -7489,7 +7520,7 @@ The next Q quarters of an ARDL in levels, term by term (identical to model.forec
 
 **Called by:** `worked`
 
-<sub>src/reporting/formula.py:276</sub>
+<sub>src/reporting/formula.py:282</sub>
 
 ### `_col`
 
@@ -7503,7 +7534,7 @@ Excel column letters for a 1-based index.
 |---|---|---|
 | `i` |  |  |
 
-<sub>src/reporting/formula.py:322</sub>
+<sub>src/reporting/formula.py:328</sub>
 
 ### `_excel_feature`
 
@@ -7527,7 +7558,7 @@ Excel formula for a transform at row r with lag l. X(row) / P(row): cell of the 
 
 **Called by:** `write_calculator`
 
-<sub>src/reporting/formula.py:331</sub>
+<sub>src/reporting/formula.py:337</sub>
 
 ### `write_calculator`
 
@@ -7555,12 +7586,12 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Called by:** `write`
 
-<sub>src/reporting/formula.py:374</sub>
+<sub>src/reporting/formula.py:380</sub>
 
 ### `write`
 
 ```python
-write(cfg, ctx, models, ranking, basis, log=print)
+write(cfg, ctx, models, ranking, basis, log=print, order=None, why_rec=None)
 ```
 
 Pick the recommended formula model, write the equation, the next quarters and the Excel calculator.
@@ -7573,6 +7604,8 @@ Pick the recommended formula model, write the equation, the next quarters and th
 | `ranking` |  | model table with the error columns (out-of-sample summary or backtest comparison). |
 | `basis` |  | "out of sample" or "backtest". |
 | `log` | `print` | message function. |
+| `order` | `None` |  |
+| `why_rec` | `None` |  |
 
 **Returns:** dict with the chosen models and file paths, or None when no model qualifies.
 
@@ -7582,7 +7615,7 @@ Pick the recommended formula model, write the equation, the next quarters and th
 
 **Called by:** `run`, `run`
 
-<sub>src/reporting/formula.py:653</sub>
+<sub>src/reporting/formula.py:659</sub>
 
 
 ## src/reporting/process_story.py
@@ -7709,7 +7742,7 @@ Reads a run and builds its sections.
 | `out` |  | the run's output folder. |
 | `charts` |  | folder for the PNGs. |
 
-**Config:** `bayes_first`, `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `impact`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
+**Config:** `bayes_first`, `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `impact`, `oos`, `recommend`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
 
 **Called by:** `make`
 
@@ -7766,7 +7799,7 @@ add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), c
 | `table_note` | `''` |  |
 | `kind` | `'content'` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_focus`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_reliability`, `Story.s_impact_responses`, `Story.s_impact_whatif`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_focus`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_reliability`, `Story.s_impact_responses`, `Story.s_impact_whatif`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_scorecard`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
 
 <sub>src/reporting/process_story.py:147</sub>
 
@@ -7782,7 +7815,7 @@ fig(name, w=9, h=4.4)
 | `w` | `9` |  |
 | `h` | `4.4` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_scorecard`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
 
 <sub>src/reporting/process_story.py:154</sub>
 
@@ -7797,7 +7830,7 @@ save(f, path)
 | `f` |  |  |
 | `path` |  | file to write or read. |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_responses`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_responses`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_scorecard`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
 
 <sub>src/reporting/process_story.py:158</sub>
 
@@ -7832,7 +7865,7 @@ short(f, n=46)
 
 **Calls:** `parse`, `tr_words`
 
-**Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_focus`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
+**Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_focus`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_scorecard`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
 
 <sub>src/reporting/process_story.py:173</sub>
 
@@ -7860,7 +7893,7 @@ _n_vars(s)
 |---|---|---|
 | `s` |  |  |
 
-<sub>src/reporting/process_story.py:255</sub>
+<sub>src/reporting/process_story.py:263</sub>
 
 ### `Story.err`
 
@@ -7874,9 +7907,9 @@ err(v)
 
 **Calls:** `num`, `pct`
 
-**Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
+**Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scorecard`, `Story.s_search_pick`, `Story.s_search_rank`
 
-<sub>src/reporting/process_story.py:262</sub>
+<sub>src/reporting/process_story.py:270</sub>
 
 ### `Story.build`
 
@@ -7888,7 +7921,7 @@ build()
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:266</sub>
+<sub>src/reporting/process_story.py:274</sub>
 
 ### `Story.s_title`
 
@@ -7898,7 +7931,7 @@ s_title()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:286</sub>
+<sub>src/reporting/process_story.py:294</sub>
 
 ### `Story.s_question`
 
@@ -7910,7 +7943,7 @@ s_question()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:295</sub>
+<sub>src/reporting/process_story.py:303</sub>
 
 ### `Story.s_overview`
 
@@ -7920,7 +7953,7 @@ s_overview()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrap`, `num`, `Report.text`
 
-<sub>src/reporting/process_story.py:322</sub>
+<sub>src/reporting/process_story.py:330</sub>
 
 ### `Story.s_target`
 
@@ -7932,7 +7965,7 @@ s_target()
 
 **Calls:** `Story.add`, `Story.save`, `plural`
 
-<sub>src/reporting/process_story.py:357</sub>
+<sub>src/reporting/process_story.py:365</sub>
 
 ### `Story.s_events`
 
@@ -7944,7 +7977,7 @@ s_events()
 
 **Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
 
-<sub>src/reporting/process_story.py:396</sub>
+<sub>src/reporting/process_story.py:404</sub>
 
 ### `Story.s_macro`
 
@@ -7956,7 +7989,7 @@ s_macro()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:433</sub>
+<sub>src/reporting/process_story.py:441</sub>
 
 ### `Story.s_signs`
 
@@ -7966,7 +7999,7 @@ s_signs()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:463</sub>
+<sub>src/reporting/process_story.py:471</sub>
 
 ### `Story.s_literature`
 
@@ -7976,7 +8009,7 @@ s_literature()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:494</sub>
+<sub>src/reporting/process_story.py:502</sub>
 
 ### `Story.s_transforms`
 
@@ -7986,7 +8019,7 @@ s_transforms()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:518</sub>
+<sub>src/reporting/process_story.py:526</sub>
 
 ### `Story.s_stationarity`
 
@@ -7996,7 +8029,7 @@ s_stationarity()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
 
-<sub>src/reporting/process_story.py:536</sub>
+<sub>src/reporting/process_story.py:544</sub>
 
 ### `Story.s_lags`
 
@@ -8006,7 +8039,7 @@ s_lags()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:562</sub>
+<sub>src/reporting/process_story.py:570</sub>
 
 ### `Story.s_funnel`
 
@@ -8016,7 +8049,7 @@ s_funnel()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:578</sub>
+<sub>src/reporting/process_story.py:586</sub>
 
 ### `Story._rule`
 
@@ -8031,7 +8064,7 @@ _rule(T, key)
 
 **Called by:** `Story.s_funnel`, `Story.s_search_pick`
 
-<sub>src/reporting/process_story.py:617</sub>
+<sub>src/reporting/process_story.py:625</sub>
 
 ### `Story.s_screen`
 
@@ -8041,7 +8074,7 @@ s_screen()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:624</sub>
+<sub>src/reporting/process_story.py:632</sub>
 
 ### `Story.s_bestform`
 
@@ -8051,7 +8084,7 @@ s_bestform()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:658</sub>
+<sub>src/reporting/process_story.py:666</sub>
 
 ### `Story.s_clusters`
 
@@ -8063,7 +8096,7 @@ s_clusters()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:678</sub>
+<sub>src/reporting/process_story.py:686</sub>
 
 ### `Story.s_shortlist`
 
@@ -8073,7 +8106,7 @@ s_shortlist()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:701</sub>
+<sub>src/reporting/process_story.py:709</sub>
 
 ### `Story.s_en`
 
@@ -8085,7 +8118,7 @@ s_en()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:716</sub>
+<sub>src/reporting/process_story.py:724</sub>
 
 ### `Story.s_stability`
 
@@ -8097,7 +8130,7 @@ s_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:739</sub>
+<sub>src/reporting/process_story.py:747</sub>
 
 ### `Story.s_bayes`
 
@@ -8109,7 +8142,7 @@ s_bayes()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:768</sub>
+<sub>src/reporting/process_story.py:776</sub>
 
 ### `Story.s_search_rules`
 
@@ -8121,7 +8154,7 @@ s_search_rules()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
 
-<sub>src/reporting/process_story.py:810</sub>
+<sub>src/reporting/process_story.py:818</sub>
 
 ### `Story.s_search_rank`
 
@@ -8133,7 +8166,7 @@ s_search_rank()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:851</sub>
+<sub>src/reporting/process_story.py:859</sub>
 
 ### `Story.s_search_pick`
 
@@ -8145,7 +8178,7 @@ s_search_pick()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
 
-<sub>src/reporting/process_story.py:886</sub>
+<sub>src/reporting/process_story.py:894</sub>
 
 ### `Story.s_families`
 
@@ -8155,7 +8188,7 @@ s_families()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:918</sub>
+<sub>src/reporting/process_story.py:926</sub>
 
 ### `Story.s_backtest_design`
 
@@ -8167,7 +8200,7 @@ s_backtest_design()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:943</sub>
+<sub>src/reporting/process_story.py:951</sub>
 
 ### `Story.s_one_origin`
 
@@ -8177,7 +8210,7 @@ s_one_origin()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:981</sub>
+<sub>src/reporting/process_story.py:989</sub>
 
 ### `Story.s_all_origins`
 
@@ -8187,7 +8220,7 @@ s_all_origins()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1024</sub>
+<sub>src/reporting/process_story.py:1032</sub>
 
 ### `Story.s_leaderboard`
 
@@ -8197,7 +8230,7 @@ s_leaderboard()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1055</sub>
+<sub>src/reporting/process_story.py:1063</sub>
 
 ### `Story.s_by_horizon`
 
@@ -8207,7 +8240,7 @@ s_by_horizon()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1087</sub>
+<sub>src/reporting/process_story.py:1095</sub>
 
 ### `Story.s_oos_design`
 
@@ -8219,7 +8252,7 @@ s_oos_design()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1125</sub>
+<sub>src/reporting/process_story.py:1133</sub>
 
 ### `Story.s_oos_gap`
 
@@ -8229,7 +8262,7 @@ s_oos_gap()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1147</sub>
+<sub>src/reporting/process_story.py:1155</sub>
 
 ### `Story.s_driver_stability`
 
@@ -8239,7 +8272,7 @@ s_driver_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1181</sub>
+<sub>src/reporting/process_story.py:1189</sub>
 
 ### `Story.s_holdout`
 
@@ -8251,7 +8284,7 @@ s_holdout()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1213</sub>
+<sub>src/reporting/process_story.py:1221</sub>
 
 ### `Story.s_rec_model`
 
@@ -8261,7 +8294,7 @@ s_rec_model()
 
 **Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1232</sub>
+<sub>src/reporting/process_story.py:1240</sub>
 
 ### `Story._term`
 
@@ -8277,7 +8310,7 @@ _term(t)
 
 **Called by:** `Story.s_rec_model`
 
-<sub>src/reporting/process_story.py:1263</sub>
+<sub>src/reporting/process_story.py:1278</sub>
 
 ### `Story.s_rec_effects`
 
@@ -8287,7 +8320,7 @@ s_rec_effects()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1272</sub>
+<sub>src/reporting/process_story.py:1287</sub>
 
 ### `Story.s_rec_fit`
 
@@ -8297,7 +8330,7 @@ s_rec_fit()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
 
-<sub>src/reporting/process_story.py:1293</sub>
+<sub>src/reporting/process_story.py:1308</sub>
 
 ### `Story.s_coef_paths`
 
@@ -8307,7 +8340,7 @@ s_coef_paths()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1317</sub>
+<sub>src/reporting/process_story.py:1332</sub>
 
 ### `Story.s_diagnostics`
 
@@ -8317,7 +8350,7 @@ s_diagnostics()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1347</sub>
+<sub>src/reporting/process_story.py:1362</sub>
 
 ### `Story.s_scen_inputs`
 
@@ -8327,7 +8360,7 @@ s_scen_inputs()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
 
-<sub>src/reporting/process_story.py:1379</sub>
+<sub>src/reporting/process_story.py:1394</sub>
 
 ### `Story.s_scen_forecast`
 
@@ -8337,7 +8370,7 @@ s_scen_forecast()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1404</sub>
+<sub>src/reporting/process_story.py:1419</sub>
 
 ### `Story.s_contrib`
 
@@ -8351,7 +8384,7 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 
 **Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1439</sub>
+<sub>src/reporting/process_story.py:1454</sub>
 
 ### `Story.s_scen_check`
 
@@ -8361,7 +8394,7 @@ s_scen_check()
 
 **Calls:** `all`, `Story.add`
 
-<sub>src/reporting/process_story.py:1501</sub>
+<sub>src/reporting/process_story.py:1516</sub>
 
 ### `Story.s_limits`
 
@@ -8371,7 +8404,19 @@ s_limits()
 
 **Calls:** `Story.add`, `Story.err`
 
-<sub>src/reporting/process_story.py:1527</sub>
+<sub>src/reporting/process_story.py:1542</sub>
+
+### `Story.s_scorecard`
+
+```python
+s_scorecard()
+```
+
+**Config:** `recommend`
+
+**Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
+
+<sub>src/reporting/process_story.py:1561</sub>
 
 ### `Story.s_recommend`
 
@@ -8381,7 +8426,7 @@ s_recommend()
 
 **Calls:** `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1546</sub>
+<sub>src/reporting/process_story.py:1609</sub>
 
 ### `Story._ex_name`
 
@@ -8391,7 +8436,7 @@ _ex_name()
 
 **Called by:** `Story.s_impact_attribution`, `Story.s_impact_responses`, `Story.s_impact_whatif`
 
-<sub>src/reporting/process_story.py:1563</sub>
+<sub>src/reporting/process_story.py:1626</sub>
 
 ### `Story._hm`
 
@@ -8403,7 +8448,7 @@ _hm()
 
 **Called by:** `Story.s_impact_attribution`, `Story.s_impact_headline`
 
-<sub>src/reporting/process_story.py:1568</sub>
+<sub>src/reporting/process_story.py:1631</sub>
 
 ### `Story._label`
 
@@ -8417,7 +8462,7 @@ _label(concept)
 
 **Called by:** `Story.s_impact_headline`
 
-<sub>src/reporting/process_story.py:1573</sub>
+<sub>src/reporting/process_story.py:1636</sub>
 
 ### `Story.s_impact_headline`
 
@@ -8427,7 +8472,7 @@ s_impact_headline()
 
 **Calls:** `sentence`, `Story._hm`, `Story._label`, `Story.add`, `Story.fig`, `Story.save`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1577</sub>
+<sub>src/reporting/process_story.py:1640</sub>
 
 ### `Story.s_focus`
 
@@ -8437,7 +8482,7 @@ s_focus()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:1619</sub>
+<sub>src/reporting/process_story.py:1682</sub>
 
 ### `Story.s_impact_responses`
 
@@ -8447,7 +8492,7 @@ s_impact_responses()
 
 **Calls:** `Story._ex_name`, `Story.add`, `Story.save`
 
-<sub>src/reporting/process_story.py:1645</sub>
+<sub>src/reporting/process_story.py:1708</sub>
 
 ### `Story.s_impact_reliability`
 
@@ -8457,7 +8502,7 @@ s_impact_reliability()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1684</sub>
+<sub>src/reporting/process_story.py:1747</sub>
 
 ### `Story.s_impact_attribution`
 
@@ -8467,7 +8512,7 @@ s_impact_attribution()
 
 **Calls:** `Story._ex_name`, `Story._hm`, `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1707</sub>
+<sub>src/reporting/process_story.py:1770</sub>
 
 ### `Story.s_impact_whatif`
 
@@ -8477,7 +8522,7 @@ s_impact_whatif()
 
 **Calls:** `Story._ex_name`, `Story.add`
 
-<sub>src/reporting/process_story.py:1748</sub>
+<sub>src/reporting/process_story.py:1811</sub>
 
 ### `Story.s_glossary`
 
@@ -8487,7 +8532,7 @@ s_glossary()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1770</sub>
+<sub>src/reporting/process_story.py:1833</sub>
 
 ### `Story.s_settings`
 
@@ -8497,7 +8542,7 @@ s_settings()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1797</sub>
+<sub>src/reporting/process_story.py:1860</sub>
 
 ### `_wrap`
 
@@ -8512,7 +8557,7 @@ _wrap(s, n)
 
 **Called by:** `Story.s_overview`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1814</sub>
+<sub>src/reporting/process_story.py:1877</sub>
 
 ### `_wrapl`
 
@@ -8529,7 +8574,7 @@ _wrapl(s, n)
 
 **Called by:** `Story.s_impact_headline`, `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
 
-<sub>src/reporting/process_story.py:1825</sub>
+<sub>src/reporting/process_story.py:1888</sub>
 
 
 ## src/reporting/report.py
@@ -9718,7 +9763,7 @@ Themes not allowed as controls because they are other outcomes of the same econo
 
 **Config:** `impact`
 
-**Called by:** `double_selection`
+**Called by:** `double_selection`, `_outcome_codes`
 
 <sub>src/selection/double_selection.py:189</sub>
 
@@ -9847,6 +9892,176 @@ Re-run the Elastic Net on many block subsamples and count how often each feature
 **Called by:** `run`, `main`
 
 <sub>src/selection/elastic_net.py:103</sub>
+
+
+## src/selection/scorecard.py
+
+The recommended model: every model competes on equal terms, scored on forecasting, interpretation and sensitivity.
+
+### `settings`
+
+```python
+settings(cfg)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+
+**Config:** `recommend`
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:43</sub>
+
+### `_transparency`
+
+```python
+_transparency(name, family, model, table)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `name` |  | display name. |
+| `family` |  | model family used in the comparison. |
+| `model` |  | a model following the model interface. |
+| `table` |  |  |
+
+**Calls:** `has_formula`
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:52</sub>
+
+### `_n_drivers`
+
+```python
+_n_drivers(model, drivers_text)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `model` |  | a model following the model interface. |
+| `drivers_text` |  |  |
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:63</sub>
+
+### `_outcome_codes`
+
+```python
+_outcome_codes(cfg)
+```
+
+Series whose theme is another outcome of the economy (same rule as the explanatory model's controls).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+
+**Calls:** `outcome_themes`, `load_metadata`
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:73</sub>
+
+### `_codes`
+
+```python
+_codes(model, drivers_text)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `model` |  | a model following the model interface. |
+| `drivers_text` |  |  |
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:90</sub>
+
+### `score`
+
+```python
+score(cfg, models, ranking, run_dir, basis, log=print)
+```
+
+Score every model and pick the recommended one.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration. |
+| `models` |  | {name: fitted model} (may miss some, e.g. horizon combinations). |
+| `ranking` |  | table with model, family, drivers and avg_1_<h>_pct columns (backtest comparison or OOS summary). |
+| `run_dir` |  | the run folder (reads comparison/ and impact/). |
+| `basis` |  | "backtest" or "out of sample". |
+| `log` | `print` | function used to print progress messages. |
+
+**Returns:** DataFrame scorecard sorted best first (eligible first), or None.
+
+**Config:** `data.macro.base_scenario`, `impact`, `sample.horizon`
+
+**Calls:** `all`, `_codes`, `_n_drivers`, `_outcome_codes`, `_transparency`, `settings`, `write`
+
+**Called by:** `run`, `run`
+
+<sub>src/selection/scorecard.py:100</sub>
+
+### `why_text`
+
+```python
+why_text(row, W, col)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `row` |  |  |
+| `W` |  |  |
+| `col` |  |  |
+
+**Called by:** `run`, `run`, `write`
+
+<sub>src/selection/scorecard.py:201</sub>
+
+### `write`
+
+```python
+write(S, cfg, run_dir, basis, col, W, st, log)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `S` |  |  |
+| `cfg` |  | the run configuration (from load_config). |
+| `run_dir` |  |  |
+| `basis` |  |  |
+| `col` |  |  |
+| `W` |  |  |
+| `st` |  |  |
+| `log` |  | function used to print progress messages. |
+
+**Calls:** `chart`, `why_text`
+
+**Called by:** `score`
+
+<sub>src/selection/scorecard.py:209</sub>
+
+### `chart`
+
+```python
+chart(S, path, W)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `S` |  |  |
+| `path` |  | file to write or read. |
+| `W` |  |  |
+
+**Called by:** `write`
+
+<sub>src/selection/scorecard.py:249</sub>
 
 
 ## src/selection/screening.py
@@ -11602,7 +11817,7 @@ YAML turns the words true, yes, on (and ON, the Ontario code) into True, and fal
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:88</sub>
+<sub>src/utils/config.py:90</sub>
 
 ### `_merge`
 
@@ -11621,7 +11836,7 @@ Recursively merge a user config over the defaults (user values win).
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:122</sub>
+<sub>src/utils/config.py:124</sub>
 
 ### `_path`
 
@@ -11639,7 +11854,7 @@ Resolve a path relative to the project folder.
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:137</sub>
+<sub>src/utils/config.py:139</sub>
 
 ### `load_config`
 
@@ -11661,7 +11876,7 @@ Read a YAML config, fill defaults, check required keys and normalise values.
 
 **Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `make`, `main`, `build_deck`, `main`, `make`, `main`
 
-<sub>src/utils/config.py:151</sub>
+<sub>src/utils/config.py:153</sub>
 
 
 ## src/utils/docs.py
@@ -12511,7 +12726,7 @@ Load the variable metadata (description, geography, theme, expected sign) and re
 
 **Calls:** `_need`, `read_table`
 
-**Called by:** `Context.__init__`, `main`
+**Called by:** `_outcome_codes`, `Context.__init__`, `main`
 
 <sub>src/utils/io.py:110</sub>
 

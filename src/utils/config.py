@@ -68,6 +68,8 @@ DEFAULTS = {
                "compare_horizon": 8, "tied_alpha": 0.10, "tied_max": 8, "tied_max_ratio": 2.0, "tied_min": 3,
                "control_t": 1.0, "horizons": [1, 4, 8, 12],
                "lookalike_corr": 0.75, "draws": 300, "seed": 42, "attribution": True, "attribution_models": "explanatory+best", "what_if": [], "episodes": []},
+    "recommend": {"weights": {"accuracy": 0.5, "interpretation": 0.25, "sensitivity": 0.25}, "max_error_ratio": 1.5,
+                  "min_coverage": 0.25, "max_drivers": 5, "transparency": {}},
     "oos": {"first_origin": None, "step": 4, "horizon": None, "window": "expanding", "window_length": 40,
             "holdout_quarters": 8},
     "final_model": {"min_vars": 1, "max_vars": 3, "t_min": 1.96, "vif_max": 5.0, "one_per_theme": True,

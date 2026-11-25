@@ -158,6 +158,34 @@ def multi_key(x):
     return str(x).strip().lower().replace(" ", "_").replace("-", "_")
 
 
+def recommendation_section(out):
+    """The recommended model: every model scored on forecasting, interpretation and sensitivity."""
+    import json
+    jf = os.path.join(out, "recommendation", "recommended.json")
+    if not os.path.exists(jf):
+        return
+    j = json.load(open(jf, encoding="utf-8"))
+    st.subheader(f"Recommended model: {j['model']}")
+    st.markdown(f"Chosen from all models ({j['basis']}): {j['why']}.")
+    if j.get("most_accurate") and j["most_accurate"] != j["model"]:
+        st.caption(f"Most accurate model: {j['most_accurate']} ({j['most_accurate_error_pct']:.2f}%).")
+    cols = ["rank", "model", "family", "error_pct", "accuracy", "interpretation", "sensitivity", "score", "eligible"]
+    S = read_result(os.path.join(out, "recommendation", "1_scorecard.csv"), need=cols)
+    if os.path.exists(os.path.join(out, "recommendation", "scorecard.png")):
+        wide_image(os.path.join(out, "recommendation", "scorecard.png"))
+    with st.expander("The scorecard: every model"):
+        extra = ["not_eligible_because", "model_type", "sign_share", "drivers", "economic_drivers", "coverage",
+                 "direction", "scenario_agreement"]
+        if len(S):
+            st.dataframe(S[cols + [c for c in extra if c in S.columns]].round(3), hide_index=True,
+                         use_container_width=True)
+        w = j.get("weights", {})
+        st.caption(f"Score = {w.get('accuracy', 0):.0%} accuracy + {w.get('interpretation', 0):.0%} interpretation + "
+                   f"{w.get('sensitivity', 0):.0%} sensitivity. Eligible: error within {j.get('max_error_ratio')}x the "
+                   f"best and a response to at least {float(j.get('min_coverage') or 0):.0%} of the focus drivers. "
+                   "Change them in the config (recommend) or in ③ Settings.")
+
+
 def impact_section(out, cfg_path):
     """How the economy affects the target: sensitivities, reliability, scenario attribution and a what-if form."""
     d = os.path.join(out, "impact")
@@ -589,7 +617,9 @@ def formula_section(out):
     st.subheader("The model to use by hand: formula and the next quarters")
     st.markdown(f"**{info['formula_model']}** ({info.get('formula_family', '')}): {info['why']}.")
     if not info.get("best_has_formula", True):
-        st.info(f"The most accurate model overall, **{info['best_model']}** ({info['best_family']}, "
+        who = ("The recommended model" if os.path.exists(os.path.join(out, "recommendation", "recommended.json"))
+               else "The most accurate model overall")
+        st.info(f"{who}, **{info['best_model']}** ({info['best_family']}, "
                 f"{info['best_error_pct']:.2f}%), has no formula you can write down. Both are shown: the formula model "
                 "here, its forecast below.")
     st.code(info["equation"], language=None)
@@ -1246,6 +1276,19 @@ if mode == "New data set":
             ov["impact.focus"] = setup.yq([x.strip() for x in ftxt.split(",") if x.strip()])
             ov["impact.max_controls"] = str(e3.number_input("Most controls", 0, 8, 4, key="imp_mc"))
 
+            st.subheader("Choosing the recommended model")
+            st.caption("Every model competes. Score = accuracy + interpretation + sensitivity to the economy, with "
+                       "these weights; a model must be within the error limit and respond to the focus drivers.")
+            r1, r2, r3, r4, r5 = st.columns(5)
+            wa = r1.slider("Accuracy", 0.0, 1.0, 0.5, 0.05, key="rec_wa")
+            wi = r2.slider("Interpretation", 0.0, 1.0, 0.25, 0.05, key="rec_wi")
+            ws = r3.slider("Sensitivity", 0.0, 1.0, 0.25, 0.05, key="rec_ws")
+            ov["recommend.weights"] = f"{{accuracy: {wa:g}, interpretation: {wi:g}, sensitivity: {ws:g}}}"
+            ov["recommend.max_error_ratio"] = str(r4.number_input("Error limit (x best)", 1.0, 10.0, 1.5, 0.1,
+                                                                  key="rec_mer"))
+            ov["recommend.min_coverage"] = str(r5.number_input("Must respond to (share of focus drivers)", 0.0, 1.0,
+                                                               0.25, 0.05, key="rec_mc"))
+
             st.subheader("Competing models")
             c1, c2, c3 = st.columns(3)
             for k, lab in [("benchmarks", "Benchmarks (AR(1), mean growth)"), ("literature", "Literature models"), ("hybrids", "Hybrids")]:
@@ -1421,6 +1464,7 @@ with tabs[4]:
             st.dataframe(friendly(oo[[c for c in cols if c in oo.columns]]), hide_index=True, use_container_width=True)
         else:
             st.info("Run the out-of-sample test in ④ for the fair ranking; below is the backtest only.")
+        recommendation_section(out)
         impact_section(out, cfg_path)
         formula_section(out)
         st.subheader("Rolling backtest' (drivers chosen with all the data: optimistic for data-driven models)")

@@ -661,9 +661,29 @@ Other outputs in `comparison/`:
 
 To switch families on or off, or change settings, edit the `models:` section of the config.
 
+## The recommended model: every model scored on equal terms (`outputs/<run>/recommendation/`)
+
+No family or selection approach is preferred. Every model in the run (literature, data-driven, explanatory, hybrid,
+auto-ARDL, regime switching, ARIMAX, machine learning, combinations, ...) is scored on three things
+(`src/selection/scorecard.py`):
+
+| Part | How it is measured |
+|---|---|
+| Accuracy | best average balance error over 1..H quarters ÷ the model's (out of sample once `run_oos.py` has run, else the backtest) |
+| Interpretation | transparency of the model type (a written equation 1.0, ARIMAX 0.7, regime switching 0.6, machine learning 0.2, deep and foundation models 0.1) × the average of: coefficients with the expected sign, at most `max_drivers` drivers, drivers that are not other outcomes of the economy (credit, deposits) |
+| Sensitivity | the average of: share of the focus drivers it responds to, share of those responses in the expected direction, share of the scenarios whose gap from the base moves the same way as the explanatory model's |
+
+`score = 0.5 × accuracy + 0.25 × interpretation + 0.25 × sensitivity` (`recommend.weights`). To be recommended, a
+model must be within `recommend.max_error_ratio` (1.5) × the best error **and** respond to at least
+`recommend.min_coverage` (a quarter) of the focus drivers: a model that cannot answer what-if questions about the
+economy is not a satellite model. Files: `1_scorecard.csv` (every component, eligibility and why not),
+`recommended.json`, `summary.md`, `scorecard.png`. The app (③ Settings) has sliders for the weights; ⑤ Results shows
+the scorecard; the process story has a scorecard page before the recommended model.
+
 ## The recommended model as a formula (`outputs/<run>/formula/`)
 
-Every run writes the most accurate model **that is a formula you can write down** (ARDL regressions, the error-correction model, the same-growth rules), with everything needed to use it by hand for the next quarters:
+Every run writes the recommended model **as a formula you can write down** (or, when it has none, the highest-scoring
+model that does: ARDL regressions, the error-correction model, the same-growth rules) (ARDL regressions, the error-correction model, the same-growth rules), with everything needed to use it by hand for the next quarters:
 
 | File | What it holds |
 |---|---|
@@ -768,7 +788,7 @@ Every number, table and chart in the deck is read from `outputs/`, so after a re
 - the recommended model with its diagnostics and scenarios;
 - limitations and next steps.
 
-The recommended model is the most accurate out-of-sample model with at most `max_variables` (3) distinct macro variables, long-run variables included. The most accurate model overall is shown next to it.
+The recommended model is the scorecard's choice (`outputs/<run>/recommendation/`: accuracy, interpretation and sensitivity, every model on equal terms); without a scorecard, the most accurate out-of-sample model with at most `max_variables` (3) distinct macro variables. The most accurate model overall is shown next to it.
 
 - **Requirements:** Quarto (quarto.org), plus `pip install python-pptx jupyter` in the same Python that runs the app or `tools/make_deck.py` (both are in requirements.txt). If one is missing, the build stops with the exact install command.
 - **Another run:** `python tools/make_deck.py --config config/my_portfolio.yaml` (the deck's parameters are read from `DECK_CONFIG`, `DECK_OUTPUTS`, `DECK_SIMULATED`, `DECK_REGION` environment variables, so papermill is not needed).

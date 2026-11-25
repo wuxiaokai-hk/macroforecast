@@ -39,8 +39,11 @@ def has_formula(model):
     return type(model).__name__ in FORMULA_TYPES
 
 
-def choose(ranking, models, col):
-    """The most accurate model overall and the most accurate model with a formula.
+def choose(ranking, models, col, order=None):
+    """The recommended model and the best model with a formula.
+
+    With `order` (model names, best first: the scorecard, src/selection/scorecard.py) the first is the recommended
+    model and the first with a formula is the formula model; without it, the most accurate ones.
 
     Args:
         ranking: table with model, family and the error column. models: dict name -> fitted model.
@@ -52,6 +55,9 @@ def choose(ranking, models, col):
     r = ranking[(ranking["family"] != "Look-ahead check") & ranking[col].notna()].sort_values(col)
     if r.empty:
         return None, None
+    if order:
+        pos = {m: i for i, m in enumerate(order)}
+        r = r.assign(_o=r["model"].map(pos).fillna(len(pos))).sort_values(["_o", col]).drop(columns="_o")
     best = r.iloc[0]
     f = r[r["model"].map(lambda m: m in models and has_formula(models[m]))]
     return best, (f.iloc[0] if len(f) else None)
@@ -650,7 +656,7 @@ def write_calculator(path, ctx, model, T, Q, info, best_other=None):
 
 
 # ------------------------------------------------------------------------------------------- main entry
-def write(cfg, ctx, models, ranking, basis, log=print):
+def write(cfg, ctx, models, ranking, basis, log=print, order=None, why_rec=None):
     """Pick the recommended formula model, write the equation, the next quarters and the Excel calculator.
 
     Args:
@@ -667,7 +673,7 @@ def write(cfg, ctx, models, ranking, basis, log=print):
         return None
     col = cols[-1]
     hq = int(col.split("_")[2])
-    best, fbest = choose(ranking, models, col)
+    best, fbest = choose(ranking, models, col, order)
     if fbest is None:
         log("  formula: no model with an explicit formula in this run")
         return None
@@ -678,11 +684,18 @@ def write(cfg, ctx, models, ranking, basis, log=print):
     T = terms(m, ctx.meta)
     W = worked(ctx, m, Q)
     start = cfg["sample"]["estimation_start"]
-    why = (f"most accurate model with a formula ({basis}, average balance error over 1–{hq} quarters "
-           f"{fbest[col]:.2f}%)")
+    if order and best is not None and best["model"] == fbest["model"]:
+        why = f"the recommended model: {why_rec}" if why_rec else "the recommended model (model scorecard)"
+    elif order:
+        why = (f"the highest-scoring model with a formula on the model scorecard ({basis}, average balance error over "
+               f"1–{hq} quarters {fbest[col]:.2f}%)")
+    else:
+        why = (f"most accurate model with a formula ({basis}, average balance error over 1–{hq} quarters "
+               f"{fbest[col]:.2f}%)")
     other = None
     if best is not None and best["model"] != fbest["model"]:
-        why += f"; the most accurate overall is {best['model']} ({best[col]:.2f}%), which has no formula"
+        why += (f"; the recommended model is {best['model']} ({best[col]:.2f}%), which has no formula" if order else
+                f"; the most accurate overall is {best['model']} ({best[col]:.2f}%), which has no formula")
         scen_f = os.path.join(cfg["out_dir"], "comparison", "6_scenario_forecasts.csv")
         if os.path.exists(scen_f):
             S = pd.read_csv(scen_f)
@@ -703,7 +716,7 @@ def write(cfg, ctx, models, ranking, basis, log=print):
            f"Estimated on {info['window']}. Next {Q} quarters: 2_next_quarters.csv; live Excel: "
            "recommended_model_calculator.xlsx."]
     if other is not None:
-        md += ["", f"## Most accurate overall: {best['model']} (no formula)", "",
+        md += ["", f"## {'Recommended' if order else 'Most accurate overall'}: {best['model']} (no formula)", "",
                "Its forecast for the same quarters is in 3_best_overall_next_quarters.csv."]
     open(os.path.join(out, "formula.md"), "w", encoding="utf-8").write("\n".join(md) + "\n")
     T.to_csv(os.path.join(out, "1_terms.csv"), index=False)

@@ -307,6 +307,15 @@ impact:
   episodes:                         # replay a historical period on top of the base scenario
     - {name: "Global financial crisis", start: 2008Q3, end: 2009Q4}
 
+# The recommended model: every model competes (src/selection/scorecard.py). Score = accuracy + interpretation +
+# sensitivity to the economy, with these weights (rescaled to sum to 1). Written to outputs/<run>/recommendation/;
+# the formula, the app and the process story use it. run_oos.py scores again on out-of-sample errors.
+recommend:
+  weights: {accuracy: 0.5, interpretation: 0.25, sensitivity: 0.25}
+  max_error_ratio: 1.5              # eligible only within 1.5x the most accurate model's error
+  min_coverage: 0.25                # and responding to at least a quarter of the focus drivers (0 = no such rule)
+  max_drivers: 5                    # more drivers than this lowers the interpretation score
+
 # Look of the process story (tools/process_story.py): classic, corporate, midnight, minimal, forest, boardroom,
 # ocean. --theme on the command line overrides it; --theme all builds one copy of each to compare.
 process_story:

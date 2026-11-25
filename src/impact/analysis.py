@@ -621,8 +621,9 @@ def run(cfg, ctx, models, run_dir, log=print, what_if=None, episodes=None):
         except Exception as e_:
             log(f"  impact: episode {ep} skipped ({e_})")
     wi = pd.concat(wi, ignore_index=True) if wi else pd.DataFrame()
+    allr = all_model_responses(cfg, ctx, models, shocks_typ, hz, resp, set_names, H)
     tables = {"1_tied_models": tied, "2_responses": resp, "3_sensitivity": sens, "4_reliability": rel,
-              "5_attribution": att, "6_what_if": wi}
+              "5_attribution": att, "6_what_if": wi, "7_all_model_responses": allr}
     for k, v in tables.items():
         f = os.path.join(out, f"{k}.csv")
         if isinstance(v, pd.DataFrame) and len(v):
@@ -643,6 +644,43 @@ def run(cfg, ctx, models, run_dir, log=print, what_if=None, episodes=None):
                 f"(90% band {s['typical_band_lo']:+.2f} to {s['typical_band_hi']:+.2f}); {r['label']}")
     log(f"  impact: tables and charts in {out}")
     return tables
+
+
+def all_model_responses(cfg, ctx, models, shocks_typ, hz, resp, set_names, H):
+    """Response of every model with drivers to a typical rise in each focus driver (for the model scorecard).
+
+    Returns:
+        DataFrame: model, shock, series, expected_sign, horizon, balance_effect.
+    """
+    from ..features.transforms import feature_sign
+    rows = []
+    sign_of = {}
+    for concept, code, size in shocks_typ:
+        sign_of[concept] = feature_sign(ctx.meta, f"{code}|lvl|L0") or (
+            int(np.sign(ctx.meta.loc[code, "expected_sign"])) if code in ctx.meta.index else 0)
+    have = resp[(resp.get("shock_type") == "typical") & (resp["kind"] == "point")] if len(resp) else resp
+    shocked = {concept: apply_shocks(cfg, ctx, ctx.base, [{"variable": code, "size": size}])
+               for concept, code, size in shocks_typ}
+    for nm, m in models.items():
+        if not has_drivers(m):
+            continue
+        if nm in set_names and len(have):
+            d = have[(have["model"] == nm) & (have["quarter"].isin(hz))]
+            rows += [{"model": nm, "shock": r["shock"], "series": r["series"], "expected_sign": sign_of.get(r["shock"], 0),
+                      "horizon": int(r["quarter"]), "balance_effect": r["balance_effect"]} for _, r in d.iterrows()]
+            continue
+        try:
+            b = forecast(ctx, m, ctx.base, H)
+        except Exception:
+            continue
+        for concept, code, size in shocks_typ:
+            try:
+                _, lv = effect(ctx, b, forecast(ctx, m, shocked[concept], H))
+            except Exception:
+                continue
+            rows += [{"model": nm, "shock": concept, "series": code, "expected_sign": sign_of.get(concept, 0),
+                      "horizon": h, "balance_effect": lv[h - 1]} for h in hz]
+    return pd.DataFrame(rows)
 
 
 def _u():
