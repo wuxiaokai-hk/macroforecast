@@ -68,7 +68,28 @@ def tr_words(tr):
     return (str(tr), str(tr))
 
 
+def apply_theme(name=None):
+    """Chart colours from a theme (src/reporting/themes.py); call before Story(...).build()."""
+    from . import themes as TH
+    t = TH.get(name)
+    h = lambda k: "#" + k                                    # noqa: E731
+    ch = [h(x) for x in t["chart"]]
+    C.update(ink=h(t["ink"]), navy=h(t["title"]), teal=ch[0], gold=ch[1], green=ch[2], red=ch[3], purple=ch[4],
+             orange=ch[5], grey=ch[6], sea=ch[7], mid=h(t["mid"]), light=h(t["tile"]), line=h(t["line"]),
+             sky=h(t["cover_sub"]), bg=h(t["card"]), box=h(t["head_bg"]), box2=h(t.get("box2", t["kicker"])),
+             boxfg=h(t["head_fg"]), boxsub=h(t["cover_sub"]) if TH.is_dark(dict(bg=t["cover_bg"])) else "#DDDDDD",
+             hl=h(t["highlight"]))
+    FAM_COL.update({"Benchmark": C["grey"], "Data-driven": C["teal"], "Literature": C["gold"], "Hybrid": C["green"],
+                    "Machine learning": C["purple"], "AI foundation model": C["red"],
+                    "Statistical time series": C["orange"], "Regime switching": C["sea"]})
+    _style()
+    return t
+
+
 def _style():
+    plt.rcParams.update({"figure.facecolor": C.get("bg", "#FFFFFF"), "axes.facecolor": C.get("bg", "#FFFFFF"),
+                         "savefig.facecolor": C.get("bg", "#FFFFFF"), "text.color": C["ink"],
+                         "legend.labelcolor": C["ink"]})
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.edgecolor": C["line"],
                          "axes.labelcolor": C["mid"], "xtick.color": C["mid"], "ytick.color": C["mid"],
                          "axes.spines.top": False, "axes.spines.right": False, "axes.grid": True,
@@ -135,7 +156,7 @@ class Story:
 
     def save(self, f, path):
         f.tight_layout()
-        f.savefig(path, dpi=200, facecolor="white")
+        f.savefig(path, dpi=200, facecolor=C.get("bg", "#FFFFFF"))
         plt.close(f)
         return path
 
@@ -307,13 +328,14 @@ class Story:
         for i, (h, s) in enumerate(steps):
             col_, row = i % 4, i // 4
             x, yb = col_ * 0.25, 0.53 - row * 0.5
-            ax.add_patch(plt.Rectangle((x + 0.008, yb), 0.234, 0.42, color=C["navy"] if i not in (3, 5) else C["teal"],
+            ax.add_patch(plt.Rectangle((x + 0.008, yb), 0.234, 0.42,
+                                       color=C.get("box", C["navy"]) if i not in (3, 5) else C.get("box2", C["teal"]),
                                        transform=ax.transAxes))
-            ax.text(x + 0.03, yb + 0.33, f"{i + 1}", ha="left", va="center", color=C["gold"], fontsize=20,
+            ax.text(x + 0.03, yb + 0.33, f"{i + 1}", ha="left", va="center", color=C.get("hl", C["gold"]), fontsize=20,
                     fontweight="bold", transform=ax.transAxes)
-            ax.text(x + 0.03, yb + 0.21, h, ha="left", va="center", color="white", fontsize=12.5,
+            ax.text(x + 0.03, yb + 0.21, h, ha="left", va="center", color=C.get("boxfg", "white"), fontsize=12.5,
                     fontweight="bold", transform=ax.transAxes)
-            ax.text(x + 0.03, yb + 0.12, "\n".join(_wrap(s, 30)), ha="left", va="top", color="#C9DCE6",
+            ax.text(x + 0.03, yb + 0.12, "\n".join(_wrap(s, 30)), ha="left", va="top", color=C.get("boxsub", "#C9DCE6"),
                     fontsize=9.5, transform=ax.transAxes)
         self.add("1. The question", "Eight steps take raw data to a tested, explained forecast",
                  "Each step narrows the possibilities or tests what is left; the rest of this document follows them in order.",

@@ -3260,9 +3260,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story._style": {
-  "hash": "4417b9b946f4",
+  "hash": "2eacbb5a181a",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.process_story.pct": {
   "hash": "37ae5569c0df",
@@ -3285,7 +3285,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "58c874034265",
+  "hash": "3026d77e3f0f",
   "added": "2026-11-18",
   "changed": "2026-11-24"
  },
@@ -3310,9 +3310,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.save": {
-  "hash": "045c1a3788db",
+  "hash": "80904b920f85",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.process_story.Story.label": {
   "hash": "414c13982fd7",
@@ -3355,9 +3355,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_overview": {
-  "hash": "9f6e9c13f598",
+  "hash": "c5dd65373051",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.process_story.Story.s_target": {
   "hash": "29678034e4fe",
@@ -3615,9 +3615,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.story_html.build": {
-  "hash": "c6954d48eb8a",
+  "hash": "684fe8a0122d",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.story_pptx.rgb": {
   "hash": "18f8c84c623d",
@@ -3640,9 +3640,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.story_pptx.table": {
-  "hash": "f0529d25d69a",
+  "hash": "66699b62645d",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.story_pptx.notes": {
   "hash": "0d5690260f00",
@@ -3650,14 +3650,14 @@
   "changed": "2026-11-18"
  },
  "src.reporting.story_pptx.chrome": {
-  "hash": "38f7f0c5042c",
+  "hash": "ba83063cb093",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.story_pptx.tiles": {
-  "hash": "f940b6726187",
+  "hash": "38b7ef1d966b",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.reporting.story_pptx.points": {
   "hash": "51c03463fce6",
@@ -3665,19 +3665,19 @@
   "changed": "2026-11-18"
  },
  "src.reporting.story_pptx.build": {
-  "hash": "a14a965e4869",
+  "hash": "b1d2baa83fca",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "tools.process_story.make": {
-  "hash": "644157622c38",
+  "hash": "6fb611e37afb",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "tools.process_story.main": {
-  "hash": "10cc7b9460b1",
+  "hash": "684093239269",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-24"
  },
  "src.utils.multi._key": {
   "hash": "8899d65c5bf0",
@@ -4124,117 +4124,52 @@
   "added": "2026-11-24",
   "changed": "2026-11-24"
  },
+ "src.reporting.process_story.apply_theme": {
+  "hash": "ee525bd13856",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.story_html.css": {
+  "hash": "9762e36345c1",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.story_pptx.apply_theme": {
+  "hash": "4317ba3b9737",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.story_pptx.background": {
+  "hash": "71e74cfb7779",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.themes.get": {
+  "hash": "9a15636ee7f4",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.themes.describe": {
+  "hash": "a208363a8f17",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.themes.is_dark": {
+  "hash": "5163d7a9ef8a",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "tools.process_story._gallery": {
+  "hash": "94a9b5878fb8",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
+ "src.reporting.story_pptx._borders": {
+  "hash": "ef4eca4f9976",
+  "added": "2026-11-24",
+  "changed": "2026-11-24"
+ },
  "_log": [
-  {
-   "date": "2026-11-12",
-   "id": "src.panel.select.quick_error",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel._target_cfg",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.sys_names",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.bank_sys_frame",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.sys_cube",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.sys_meta",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.Node",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.Node.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.Node.bank_X",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.build_node",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.chain_forecast",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel._err_rows",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.links",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel.run",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel._chart",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.panel._summary",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.run.resolve_master",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.system.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.utils.config.load_config",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.utils.master._sheets",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.utils.master._norm",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-12",
-   "id": "src.utils.master.is_master",
-   "what": "added"
-  },
   {
    "date": "2026-11-12",
    "id": "src.utils.master.targets",
@@ -5623,6 +5558,116 @@
   {
    "date": "2026-11-24",
    "id": "tools.panel_compare.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.process_story.apply_theme",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.process_story._style",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.process_story.Story.save",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.process_story.Story.s_overview",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_html.css",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_html.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.apply_theme",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.background",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.chrome",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.tiles",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.themes.get",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.themes.describe",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.themes.is_dark",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.process_story.make",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.process_story._gallery",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "tools.process_story.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx._borders",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.table",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-24",
+   "id": "src.reporting.story_pptx.build",
    "what": "changed"
   }
  ]

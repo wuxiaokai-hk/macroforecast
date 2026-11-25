@@ -285,3 +285,8 @@ panel:                              # used only when data.bank.panel_column is s
     weighting: equal                # equal (every credit union counts the same) or size (latest balance)
     benchmark: null                 # model for the "vs" columns (null: the AR(1) benchmark)
     exclude_covid: true             # leave out the forecasts that cover the dummy (COVID) quarters
+
+# Look of the process story (tools/process_story.py): classic, corporate, midnight, minimal, forest, boardroom,
+# ocean. --theme on the command line overrides it; --theme all builds one copy of each to compare.
+process_story:
+  theme: classic

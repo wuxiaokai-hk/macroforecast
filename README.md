@@ -765,6 +765,29 @@ Writes `outputs/<run>/process_story/process_story.html` (one long page with a co
 
 Each section states the finding as its title, a one-line takeaway, what was done, why, what happened in this run and how to read the chart. On the slides the key points and figures sit beside the chart or table, and the full text is in the speaker notes. Titles and takeaways follow the results (e.g. a flagged diagnostic is named, not glossed over). Balance targets are described in growth and percent, rate targets (`target.transform: diff`) in changes and their own units. Needs only python-pptx and matplotlib (no Quarto); the app has a "Build the process story" button under ⑤ Results.
 
+### Styles (themes)
+
+The same content comes in seven looks; the charts follow the theme too.
+
+| Theme | Look |
+|---|---|
+| `classic` (default) | Navy, teal and gold with serif titles |
+| `corporate` | White slides, strong blue headings, orange accent; Arial |
+| `midnight` | Dark slides with cyan and amber; for screens, not print |
+| `minimal` | Black, white and grey with one red accent; print-friendly |
+| `forest` | Deep greens with ochre and Georgia titles |
+| `boardroom` | Burgundy and charcoal with brass and Garamond titles |
+| `ocean` | Teal and turquoise with a coral accent |
+
+```bash
+python tools/process_story.py --config config/my.yaml --theme corporate
+python tools/process_story.py --config config/my.yaml --theme all     # one copy of each in process_story/themes/<name>/, plus index.html
+python tools/process_story.py --list-themes
+fc.process_story(theme="midnight")
+```
+
+A project default goes in the config (`process_story: {theme: corporate}`); `--theme` overrides it. In the app, pick the style above the build button ("All themes" builds every copy and lists download buttons for each). Previews: [slides](docs/themes/deck_themes.jpg), [pages 1](docs/themes/page_themes_1.jpg), [pages 2](docs/themes/page_themes_2.jpg). To add your own, copy an entry in `src/reporting/themes.py` (the colour roles are listed at the top of that file).
+
 ## Function reference (`docs/reference.html`, automatic)
 
 A searchable page with a card for every module, class, function and method in the project (about 280), built from the code itself, so it cannot drift from it. Each card shows:

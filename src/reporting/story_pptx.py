@@ -11,10 +11,31 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
-C = dict(ink="1B2A41", navy="0E3B4F", teal="1F6F8B", gold="E3A72F", mid="4A5866", light="EEF3F6", line="D9E1E8",
-         white="FFFFFF", sky="C9DCE6", green="2E9E83")
+from . import themes as TH
+
+C = {}
 HEAD, BODY = "Cambria", "Calibri"
 W, H = 13.333, 7.5
+
+
+def apply_theme(name=None):
+    """Use a theme (src/reporting/themes.py) for the deck."""
+    global HEAD, BODY
+    t = TH.get(name)
+    C.clear()
+    C.update({k: v for k, v in t.items() if isinstance(v, str) and len(v) == 6 and k not in ("name",)})
+    C.update(white="FFFFFF", green=t["chart"][2])
+    HEAD, BODY = t["head"], t["body"]
+    return t
+
+
+apply_theme()
+
+
+def background(slide, key="bg"):
+    """A full-slide background (only when it is not white)."""
+    if C.get(key, "FFFFFF").upper() != "FFFFFF":
+        box(slide, 0, 0, W, H, key)
 
 
 def rgb(k):
@@ -69,6 +90,23 @@ def _fit(lines, w, h, start=15, low=9.5):
     return low
 
 
+def _borders(cell, key="line"):
+    """Thin cell borders in a theme colour (PowerPoint's default grid is white, which shows on dark slides)."""
+    from pptx.oxml.ns import qn
+    from lxml import etree
+    tcPr = cell._tc.get_or_add_tcPr()
+    for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
+        for old in tcPr.findall(qn(tag)):
+            tcPr.remove(old)
+        ln = etree.SubElement(tcPr, qn(tag), w="6350")
+        fill = etree.SubElement(ln, qn("a:solidFill"))
+        etree.SubElement(fill, qn("a:srgbClr"), val=C[key])
+    # the schema wants the borders before the fill
+    for f in tcPr.findall(qn("a:solidFill")):
+        tcPr.remove(f)
+        tcPr.append(f)
+
+
 def table(slide, df, x, y, w, h, note=""):
     df = df.copy().map(lambda v: "" if v is None or (isinstance(v, float) and v != v) else str(v))
     cols = list(df.columns)
@@ -93,18 +131,20 @@ def table(slide, df, x, y, w, h, note=""):
         cell = tbl.cell(0, j)
         cell.text = c
         cell.fill.solid()
-        cell.fill.fore_color.rgb = rgb("navy")
+        cell.fill.fore_color.rgb = rgb("head_bg")
         for p in cell.text_frame.paragraphs:
             for r in p.runs:
                 r.font.size, r.font.bold, r.font.name = Pt(size), True, BODY
-                r.font.color.rgb = rgb("white")
+                r.font.color.rgb = rgb("head_fg")
+        _borders(cell, "head_bg")
     for i, row in enumerate(df.values, start=1):
         for j, v in enumerate(row):
             cell = tbl.cell(i, j)
             cap = int(widths[j] * cpi * 2) - 1             # at most about two lines
             cell.text = v if len(v) <= cap else v[:max(cap - 1, 4)] + "…"
             cell.fill.solid()
-            cell.fill.fore_color.rgb = rgb("light" if i % 2 else "white")
+            cell.fill.fore_color.rgb = rgb("alt" if i % 2 else "card")
+            _borders(cell)
             cell.margin_top = cell.margin_bottom = Inches(0.02)
             for p in cell.text_frame.paragraphs:
                 for r in p.runs:
@@ -131,13 +171,14 @@ def notes(slide, s):
 
 
 def chrome(slide, s, n, footer):
-    box(slide, 0, 0, W, 0.09, "navy")
+    background(slide)
+    box(slide, 0, 0, W, 0.09, "bar")
     if s["part"]:
-        text(slide, 0.55, 0.28, 9, 0.3, [s["part"].upper()], size=10, color="teal", bold=True)
+        text(slide, 0.55, 0.28, 9, 0.3, [s["part"].upper()], size=10, color="kicker", bold=True)
     tsize = 24 if len(s["title"]) < 70 else 21 if len(s["title"]) < 95 else 19
-    text(slide, 0.55, 0.55, 12.2, 0.9, [s["title"]], size=tsize, color="navy", font=HEAD, bold=True)
+    text(slide, 0.55, 0.55, 12.2, 0.9, [s["title"]], size=tsize, color="title", font=HEAD, bold=True)
     if s["takeaway"]:
-        box(slide, 0.55, 1.42, 0.07, 0.5, "gold")
+        box(slide, 0.55, 1.42, 0.07, 0.5, "highlight")
         text(slide, 0.72, 1.4, 12, 0.6, [s["takeaway"]], size=13, color="mid", anchor=MSO_ANCHOR.MIDDLE)
     text(slide, 0.55, 7.08, 9, 0.3, [footer], size=9, color="mid")
     text(slide, 12.2, 7.08, 0.6, 0.3, [str(n)], size=9, color="mid", align=PP_ALIGN.RIGHT)
@@ -150,9 +191,9 @@ def tiles(slide, nums, x, y, w):
     tw = (w - 0.15 * (len(nums) - 1)) / len(nums)
     for i, (k, v) in enumerate(nums):
         xx = x + i * (tw + 0.15)
-        box(slide, xx, y, tw, 0.95, "light")
+        box(slide, xx, y, tw, 0.95, "tile")
         vs = 20 if len(v) <= 10 else 15 if len(v) <= 18 else 12
-        text(slide, xx + 0.1, y + 0.06, tw - 0.2, 0.5, [v], size=vs, color="navy", font=HEAD, bold=True)
+        text(slide, xx + 0.1, y + 0.06, tw - 0.2, 0.5, [v], size=vs, color="tile_value", font=HEAD, bold=True)
         text(slide, xx + 0.1, y + 0.6, tw - 0.2, 0.3, [k], size=9.5, color="mid")
     return 1.1
 
@@ -167,7 +208,8 @@ def points(s, n=5):
     return pts
 
 
-def build(sections, path, footer):
+def build(sections, path, footer, theme=None):
+    apply_theme(theme)
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(W), Inches(H)
     blank = prs.slide_layouts[6]
@@ -175,24 +217,32 @@ def build(sections, path, footer):
     for s in sections:
         if s["kind"] == "title":
             sl = prs.slides.add_slide(blank)
-            box(sl, 0, 0, W, H, "navy")
-            box(sl, 0.8, 2.3, 0.1, 1.6, "gold")
-            text(sl, 1.1, 2.15, 11, 1.2, [s["title"]], size=38, color="white", font=HEAD, bold=True)
-            text(sl, 1.1, 3.35, 10.5, 1, [s["takeaway"]], size=16, color="sky")
+            box(sl, 0, 0, W, H, "cover_bg")
+            if C["cover_bg"].upper() == "FFFFFF":            # a light cover: a band of the title colour on the left
+                box(sl, 0, 0, 0.35, H, "bar")
+            box(sl, 0.8, 2.3, 0.1, 1.6, "highlight")
+            serif = HEAD in ("Cambria", "Georgia", "Garamond", "Times New Roman")
+            tsz = 38 if len(s["title"]) <= (32 if serif else 40) else 32 if len(s["title"]) <= 48 else 28
+            text(sl, 1.1, 2.15, 11, 1.2, [s["title"]], size=tsz, color="cover_fg", font=HEAD, bold=True)
+            text(sl, 1.1, 3.35, 10.5, 1, [s["takeaway"]], size=16, color="cover_sub")
             for i, (k, v) in enumerate(s["numbers"]):
-                text(sl, 1.1 + i * 2.9, 5.2, 2.8, 0.5, [v], size=16, color="gold", font=HEAD, bold=True)
-                text(sl, 1.1 + i * 2.9, 5.7, 2.8, 0.4, [k], size=11, color="sky")
+                text(sl, 1.1 + i * 2.9, 5.2, 2.8, 0.5, [v], size=16 if len(v) <= 16 else 13 if len(v) <= 22 else 11,
+                     color="highlight", font=HEAD, bold=True)
+                text(sl, 1.1 + i * 2.9, 5.7, 2.8, 0.4, [k], size=11, color="cover_sub")
             n += 1
             continue
         if s["part"] != part and s["part"]:
             part = s["part"]
             sl = prs.slides.add_slide(blank)
             n += 1
-            box(sl, 0, 0, W, H, "navy")
-            text(sl, 1.1, 3.0, 11, 1.2, [part], size=34, color="white", font=HEAD, bold=True)
+            box(sl, 0, 0, W, H, "cover_bg")
+            if C["cover_bg"].upper() == "FFFFFF":
+                box(sl, 0, 0, 0.35, H, "bar")
+            box(sl, 1.1, 2.75, 1.2, 0.08, "highlight")
+            text(sl, 1.1, 3.0, 11, 1.2, [part], size=34, color="cover_fg", font=HEAD, bold=True)
             heads = [x["title"] for x in sections if x["part"] == part][:8]
-            text(sl, 1.1, 4.1, 11, 3, [(h, {"size": 13, "color": "sky", "bullet": True, "space": 3}) for h in heads],
-                 size=13, color="sky")
+            text(sl, 1.1, 4.1, 11, 3, [(h, {"size": 13, "color": "cover_sub", "bullet": True, "space": 3})
+                                        for h in heads], size=13, color="cover_sub")
         sl = prs.slides.add_slide(blank)
         n += 1
         chrome(sl, s, n, footer)
@@ -207,8 +257,8 @@ def build(sections, path, footer):
             if why and s["kind"] != "closing":
                 fs = _fit(pts, 6.6, body_h - used)
                 text(sl, 0.55, top + used, 6.6, body_h - used, [(t, {"bullet": True}) for t in pts], size=fs)
-                box(sl, 7.5, top + used, 5.25, body_h - used - 0.1, "light")
-                text(sl, 7.7, top + used + 0.12, 4.9, 0.3, ["Why"], size=12, color="teal", bold=True)
+                box(sl, 7.5, top + used, 5.25, body_h - used - 0.1, "tile")
+                text(sl, 7.7, top + used + 0.12, 4.9, 0.3, ["Why"], size=12, color="kicker", bold=True)
                 text(sl, 7.7, top + used + 0.45, 4.9, body_h - used - 0.6, why,
                      size=_fit(why, 4.9, body_h - used - 0.6, 12))
             else:

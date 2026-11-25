@@ -39,6 +39,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/reporting/story.py](#srcreportingstorypy)
 - [src/reporting/story_html.py](#srcreportingstoryhtmlpy)
 - [src/reporting/story_pptx.py](#srcreportingstorypptxpy)
+- [src/reporting/themes.py](#srcreportingthemespy)
 - [src/selection/bayes.py](#srcselectionbayespy)
 - [src/selection/clustering.py](#srcselectionclusteringpy)
 - [src/selection/elastic_net.py](#srcselectionelasticnetpy)
@@ -991,6 +992,8 @@ coefficient_table() without the safety net.
 | argument | default | meaning |
 |---|---|---|
 | `model` |  | a model following the model interface. |
+
+**Calls:** `get`
 
 **Called by:** `coefficient_table`
 
@@ -6952,15 +6955,33 @@ Plain name and meaning of a transform code (moving windows included).
 
 <sub>src/reporting/process_story.py:57</sub>
 
+### `apply_theme`
+
+```python
+apply_theme(name=None)
+```
+
+Chart colours from a theme (src/reporting/themes.py); call before Story(...).build().
+
+| argument | default | meaning |
+|---|---|---|
+| `name` | `None` | display name. |
+
+**Calls:** `_style`, `get`, `is_dark`
+
+**Called by:** `make`
+
+<sub>src/reporting/process_story.py:71</sub>
+
 ### `_style`
 
 ```python
 _style()
 ```
 
-**Called by:** `Story.__init__`
+**Called by:** `Story.__init__`, `apply_theme`
 
-<sub>src/reporting/process_story.py:71</sub>
+<sub>src/reporting/process_story.py:89</sub>
 
 ### `pct`
 
@@ -6975,7 +6996,7 @@ pct(v, d=2)
 
 **Called by:** `Story.err`
 
-<sub>src/reporting/process_story.py:81</sub>
+<sub>src/reporting/process_story.py:102</sub>
 
 ### `num`
 
@@ -6990,7 +7011,7 @@ num(v, d=0)
 
 **Called by:** `equation_text`, `Story.err`, `Story.s_overview`
 
-<sub>src/reporting/process_story.py:85</sub>
+<sub>src/reporting/process_story.py:106</sub>
 
 ### `plural`
 
@@ -7006,7 +7027,7 @@ plural(n, word, many=None)
 
 **Called by:** `Story.s_events`, `Story.s_literature`, `Story.s_question`, `Story.s_search_pick`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:91</sub>
+<sub>src/reporting/process_story.py:112</sub>
 
 ### `parse`
 
@@ -7022,7 +7043,7 @@ parse(f)
 
 **Called by:** `Story.label`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.short`, `_code_only`, `code_hash`, `scan`
 
-<sub>src/reporting/process_story.py:95</sub>
+<sub>src/reporting/process_story.py:116</sub>
 
 ### `Story`
 
@@ -7042,7 +7063,7 @@ Reads a run and builds its sections.
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:106</sub>
+<sub>src/reporting/process_story.py:127</sub>
 
 ### `Story.__init__`
 
@@ -7058,7 +7079,7 @@ __init__(cfg, out, charts)
 
 **Calls:** `_style`
 
-<sub>src/reporting/process_story.py:113</sub>
+<sub>src/reporting/process_story.py:134</sub>
 
 ### `Story.read`
 
@@ -7072,7 +7093,7 @@ read(*p)
 
 **Called by:** `check_package`, `_file_hash`, `code_hash`, `_re_evaluate`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
-<sub>src/reporting/process_story.py:121</sub>
+<sub>src/reporting/process_story.py:142</sub>
 
 ### `Story.add`
 
@@ -7097,7 +7118,7 @@ add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), c
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
 
-<sub>src/reporting/process_story.py:125</sub>
+<sub>src/reporting/process_story.py:146</sub>
 
 ### `Story.fig`
 
@@ -7113,7 +7134,7 @@ fig(name, w=9, h=4.4)
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
 
-<sub>src/reporting/process_story.py:132</sub>
+<sub>src/reporting/process_story.py:153</sub>
 
 ### `Story.save`
 
@@ -7128,7 +7149,7 @@ save(f, path)
 
 **Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:136</sub>
+<sub>src/reporting/process_story.py:157</sub>
 
 ### `Story.label`
 
@@ -7146,7 +7167,7 @@ Plain label of a feature: 'House price index, Ontario: quarterly growth, 1 quart
 
 **Called by:** `Story.s_rec_model`, `Story.s_recommend`, `Story.s_screen`
 
-<sub>src/reporting/process_story.py:142</sub>
+<sub>src/reporting/process_story.py:163</sub>
 
 ### `Story.short`
 
@@ -7163,7 +7184,7 @@ short(f, n=46)
 
 **Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
 
-<sub>src/reporting/process_story.py:151</sub>
+<sub>src/reporting/process_story.py:172</sub>
 
 ### `Story.load`
 
@@ -7177,7 +7198,7 @@ load()
 
 **Called by:** `Story.build`
 
-<sub>src/reporting/process_story.py:161</sub>
+<sub>src/reporting/process_story.py:182</sub>
 
 ### `Story._n_vars`
 
@@ -7189,7 +7210,7 @@ _n_vars(s)
 |---|---|---|
 | `s` |  |  |
 
-<sub>src/reporting/process_story.py:228</sub>
+<sub>src/reporting/process_story.py:249</sub>
 
 ### `Story.err`
 
@@ -7205,7 +7226,7 @@ err(v)
 
 **Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
 
-<sub>src/reporting/process_story.py:235</sub>
+<sub>src/reporting/process_story.py:256</sub>
 
 ### `Story.build`
 
@@ -7217,7 +7238,7 @@ build()
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:239</sub>
+<sub>src/reporting/process_story.py:260</sub>
 
 ### `Story.s_title`
 
@@ -7227,7 +7248,7 @@ s_title()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:257</sub>
+<sub>src/reporting/process_story.py:278</sub>
 
 ### `Story.s_question`
 
@@ -7239,7 +7260,7 @@ s_question()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:266</sub>
+<sub>src/reporting/process_story.py:287</sub>
 
 ### `Story.s_overview`
 
@@ -7249,7 +7270,7 @@ s_overview()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrap`, `num`, `Report.text`
 
-<sub>src/reporting/process_story.py:293</sub>
+<sub>src/reporting/process_story.py:314</sub>
 
 ### `Story.s_target`
 
@@ -7261,7 +7282,7 @@ s_target()
 
 **Calls:** `Story.add`, `Story.save`, `plural`
 
-<sub>src/reporting/process_story.py:327</sub>
+<sub>src/reporting/process_story.py:349</sub>
 
 ### `Story.s_events`
 
@@ -7273,7 +7294,7 @@ s_events()
 
 **Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
 
-<sub>src/reporting/process_story.py:366</sub>
+<sub>src/reporting/process_story.py:388</sub>
 
 ### `Story.s_macro`
 
@@ -7285,7 +7306,7 @@ s_macro()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:403</sub>
+<sub>src/reporting/process_story.py:425</sub>
 
 ### `Story.s_signs`
 
@@ -7295,7 +7316,7 @@ s_signs()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:433</sub>
+<sub>src/reporting/process_story.py:455</sub>
 
 ### `Story.s_literature`
 
@@ -7305,7 +7326,7 @@ s_literature()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:464</sub>
+<sub>src/reporting/process_story.py:486</sub>
 
 ### `Story.s_transforms`
 
@@ -7315,7 +7336,7 @@ s_transforms()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:488</sub>
+<sub>src/reporting/process_story.py:510</sub>
 
 ### `Story.s_stationarity`
 
@@ -7325,7 +7346,7 @@ s_stationarity()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
 
-<sub>src/reporting/process_story.py:506</sub>
+<sub>src/reporting/process_story.py:528</sub>
 
 ### `Story.s_lags`
 
@@ -7335,7 +7356,7 @@ s_lags()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:532</sub>
+<sub>src/reporting/process_story.py:554</sub>
 
 ### `Story.s_funnel`
 
@@ -7345,7 +7366,7 @@ s_funnel()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:548</sub>
+<sub>src/reporting/process_story.py:570</sub>
 
 ### `Story._rule`
 
@@ -7360,7 +7381,7 @@ _rule(T, key)
 
 **Called by:** `Story.s_funnel`, `Story.s_search_pick`
 
-<sub>src/reporting/process_story.py:587</sub>
+<sub>src/reporting/process_story.py:609</sub>
 
 ### `Story.s_screen`
 
@@ -7370,7 +7391,7 @@ s_screen()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:594</sub>
+<sub>src/reporting/process_story.py:616</sub>
 
 ### `Story.s_bestform`
 
@@ -7380,7 +7401,7 @@ s_bestform()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:628</sub>
+<sub>src/reporting/process_story.py:650</sub>
 
 ### `Story.s_clusters`
 
@@ -7392,7 +7413,7 @@ s_clusters()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:648</sub>
+<sub>src/reporting/process_story.py:670</sub>
 
 ### `Story.s_shortlist`
 
@@ -7402,7 +7423,7 @@ s_shortlist()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:671</sub>
+<sub>src/reporting/process_story.py:693</sub>
 
 ### `Story.s_en`
 
@@ -7414,7 +7435,7 @@ s_en()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:686</sub>
+<sub>src/reporting/process_story.py:708</sub>
 
 ### `Story.s_stability`
 
@@ -7426,7 +7447,7 @@ s_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:709</sub>
+<sub>src/reporting/process_story.py:731</sub>
 
 ### `Story.s_bayes`
 
@@ -7438,7 +7459,7 @@ s_bayes()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:738</sub>
+<sub>src/reporting/process_story.py:760</sub>
 
 ### `Story.s_search_rules`
 
@@ -7450,7 +7471,7 @@ s_search_rules()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
 
-<sub>src/reporting/process_story.py:780</sub>
+<sub>src/reporting/process_story.py:802</sub>
 
 ### `Story.s_search_rank`
 
@@ -7462,7 +7483,7 @@ s_search_rank()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:821</sub>
+<sub>src/reporting/process_story.py:843</sub>
 
 ### `Story.s_search_pick`
 
@@ -7474,7 +7495,7 @@ s_search_pick()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
 
-<sub>src/reporting/process_story.py:856</sub>
+<sub>src/reporting/process_story.py:878</sub>
 
 ### `Story.s_families`
 
@@ -7484,7 +7505,7 @@ s_families()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:888</sub>
+<sub>src/reporting/process_story.py:910</sub>
 
 ### `Story.s_backtest_design`
 
@@ -7496,7 +7517,7 @@ s_backtest_design()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:913</sub>
+<sub>src/reporting/process_story.py:935</sub>
 
 ### `Story.s_one_origin`
 
@@ -7506,7 +7527,7 @@ s_one_origin()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:951</sub>
+<sub>src/reporting/process_story.py:973</sub>
 
 ### `Story.s_all_origins`
 
@@ -7516,7 +7537,7 @@ s_all_origins()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:994</sub>
+<sub>src/reporting/process_story.py:1016</sub>
 
 ### `Story.s_leaderboard`
 
@@ -7526,7 +7547,7 @@ s_leaderboard()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1025</sub>
+<sub>src/reporting/process_story.py:1047</sub>
 
 ### `Story.s_by_horizon`
 
@@ -7536,7 +7557,7 @@ s_by_horizon()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1057</sub>
+<sub>src/reporting/process_story.py:1079</sub>
 
 ### `Story.s_oos_design`
 
@@ -7548,7 +7569,7 @@ s_oos_design()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1095</sub>
+<sub>src/reporting/process_story.py:1117</sub>
 
 ### `Story.s_oos_gap`
 
@@ -7558,7 +7579,7 @@ s_oos_gap()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1117</sub>
+<sub>src/reporting/process_story.py:1139</sub>
 
 ### `Story.s_driver_stability`
 
@@ -7568,7 +7589,7 @@ s_driver_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1151</sub>
+<sub>src/reporting/process_story.py:1173</sub>
 
 ### `Story.s_holdout`
 
@@ -7580,7 +7601,7 @@ s_holdout()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1183</sub>
+<sub>src/reporting/process_story.py:1205</sub>
 
 ### `Story.s_rec_model`
 
@@ -7590,7 +7611,7 @@ s_rec_model()
 
 **Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1202</sub>
+<sub>src/reporting/process_story.py:1224</sub>
 
 ### `Story._term`
 
@@ -7606,7 +7627,7 @@ _term(t)
 
 **Called by:** `Story.s_rec_model`
 
-<sub>src/reporting/process_story.py:1233</sub>
+<sub>src/reporting/process_story.py:1255</sub>
 
 ### `Story.s_rec_effects`
 
@@ -7616,7 +7637,7 @@ s_rec_effects()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1242</sub>
+<sub>src/reporting/process_story.py:1264</sub>
 
 ### `Story.s_rec_fit`
 
@@ -7626,7 +7647,7 @@ s_rec_fit()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
 
-<sub>src/reporting/process_story.py:1263</sub>
+<sub>src/reporting/process_story.py:1285</sub>
 
 ### `Story.s_coef_paths`
 
@@ -7636,7 +7657,7 @@ s_coef_paths()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1287</sub>
+<sub>src/reporting/process_story.py:1309</sub>
 
 ### `Story.s_diagnostics`
 
@@ -7646,7 +7667,7 @@ s_diagnostics()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1317</sub>
+<sub>src/reporting/process_story.py:1339</sub>
 
 ### `Story.s_scen_inputs`
 
@@ -7656,7 +7677,7 @@ s_scen_inputs()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
 
-<sub>src/reporting/process_story.py:1349</sub>
+<sub>src/reporting/process_story.py:1371</sub>
 
 ### `Story.s_scen_forecast`
 
@@ -7666,7 +7687,7 @@ s_scen_forecast()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1374</sub>
+<sub>src/reporting/process_story.py:1396</sub>
 
 ### `Story.s_contrib`
 
@@ -7680,7 +7701,7 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 
 **Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1409</sub>
+<sub>src/reporting/process_story.py:1431</sub>
 
 ### `Story.s_scen_check`
 
@@ -7690,7 +7711,7 @@ s_scen_check()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1471</sub>
+<sub>src/reporting/process_story.py:1493</sub>
 
 ### `Story.s_limits`
 
@@ -7700,7 +7721,7 @@ s_limits()
 
 **Calls:** `Story.add`, `Story.err`
 
-<sub>src/reporting/process_story.py:1497</sub>
+<sub>src/reporting/process_story.py:1519</sub>
 
 ### `Story.s_recommend`
 
@@ -7710,7 +7731,7 @@ s_recommend()
 
 **Calls:** `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1516</sub>
+<sub>src/reporting/process_story.py:1538</sub>
 
 ### `Story.s_glossary`
 
@@ -7720,7 +7741,7 @@ s_glossary()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1530</sub>
+<sub>src/reporting/process_story.py:1552</sub>
 
 ### `Story.s_settings`
 
@@ -7730,7 +7751,7 @@ s_settings()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1550</sub>
+<sub>src/reporting/process_story.py:1572</sub>
 
 ### `_wrap`
 
@@ -7745,7 +7766,7 @@ _wrap(s, n)
 
 **Called by:** `Story.s_overview`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1567</sub>
+<sub>src/reporting/process_story.py:1589</sub>
 
 ### `_wrapl`
 
@@ -7762,7 +7783,7 @@ _wrapl(s, n)
 
 **Called by:** `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
 
-<sub>src/reporting/process_story.py:1578</sub>
+<sub>src/reporting/process_story.py:1600</sub>
 
 
 ## src/reporting/report.py
@@ -8222,6 +8243,24 @@ The story of the out-of-sample test (run_oos.py).
 
 The process story as one self-contained HTML page (charts embedded), with a contents sidebar.
 
+### `css`
+
+```python
+css(theme=None)
+```
+
+The page's style sheet for a theme.
+
+| argument | default | meaning |
+|---|---|---|
+| `theme` | `None` |  |
+
+**Calls:** `get`, `is_dark`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_html.py:67</sub>
+
 ### `_img`
 
 ```python
@@ -8236,7 +8275,7 @@ _img(p)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_html.py:51</sub>
+<sub>src/reporting/story_html.py:80</sub>
 
 ### `_s`
 
@@ -8250,7 +8289,7 @@ _s(v)
 
 **Called by:** `_table`
 
-<sub>src/reporting/story_html.py:56</sub>
+<sub>src/reporting/story_html.py:85</sub>
 
 ### `_slug`
 
@@ -8265,7 +8304,7 @@ _slug(s, i)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_html.py:60</sub>
+<sub>src/reporting/story_html.py:89</sub>
 
 ### `_list`
 
@@ -8279,7 +8318,7 @@ _list(items)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_html.py:64</sub>
+<sub>src/reporting/story_html.py:93</sub>
 
 ### `_table`
 
@@ -8296,7 +8335,7 @@ _table(df, note)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_html.py:69</sub>
+<sub>src/reporting/story_html.py:98</sub>
 
 ### `_tiles`
 
@@ -8310,12 +8349,12 @@ _tiles(nums)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_html.py:78</sub>
+<sub>src/reporting/story_html.py:107</sub>
 
 ### `build`
 
 ```python
-build(sections, path, title)
+build(sections, path, title, theme=None)
 ```
 
 | argument | default | meaning |
@@ -8323,17 +8362,55 @@ build(sections, path, title)
 | `sections` |  |  |
 | `path` |  | file to write or read. |
 | `title` |  |  |
+| `theme` | `None` |  |
 
-**Calls:** `_img`, `_list`, `_slug`, `_table`, `_tiles`
+**Calls:** `_img`, `_list`, `_slug`, `_table`, `_tiles`, `css`
 
 **Called by:** `make`
 
-<sub>src/reporting/story_html.py:84</sub>
+<sub>src/reporting/story_html.py:113</sub>
 
 
 ## src/reporting/story_pptx.py
 
 The process story as a PowerPoint deck (python-pptx only; no Quarto).
+
+### `apply_theme`
+
+```python
+apply_theme(name=None)
+```
+
+Use a theme (src/reporting/themes.py) for the deck.
+
+| argument | default | meaning |
+|---|---|---|
+| `name` | `None` | display name. |
+
+**Calls:** `get`
+
+**Called by:** `build`
+
+<sub>src/reporting/story_pptx.py:21</sub>
+
+### `background`
+
+```python
+background(slide, key='bg')
+```
+
+A full-slide background (only when it is not white).
+
+| argument | default | meaning |
+|---|---|---|
+| `slide` |  |  |
+| `key` | `'bg'` |  |
+
+**Calls:** `box`
+
+**Called by:** `chrome`
+
+<sub>src/reporting/story_pptx.py:35</sub>
 
 ### `rgb`
 
@@ -8347,7 +8424,7 @@ rgb(k)
 
 **Called by:** `box`, `table`, `text`
 
-<sub>src/reporting/story_pptx.py:20</sub>
+<sub>src/reporting/story_pptx.py:41</sub>
 
 ### `box`
 
@@ -8367,9 +8444,9 @@ box(slide, x, y, w, h, fill, line=None)
 
 **Calls:** `rgb`
 
-**Called by:** `build`, `chrome`, `tiles`
+**Called by:** `background`, `build`, `chrome`, `tiles`
 
-<sub>src/reporting/story_pptx.py:24</sub>
+<sub>src/reporting/story_pptx.py:45</sub>
 
 ### `text`
 
@@ -8399,7 +8476,7 @@ paras: list of strings or (string, dict(size, color, bold, font, bullet)).
 
 **Called by:** `build`, `chrome`, `table`, `tiles`
 
-<sub>src/reporting/story_pptx.py:36</sub>
+<sub>src/reporting/story_pptx.py:57</sub>
 
 ### `_fit`
 
@@ -8419,7 +8496,24 @@ Largest font size (pt) at which the lines roughly fit a w x h inch box.
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:60</sub>
+<sub>src/reporting/story_pptx.py:81</sub>
+
+### `_borders`
+
+```python
+_borders(cell, key='line')
+```
+
+Thin cell borders in a theme colour (PowerPoint's default grid is white, which shows on dark slides).
+
+| argument | default | meaning |
+|---|---|---|
+| `cell` |  |  |
+| `key` | `'line'` |  |
+
+**Called by:** `table`
+
+<sub>src/reporting/story_pptx.py:93</sub>
 
 ### `table`
 
@@ -8437,11 +8531,11 @@ table(slide, df, x, y, w, h, note='')
 | `h` |  |  |
 | `note` | `''` | free text shown in the model list. |
 
-**Calls:** `rgb`, `text`
+**Calls:** `_borders`, `rgb`, `text`
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:72</sub>
+<sub>src/reporting/story_pptx.py:110</sub>
 
 ### `notes`
 
@@ -8456,7 +8550,7 @@ notes(slide, s)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:120</sub>
+<sub>src/reporting/story_pptx.py:160</sub>
 
 ### `chrome`
 
@@ -8471,11 +8565,11 @@ chrome(slide, s, n, footer)
 | `n` |  |  |
 | `footer` |  |  |
 
-**Calls:** `box`, `text`
+**Calls:** `background`, `box`, `text`
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:133</sub>
+<sub>src/reporting/story_pptx.py:173</sub>
 
 ### `tiles`
 
@@ -8495,7 +8589,7 @@ tiles(slide, nums, x, y, w)
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:146</sub>
+<sub>src/reporting/story_pptx.py:187</sub>
 
 ### `points`
 
@@ -8512,12 +8606,12 @@ The slide's bullet points: what happened first, then what was done.
 
 **Called by:** `build`
 
-<sub>src/reporting/story_pptx.py:160</sub>
+<sub>src/reporting/story_pptx.py:201</sub>
 
 ### `build`
 
 ```python
-build(sections, path, footer)
+build(sections, path, footer, theme=None)
 ```
 
 | argument | default | meaning |
@@ -8525,12 +8619,58 @@ build(sections, path, footer)
 | `sections` |  |  |
 | `path` |  | file to write or read. |
 | `footer` |  |  |
+| `theme` | `None` |  |
 
-**Calls:** `_fit`, `box`, `chrome`, `notes`, `points`, `table`, `text`, `tiles`
+**Calls:** `_fit`, `apply_theme`, `box`, `chrome`, `notes`, `points`, `table`, `text`, `tiles`
 
 **Called by:** `make`
 
-<sub>src/reporting/story_pptx.py:170</sub>
+<sub>src/reporting/story_pptx.py:211</sub>
+
+
+## src/reporting/themes.py
+
+Visual themes for the process story (PowerPoint and HTML) and its charts.
+
+### `get`
+
+```python
+get(name=None)
+```
+
+The theme dict (unknown names raise with the list).
+
+| argument | default | meaning |
+|---|---|---|
+| `name` | `None` | display name. |
+
+**Called by:** `_coefficient_table`, `apply_theme`, `css`, `apply_theme`, `make`
+
+<sub>src/reporting/themes.py:89</sub>
+
+### `describe`
+
+```python
+describe()
+```
+
+**Called by:** `main`
+
+<sub>src/reporting/themes.py:97</sub>
+
+### `is_dark`
+
+```python
+is_dark(t)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `t` |  |  |
+
+**Called by:** `apply_theme`, `css`
+
+<sub>src/reporting/themes.py:101</sub>
 
 
 ## src/selection/bayes.py
@@ -14541,7 +14681,7 @@ The process story of a run, for an audience: what happened at every step, with t
 ### `make`
 
 ```python
-make(config, run_dir=None, fmt='both', out_dir=None, log=print)
+make(config, run_dir=None, fmt='both', out_dir=None, log=print, theme=None)
 ```
 
 Build the story of a finished run.
@@ -14553,16 +14693,34 @@ Build the story of a finished run.
 | `fmt` | `'both'` | html, pptx or both. |
 | `out_dir` | `None` | where to write (default <run_dir>/process_story). |
 | `log` | `print` | function used to print progress messages. |
+| `theme` | `None` | a theme name (src/reporting/themes.py), "all" for one copy per theme in <out>/themes/<name>/, or None for the config's process_story.theme (default classic). |
 
-**Returns:** dict with the paths written and any section that could not be built.
+**Returns:** dict with the paths written and any section that could not be built ("all": a dict per theme).
 
-**Config:** `out_dir`, `run_name`
+**Config:** `out_dir`, `process_story`, `run_name`
 
-**Calls:** `Story`, `Story.build`, `build`, `build`, `load_config`
+**Calls:** `Story`, `Story.build`, `apply_theme`, `build`, `build`, `get`, `load_config`, `_gallery`
 
 **Called by:** `main`
 
-<sub>tools/process_story.py:30</sub>
+<sub>tools/process_story.py:35</sub>
+
+### `_gallery`
+
+```python
+_gallery(res, path)
+```
+
+A small page linking every theme's copy.
+
+| argument | default | meaning |
+|---|---|---|
+| `res` |  |  |
+| `path` |  | file to write or read. |
+
+**Called by:** `make`
+
+<sub>tools/process_story.py:77</sub>
 
 ### `main`
 
@@ -14570,9 +14728,9 @@ Build the story of a finished run.
 main()
 ```
 
-**Calls:** `make`
+**Calls:** `describe`, `make`
 
-<sub>tools/process_story.py:59</sub>
+<sub>tools/process_story.py:89</sub>
 
 
 ## tools/simulate_data.py

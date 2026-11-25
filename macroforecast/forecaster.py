@@ -375,9 +375,10 @@ class Forecaster:
     def files(self, pattern="*"):
         return self._need().files(pattern)
 
-    def process_story(self, fmt="both"):
+    def process_story(self, fmt="both", theme=None):
         """What happened at every step of the run, for an audience: an HTML page and a PowerPoint deck
-        (see tools/process_story.py). fmt: html, pptx or both. Returns the paths written."""
+        (see tools/process_story.py). fmt: html, pptx or both. theme: classic, corporate, midnight, minimal,
+        forest, boardroom, ocean, or "all" for one copy of each. Returns the paths written."""
         import importlib.util
         r = self._need()
         folder = getattr(r, "out_dir", None) or self.path
@@ -386,7 +387,7 @@ class Forecaster:
                                                       os.path.join(PROJECT_ROOT, "tools", "process_story.py"))
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-        return mod.make(cfg, folder, fmt)
+        return mod.make(cfg, folder, fmt, theme=theme)
 
     def __repr__(self):
         if self.results is None:

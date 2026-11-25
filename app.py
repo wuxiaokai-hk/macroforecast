@@ -158,6 +158,38 @@ def multi_key(x):
     return str(x).strip().lower().replace(" ", "_").replace("-", "_")
 
 
+def story_theme_picker():
+    """The look of the process story: a theme name, or "all" for one copy of each to compare."""
+    from src.reporting import themes as TH
+    names = list(TH.THEMES) + ["all"]
+    lab = {**{k: f"{v['label']}: {v['note']}" for k, v in TH.THEMES.items()},
+           "all": "All themes: one copy of each, to compare (takes longer)"}
+    return st.selectbox("Style of the deck and page", names, format_func=lambda k: lab[k], key="story_theme",
+                        help="The same content in another look. Charts follow the theme. Set a project default "
+                             "with `process_story: {theme: corporate}` in the config.")
+
+
+def story_gallery(story_dir):
+    """Download buttons for every theme's copy."""
+    from src.reporting import themes as TH
+    base = os.path.join(story_dir, "themes")
+    if not os.path.isdir(base):
+        return
+    st.markdown("**Every theme** (open the HTML or the deck of the one you like, then pick it above and rebuild)")
+    for name, t in TH.THEMES.items():
+        files = [os.path.join(base, name, f) for f in ("process_story.html", "process_story.pptx")]
+        if not any(os.path.exists(f) for f in files):
+            continue
+        c0, c1, c2 = st.columns([3, 1, 1])
+        c0.markdown(f"**{t['label']}** · {t['note']}")
+        for col_, f_, mime_ in zip((c1, c2), files, ("text/html",
+                                   "application/vnd.openxmlformats-officedocument.presentationml.presentation")):
+            if os.path.exists(f_):
+                col_.download_button(os.path.splitext(f_)[1][1:].upper(), open(f_, "rb").read(),
+                                     file_name=f"process_story_{name}{os.path.splitext(f_)[1]}", mime=mime_,
+                                     key=f"dl_theme_{name}_{os.path.splitext(f_)[1]}")
+
+
 def run_script(script, cfg_path, extra=()):
     """Run run_pipeline.py or run_oos.py and stream its log into the page.
 
@@ -1213,10 +1245,14 @@ with tabs[4]:
                    "a PowerPoint deck (about 50 slides, full text in the speaker notes). No Quarto needed; a few seconds.")
         story_dir = os.path.join(out, "process_story")
         story_files = [os.path.join(story_dir, f) for f in ("process_story.html", "process_story.pptx")]
+        story_theme = story_theme_picker()
         if st.button("Rebuild the process story" if os.path.exists(story_files[0]) else "Build the process story",
                      key="build_story"):
-            if run_script(os.path.join("tools", "process_story.py"), cfg_path, ["--run-dir", out]) != 0:
+            if run_script(os.path.join("tools", "process_story.py"), cfg_path,
+                          ["--run-dir", out, "--theme", story_theme]) != 0:
                 st.error("The process story could not be built: see the log above (python-pptx and matplotlib are needed).")
+        if story_theme == "all":
+            story_gallery(story_dir)
         s1, s2 = st.columns(2)
         for col_, f_, mime_ in zip((s1, s2), story_files, ("text/html",
                                    "application/vnd.openxmlformats-officedocument.presentationml.presentation")):
@@ -1346,10 +1382,14 @@ with tabs[4]:
                    "a PowerPoint deck (about 50 slides, full text in the speaker notes). No Quarto needed; a few seconds.")
         story_dir = os.path.join(out, "process_story")
         story_files = [os.path.join(story_dir, f) for f in ("process_story.html", "process_story.pptx")]
+        story_theme = story_theme_picker()
         if st.button("Rebuild the process story" if os.path.exists(story_files[0]) else "Build the process story",
                      key="build_story"):
-            if run_script(os.path.join("tools", "process_story.py"), cfg_path, ["--run-dir", out]) != 0:
+            if run_script(os.path.join("tools", "process_story.py"), cfg_path,
+                          ["--run-dir", out, "--theme", story_theme]) != 0:
                 st.error("The process story could not be built: see the log above (python-pptx and matplotlib are needed).")
+        if story_theme == "all":
+            story_gallery(story_dir)
         s1, s2 = st.columns(2)
         for col_, f_, mime_ in zip((s1, s2), story_files, ("text/html",
                                    "application/vnd.openxmlformats-officedocument.presentationml.presentation")):
