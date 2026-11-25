@@ -1,18 +1,18 @@
 {
  "run_pipeline.main": {
-  "hash": "40735c254baa",
+  "hash": "c3d758f4cf24",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "run_pipeline.run": {
-  "hash": "7e45c39443f0",
+  "hash": "9a13befa4327",
   "added": "",
   "changed": "2026-11-25"
  },
  "run_oos.main": {
-  "hash": "212a37736a46",
+  "hash": "d9bee40277cd",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "run_oos.run": {
   "hash": "9d025d0081cf",
@@ -20,9 +20,9 @@
   "changed": "2026-11-25"
  },
  "src.features.transforms.transform": {
-  "hash": "567e52adbc5a",
+  "hash": "f54d071d7390",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.features.transforms.feature_name": {
   "hash": "9fb2cd8d9c56",
@@ -45,19 +45,19 @@
   "changed": ""
  },
  "src.features.transforms.describe": {
-  "hash": "778d14ffb793",
+  "hash": "41064b04e62a",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.features.transforms.candidate_forms": {
-  "hash": "e34792a9ab62",
+  "hash": "04c7a89391ab",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.features.transforms.all_features": {
-  "hash": "983e758e5f25",
+  "hash": "a91ca9a2fd6f",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.modelling.ardl.ols_np": {
   "hash": "9b05cc38e75e",
@@ -585,9 +585,9 @@
   "changed": ""
  },
  "src.models.zoo.build": {
-  "hash": "5b5a548bd6ab",
+  "hash": "991ae6c7d644",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.pipelines.en_first.run": {
   "hash": "681327439870",
@@ -600,9 +600,9 @@
   "changed": "2026-10-27"
  },
  "src.reporting.report.write_tables": {
-  "hash": "8b02dfb061bb",
+  "hash": "120a99286e04",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.reporting.report.best_per_family": {
   "hash": "a0c280e34369",
@@ -750,9 +750,9 @@
   "changed": ""
  },
  "src.utils.config.load_config": {
-  "hash": "7115b7b6964d",
+  "hash": "29f0c56975f0",
   "added": "",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.utils.docs.source_files": {
   "hash": "95874720b287",
@@ -970,14 +970,14 @@
   "changed": ""
  },
  "src.utils.io.Context": {
-  "hash": "4c1d4a2f93d8",
+  "hash": "6302e317cb6d",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.utils.io.Context.__init__": {
-  "hash": "b0d224827b92",
+  "hash": "4dc024567265",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.utils.trace._cell": {
   "hash": "80c73f8add03",
@@ -1105,12 +1105,12 @@
   "changed": ""
  },
  "src.validation.oos.truncated": {
-  "hash": "f84e9023ad37",
+  "hash": "d4290389bc0d",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-25"
  },
  "src.validation.oos.select_at": {
-  "hash": "81bb1d7c94a0",
+  "hash": "301cc9c7dd6a",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -2830,7 +2830,7 @@
   "changed": "2026-11-04"
  },
  "src.system.run.joint_oos": {
-  "hash": "e44dd3b661fc",
+  "hash": "5395ae0a5f25",
   "added": "2026-11-04",
   "changed": "2026-11-25"
  },
@@ -3285,7 +3285,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "315c3a4a178e",
+  "hash": "7f977efd893d",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -3315,9 +3315,9 @@
   "changed": "2026-11-24"
  },
  "src.reporting.process_story.Story.label": {
-  "hash": "414c13982fd7",
+  "hash": "0c0e4f78644c",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story.short": {
   "hash": "c7403a6ac6e6",
@@ -3325,7 +3325,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.load": {
-  "hash": "009ac2a4432b",
+  "hash": "8352107120db",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -3340,7 +3340,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.build": {
-  "hash": "ceb51a0dfa4d",
+  "hash": "e335fec06246",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -4225,9 +4225,9 @@
   "changed": "2026-11-24"
  },
  "src.impact.analysis.unit_label": {
-  "hash": "0a6d9b4d478f",
+  "hash": "ff3abc28d3ec",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.impact.analysis.describe": {
   "hash": "560a7bbfe79a",
@@ -4245,9 +4245,9 @@
   "changed": "2026-11-24"
  },
  "src.impact.analysis.apply_shocks": {
-  "hash": "46cbf162ac62",
+  "hash": "4ce260608c6b",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.impact.analysis.forecast": {
   "hash": "84bfb6b92b00",
@@ -4310,7 +4310,7 @@
   "changed": "2026-11-24"
  },
  "src.impact.analysis.run": {
-  "hash": "633228e01dce",
+  "hash": "78460dee1bf1",
   "added": "2026-11-24",
   "changed": "2026-11-25"
  },
@@ -4474,257 +4474,112 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.features.factors.settings": {
+  "hash": "70a78b894f3a",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.slug": {
+  "hash": "effcebb0b121",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.member_kind": {
+  "hash": "5e15ea7181ce",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.member_values": {
+  "hash": "79d3286cfd2a",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.spec_for": {
+  "hash": "2928a2db6d09",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.values": {
+  "hash": "f3214a02d2fb",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.activate": {
+  "hash": "01e10e0ee1fa",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors._t_best_lag": {
+  "hash": "095c8c9ffb31",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.build": {
+  "hash": "a49082d889e4",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.attach": {
+  "hash": "be96dd1e4fe8",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.pipelines.factors_first.run": {
+  "hash": "c39cd23b9295",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.pipelines.stable_first.run": {
+  "hash": "f3862c7a3285",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.small_search.best_forms": {
+  "hash": "8aff9f3fa90f",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.small_search.subset_search": {
+  "hash": "689bbf181eb6",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.stability.settings": {
+  "hash": "9a9d69a7af53",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.stability._groups": {
+  "hash": "d7f8b374d0dd",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.selection.stability.select": {
+  "hash": "a052f962acc3",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story._chosen": {
+  "hash": "f1141dacd54e",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story.s_factors": {
+  "hash": "5df8a2197094",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story.s_stable": {
+  "hash": "2f364380610c",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.features.factors.register": {
+  "hash": "cc25c889577e",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_one_origin",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_all_origins",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_by_horizon",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_rec_effects",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_diagnostics",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_scen_forecast",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_contrib",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.apply",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi._key",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi.columns",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi.suggest_form",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi.catalog",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi.target_config",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.multi.outdir",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.literature_master.merge",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.literature_master.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.post",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.cached",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.metadata",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan._words",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.find_member",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.coordinate",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.download",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.quarterly",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.scenario_paths",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.build",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.write_config",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.describe",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.main",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.models.literature.read_workbook",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.models.literature.write_workbook",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.models.literature.legacy_columns",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.models.literature.load",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.models.literature.status",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.process_story.Story.s_literature",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.reporting.story._model_steps",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master._norm",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.preflight.check",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.fetch_statcan.post",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.new_data_setup.match_concepts",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.new_data_setup.propose",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.new_data_setup.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.config.load_config",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.name_map",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.rename_expr",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master._rename_meta",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master._rename_concepts",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.extract",
-   "what": "changed"
-  },
   {
    "date": "2026-11-18",
    "id": "src.utils.master.apply",
@@ -5973,6 +5828,256 @@
   {
    "date": "2026-11-25",
    "id": "src.selection.scorecard.score",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_pipeline.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_pipeline.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_oos.main",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.slug",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.member_kind",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.member_values",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.spec_for",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.values",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.activate",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors._t_best_lag",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.build",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.attach",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.transform",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.candidate_forms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.all_features",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.zoo.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.pipelines.factors_first.run",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.pipelines.stable_first.run",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.small_search.best_forms",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.small_search.subset_search",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.stability.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.stability._groups",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.stability.select",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.system.run.joint_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.utils.config.load_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.utils.io.Context",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.utils.io.Context.__init__",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.truncated",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.select_at",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.candidate_forms",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.report.write_tables",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.stability.settings",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.unit_label",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.apply_shocks",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.load",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story._chosen",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_factors",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_stable",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.transforms.describe",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.label",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.register",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.spec_for",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.features.factors.attach",
    "what": "changed"
   }
  ]

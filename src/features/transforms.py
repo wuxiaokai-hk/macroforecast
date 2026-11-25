@@ -97,7 +97,12 @@ def transform(mdf, code, tr, deflator=None):
     Returns:
         Series on the same quarterly index (NaN where the transform needs more history).
     """
-    x = mdf[code]
+    if str(code).startswith("FAC."):                  # theme factor: always rebuilt from its members
+        from . import factors
+        sp = factors.spec_for(mdf, code)
+        x = factors.values(mdf, sp) if sp else mdf[code]
+    else:
+        x = mdf[code]
     w = window(tr)
     if w:
         rate, kind, k = w
@@ -191,6 +196,8 @@ def describe(name, meta):
     """
     code, tr, lag = parse_feature(name)
     d = meta.loc[code, "description"] if code in meta.index else code
+    if str(code).startswith("FAC.") and tr == "lvl":
+        return f"{d} ({'same quarter' if lag == 0 else f'lag {lag}Q'})"
     return f"{d} ({tr_desc(tr)}, {'same quarter' if lag == 0 else f'lag {lag}Q'})"
 
 
@@ -207,7 +214,8 @@ def candidate_forms(cfg, hist, meta):
         if code not in meta.index:
             continue
         geo, theme = meta.loc[code, "geography"], meta.loc[code, "theme"]
-        if f["allowed_geographies"] and not any(geo.startswith(g) for g in f["allowed_geographies"]):
+        is_factor = meta.loc[code, "transform"] == "factor"       # members already filtered by geography
+        if f["allowed_geographies"] and not is_factor and not any(str(geo).startswith(g) for g in f["allowed_geographies"]):
             continue
         if theme in (f["excluded_themes"] or []):
             continue
@@ -215,13 +223,20 @@ def candidate_forms(cfg, hist, meta):
             continue
         x = hist[code].dropna()
         is_level = meta.loc[code, "transform"] == "dlog" and len(x) and (x > 0).all()
-        trs = list(f["transforms_level"]) if is_level else list(f["transforms_rate"])
+        if meta.loc[code, "transform"] == "factor":          # theme factors are already growth/change indexes
+            trs = ["lvl"]
+        elif f.get("form_rule", "all") == "by_type":          # one form per variable: growth or change
+            trs = ["dlog"] if is_level else ["diff"]
+        else:
+            trs = list(f["transforms_level"]) if is_level else list(f["transforms_rate"])
         # moving windows: features.moving_average / features.volatility = lists of windows, e.g. [8] and [4, 8]
         pre = "" if is_level else "d"
         trs += [f"{pre}ma{k}" for k in (f.get("moving_average") or [])]
         trs += [f"{pre}vol{k}" for k in (f.get("volatility") or [])]
-        if is_level and theme in (f["real_themes"] or []) and f["deflator"] in hist.columns:
-            trs += ["rdlog", "ryoy"]
+        if meta.loc[code, "transform"] == "factor":
+            trs = ["lvl"]
+        elif is_level and theme in (f["real_themes"] or []) and f["deflator"] in hist.columns:
+            trs += ["rdlog"] if f.get("form_rule", "all") == "by_type" else ["rdlog", "ryoy"]
         for tr in trs:
             s = transform(hist, code, tr, f["deflator"]).dropna()
             try:
@@ -235,8 +250,9 @@ def candidate_forms(cfg, hist, meta):
 
 def all_features(cfg, ctx, forms):
     """All stationary (variable, transform) pairs at every lag, with no gaps in the estimation window."""
-    names = [feature_name(r.mnemonic, r.transform, l) for r in forms[forms["stationary"]].itertuples()
-             for l in range(cfg["features"]["max_lag"] + 1)]
+    lags = cfg["features"].get("lags") or range(cfg["features"]["max_lag"] + 1)    # features.lags: e.g. [0, 1, 4]
+    names = [feature_name(r.mnemonic, r.transform, int(l)) for r in forms[forms["stationary"]].itertuples()
+             for l in lags]
     F = feature_matrix(ctx.hist, names, cfg["features"]["deflator"])
     window = F.iloc[ctx.est0:ctx.end + 1]
     keep = window.columns[window.notna().all() & (window.std() > 0)]

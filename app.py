@@ -1255,10 +1255,18 @@ if mode == "New data set":
             ov["final_model.t_min"] = str(c2.number_input("Smallest |t| allowed", 1.0, 4.0, 1.96, 0.01))
             ov["final_model.vif_max"] = str(c3.number_input("Largest VIF allowed", 2.0, 20.0, 5.0, 0.5))
             ov["approaches"] = setup.yq(c4.multiselect(
-                "Selection approaches", ["screen_first", "en_first", "bayes_first"],
-                default=["screen_first", "en_first", "bayes_first"],
+                "Selection approaches", ["screen_first", "en_first", "bayes_first", "factors_first", "stable_first"],
+                default=["screen_first", "en_first", "bayes_first", "factors_first", "stable_first"],
                 help="screen_first: one variable at a time; en_first: Elastic Net on all at once; bayes_first: Bayesian "
-                     "model averaging (inclusion probabilities), which also adds the 'Bayesian model average' model"))
+                     "model averaging (inclusion probabilities), which also adds the 'Bayesian model average' model; "
+                     "factors_first: one index per theme from all its series; stable_first: variables a lasso picks "
+                     "in most sub-samples (stability selection)"))
+            ov["factors.enabled"] = "true" if "factors_first" in S["ov"].get("approaches", "factors_first") else "false"
+            ov["stability.enabled"] = "true" if "stable_first" in S["ov"].get("approaches", "stable_first") else "false"
+            ov["features.form_rule"] = c4.selectbox(
+                "Forms per variable", ["all", "by_type"], index=0, key="form_rule",
+                help="all: every transformation (growth, annual growth, acceleration, gaps ...); by_type: one form per "
+                     "variable (growth for levels, change for rates), about 4x fewer candidates and fewer chance picks")
 
             st.subheader("How the economy affects the target")
             st.caption("An explanatory model built to measure effects rather than to win the forecast race: the focus "

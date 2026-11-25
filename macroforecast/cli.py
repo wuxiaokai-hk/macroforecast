@@ -37,7 +37,7 @@ def main(argv=None):
     a.add_argument("--base-config", default=None, help="start from this YAML config instead of the example")
     a.add_argument("--run-name", default=None)
     a.add_argument("--output-dir", default=None)
-    a.add_argument("--approach", choices=["screen_first", "en_first", "bayes_first", "focus_first"], default=None)
+    a.add_argument("--approach", choices=["screen_first", "en_first", "bayes_first", "focus_first", "factors_first", "stable_first"], default=None)
     a.add_argument("--no-oos", action="store_true", help="skip the out-of-sample test")
     a.add_argument("--deck", action="store_true", help="also build the PowerPoint deck (needs Quarto)")
     a.add_argument("--force", action="store_true", help="recompute every step")

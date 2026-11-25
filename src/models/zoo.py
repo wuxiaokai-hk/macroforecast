@@ -36,7 +36,8 @@ from .simple import SameGrowth
 from . import autoardl
 
 APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first", "bayes_first": "Bayesian first",
-                  "focus_first": "Explanatory: focus drivers"}
+                  "focus_first": "Explanatory: focus drivers", "factors_first": "Factors first",
+                  "stable_first": "Stable first"}
 APPROACH_FAMILY = {"focus_first": "Explanatory"}
 
 
@@ -199,6 +200,8 @@ def build(cfg, ctx, sel, log=print):
         add(ARDL("Mean growth benchmark", [], ar=False, family="Benchmark"),
             "Average historical growth: a random walk with drift in the balance")
     for ap, info in sel.items():
+        if not info.get("features"):
+            continue
         if ap == "focus_first":
             m_ = ARDL(APPROACH_NAMES[ap], info["features"], family=APPROACH_FAMILY[ap])
             m_.focus = list(info.get("focus") or [])

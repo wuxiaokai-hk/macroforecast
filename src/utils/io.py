@@ -188,3 +188,7 @@ class Context:
         self.end = int(np.where(self.idx == hist_end)[0][0]) if hist_end in self.idx else len(self.idx) - 1
         self.dummies = pd.DataFrame({f"D_{q}": (self.idx == pd.Period(q, freq="Q")).astype(float)
                                      for q in cfg["sample"]["dummy_quarters"]}, index=self.idx)
+        from ..features import factors                  # theme factors: one index per theme (FAC.<THEME>)
+        self.factor_table, self.factor_loadings = factors.attach(cfg, self, log)
+        if len(self.factor_table):
+            log(f"  theme factors: {len(self.factor_table)} ({', '.join(self.factor_table['mnemonic'])})")

@@ -27,6 +27,9 @@ def write_tables(folder, tables):
         folder: output folder. tables: dict name -> DataFrame.
     """
     os.makedirs(folder, exist_ok=True)
+    tables = {k: v for k, v in (tables or {}).items() if isinstance(v, pd.DataFrame)}
+    if not tables:
+        return
     with pd.ExcelWriter(os.path.join(folder, "tables.xlsx"), engine="openpyxl") as w:
         for name, df in tables.items():
             df.to_csv(os.path.join(folder, f"{name}.csv"), index=False)

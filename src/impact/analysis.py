@@ -58,7 +58,9 @@ def typical_size(ctx, code):
 
 
 def unit_label(ctx, code, size):
-    """'+1.00 pt' or '+1.00%'."""
+    """'+1.00 pt', '+1.00%' or '+1.00 index points' (theme factors)."""
+    if str(code).startswith("FAC."):
+        return f"{size:+.2f} index pts"
     return f"{size:+.2f}{'%' if is_level(ctx, code) else ' pt'}"
 
 
@@ -128,6 +130,19 @@ def apply_shocks(cfg, ctx, mdf, shocks, with_lookalikes=True):
         size, q, start = float(s["size"]), max(int(s.get("quarters", 1) or 1), 1), max(int(s.get("start", 1) or 1), 1)
         k = np.arange(1, len(pos) + 1)
         ramp = np.clip((k - start + 1) / q, 0, 1)
+        if str(code).startswith("FAC."):              # a theme factor: move its members so the index rises by size
+            from ..features import factors
+            sp = factors.spec_for(out, code)
+            if sp:
+                for m in sp["members"]:
+                    col = out.columns.get_loc(m["code"])
+                    vals = out.iloc[pos, col].astype(float).values
+                    # the index is built from quarterly growth/changes: a lasting rise of `size` in the index
+                    # means each member's growth (change) is higher by size*weight*sd every quarter
+                    per_q = size * ramp * m["weight"] * m["sd"]
+                    cum = np.cumsum(per_q)
+                    out.iloc[pos, col] = vals * np.exp(cum) if m["kind"] == "dlog" else vals + cum
+            continue
         targets = {code: 1.0}
         if with_lookalikes:
             targets.update(lookalikes(cfg, ctx, code))

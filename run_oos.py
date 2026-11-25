@@ -26,7 +26,7 @@ import warnings  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from src.features.transforms import all_features, candidate_forms  # noqa: E402
-from src.pipelines import bayes_first, en_first, focus_first, screen_first  # noqa: E402
+from src.pipelines import bayes_first, en_first, factors_first, focus_first, screen_first, stable_first  # noqa: E402
 from src.reporting import formula, report, story  # noqa: E402
 from src.utils.cache import StepCache, hash_code, hash_frame, hash_obj  # noqa: E402
 from src.utils.config import load_config  # noqa: E402
@@ -38,14 +38,14 @@ from src.validation import oos  # noqa: E402
 
 warnings.filterwarnings("ignore")
 APPROACHES = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first,
-              "focus_first": focus_first}
+              "focus_first": focus_first, "factors_first": factors_first, "stable_first": stable_first}
 
 
 def main():
     """Command line entry for the out-of-sample test."""
     ap = argparse.ArgumentParser(description="Out-of-sample test with re-selection at each origin")
     ap.add_argument("--config", default=os.path.join(HERE, "config", "example_config.yaml"))
-    ap.add_argument("--approach", choices=["both", "all", "screen_first", "en_first", "bayes_first", "focus_first"], default=None)
+    ap.add_argument("--approach", choices=["both", "all", "screen_first", "en_first", "bayes_first", "focus_first", "factors_first", "stable_first"], default=None)
     ap.add_argument("--force", action="store_true", help="recompute every origin")
     ap.add_argument("--no-cache", action="store_true")
     ap.add_argument("--skip-check", action="store_true", help="do not stop on errors found by the pre-flight check")

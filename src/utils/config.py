@@ -28,7 +28,8 @@ DEFAULTS = {
     "features": {"max_lag": 4, "adf_p": 0.05, "transforms_level": ["dlog", "yoy", "dlog2", "acc", "gap"],
                  "transforms_rate": ["diff", "diff2", "diff4", "lvl", "rgap"], "real_themes": [],
                  "moving_average": [], "volatility": [], "volatility_sign": -1,
-                 "deflator": None, "allowed_geographies": [], "excluded_themes": [], "require_sign_prior": True},
+                 "deflator": None, "allowed_geographies": [], "excluded_themes": [], "require_sign_prior": True,
+                 "form_rule": "all", "lags": None},
     "approaches": ["screen_first", "en_first", "bayes_first"],
     "screen_first": {"screen_p": 0.05, "cluster_corr": 0.75, "primary_geography": None, "rep_tolerance": 0.75,
                      "shortlist_max": 25},
@@ -64,6 +65,10 @@ DEFAULTS = {
     "trace": {"enabled": True, "folder": "trace", "preview_rows": 20, "save_tables": True, "detail_calls": 1,
               "distinct_labels": 8, "keep_runs": 10, "max_table_cells": 200000,
               "local_variables": True, "local_preview_rows": 8, "library_functions": "default", "follow": "auto"},
+    "factors": {"enabled": True, "targeted": True, "t_threshold": 1.65, "min_members": 3, "n_factors": 1,
+                "exclude_outcomes": True, "max_vars": 4, "t_min": 1.0},
+    "stability": {"enabled": True, "draws": 100, "q": 8, "threshold": 0.6, "block": 4, "cluster_corr": 0.75,
+                  "seed": 7, "max_vars": 4, "t_min": 1.0},
     "impact": {"enabled": True, "focus": [], "max_controls": 4, "control_corr": 0.9, "controls_same_theme": False, "excluded_control_themes": "auto",
                "compare_horizon": 8, "tied_alpha": 0.10, "tied_max": 8, "tied_max_ratio": 2.0, "tied_min": 3,
                "control_t": 1.0, "horizons": [1, 4, 8, 12],
@@ -227,6 +232,11 @@ def load_config(path):
     cfg["oos"]["first_origin"] = str(cfg["oos"]["first_origin"])
     if cfg["oos"]["window"] not in ("expanding", "rolling"):
         raise ValueError("oos.window must be 'expanding' or 'rolling'")
+    for key, ap in (("factors", "factors_first"), ("stability", "stable_first")):   # new approaches, on by default
+        if cfg[key].get("enabled", True) and ap not in cfg["approaches"]:
+            cfg["approaches"] = list(cfg["approaches"]) + [ap]
+        if not cfg[key].get("enabled", True):
+            cfg["approaches"] = [a for a in cfg["approaches"] if a != ap]
     imp = cfg["impact"]                                    # the explanatory model is one more approach
     if imp.get("enabled", True) and "focus_first" not in cfg["approaches"]:
         cfg["approaches"] = list(cfg["approaches"]) + ["focus_first"]

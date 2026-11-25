@@ -34,7 +34,8 @@ from ..utils.io import log
 
 CODE = ["features/transforms.py", "selection/screening.py", "selection/clustering.py", "selection/elastic_net.py",
         "modelling/search.py", "modelling/ardl.py", "pipelines/screen_first.py", "pipelines/en_first.py",
-        "validation/oos.py", "models/zoo.py", "selection/double_selection.py", "pipelines/focus_first.py"]
+        "validation/oos.py", "models/zoo.py", "selection/double_selection.py", "pipelines/focus_first.py",
+        "features/factors.py", "pipelines/factors_first.py", "selection/stability.py"]
 PRETTY = zoo.APPROACH_NAMES
 
 
@@ -64,6 +65,10 @@ def truncated(ctx, end_pos, cfg):
     o = cfg["oos"]
     if o["window"] == "rolling":
         c.est0 = max(ctx.est0, end_pos - int(o["window_length"]) + 1)
+    if getattr(ctx, "factor_specs", None):           # theme factors re-estimated with data up to the origin
+        from ..features import factors
+        factors.attach(c.cfg, c, lambda *a, **k: None)
+        factors.activate(ctx.factor_specs)            # the full-sample ones stay active elsewhere
     return c
 
 
@@ -78,6 +83,7 @@ def select_at(cfg, ctx, approach_mod, end_pos, cache, approach):
             "metadata": hash_frame(ctx.meta), "end": str(ctx.idx[end_pos]), "est0": str(ctx.idx[c.est0]),
             "config": hash_obj({**{k: cfg.get(k) for k in ("features", approach, "final_model", "sample")},
                                 "impact": cfg.get("impact") if approach == "focus_first" else None,
+                                "factors": cfg.get("factors"), "stability": cfg.get("stability"),
                                 "literature": cfg["literature"].get("models") if approach == "focus_first" else None,
                                 "window": cfg["oos"]["window"], "window_length": cfg["oos"]["window_length"]}),
             "code": hash_code(*CODE)}

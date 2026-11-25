@@ -110,8 +110,34 @@ features:                           # shared by both approaches
                                     #   last k quarters (ma8 / dma8). ma4 = yoy/4 and ma2 = dlog2/2 add nothing new
   volatility: []                    # e.g. [4, 8]: rolling std. dev. of q/q growth (change) over k quarters (vol4 / dvol4)
   volatility_sign: -1               # expected sign of every volatility feature (more uncertainty, less growth)
+  form_rule: all                    # all = every form above; by_type = one form per variable (growth for levels,
+                                    #   change for rates): about 4x fewer candidates, fewer chance picks
+  lags: null                        # null = 0..max_lag; or a list, e.g. [0, 1, 4]
 
-approaches: [screen_first, en_first, bayes_first]   # any of the three
+# Theme factors (src/features/factors.py): one index per theme from all its series (targeted principal component),
+# added as candidates FAC.<THEME> for every approach, and the 'factors_first' approach built from them only.
+factors:
+  enabled: true
+  targeted: true                    # only series related to the target (|t| >= t_threshold) enter a factor
+  t_threshold: 1.65
+  min_members: 3                    # themes with fewer series get no factor
+  n_factors: 1                      # principal components per theme
+  exclude_outcomes: true            # no factors from credit/deposit themes (other outcomes of the economy)
+  max_vars: 4                       # factors_first: at most this many factors in the model
+
+# Stability selection (src/selection/stability.py): the 'stable_first' approach keeps the variables a lasso picks in
+# most half-samples of the history; closely related variables vote together.
+stability:
+  enabled: true
+  draws: 100
+  q: 8                              # variables recorded per draw (the first to enter the lasso path)
+  threshold: 0.6                    # kept if picked in at least 60% of the draws
+  block: 4                          # quarters are drawn in blocks of 4
+  cluster_corr: 0.75                # variables whose best features correlate above this vote as one group
+  max_vars: 4
+
+approaches: [screen_first, en_first, bayes_first]   # any of these; factors_first, stable_first and focus_first
+                                    #   are added when factors / stability / impact are enabled
 
 # -----------------------------------------------------------------------------
 # Models from the literature: EVERYTHING is in the workbook (sheets models, concepts, settings, references).

@@ -368,10 +368,11 @@ def members_by(members):
 def joint_oos(members, scfg, H, log=print):
     """Out-of-sample: at each origin every target's drivers are re-selected with data up to the origin, then the
     chain forecasts itself."""
-    from ..pipelines import bayes_first, en_first, focus_first, screen_first
+    from ..pipelines import bayes_first, en_first, factors_first, focus_first, screen_first, stable_first
     from ..utils.cache import StepCache
     from ..validation import oos
-    APP = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first, "focus_first": focus_first}
+    APP = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first, "focus_first": focus_first,
+           "factors_first": factors_first, "stable_first": stable_first}
     c0 = members[0].cfg
     first = pd.Period(c0["oos"]["first_origin"], freq="Q")
     end = members[0].ctx.idx[members[0].ctx.end]

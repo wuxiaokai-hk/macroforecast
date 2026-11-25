@@ -168,6 +168,8 @@ class Story:
             return str(f)
         d = self.meta.loc[code, "description"] if code in self.meta.index else code
         when = "same quarter" if lag == 0 else (f"{lag} quarter earlier" if lag == 1 else f"{lag} quarters earlier")
+        if str(code).startswith("FAC.") and tr == "lvl":
+            return f"{d}, {when}"
         return f"{d}: {tr_words(tr)[0]}, {when}"
 
     def short(self, f, n=46):
@@ -223,6 +225,9 @@ class Story:
             "1_oos_summary.csv", "2_oos_by_horizon.csv", "3_dm_tests_vs_benchmark.csv", "4_drivers_by_origin.csv",
             "5_driver_stability.csv", "7_holdout.csv"))
         self.terms, self.nextq = R("formula", "1_terms.csv"), R("formula", "2_next_quarters.csv")
+        self.e1, self.e2, self.e3 = (R("factors_first", f) for f in ("E1_factors.csv", "E2_loadings.csv",
+                                                                     "E3_best_lag.csv"))
+        self.f1, self.f2 = R("stable_first", "F1_selection_probabilities.csv"), R("stable_first", "F2_settings.csv")
         self.d1, self.d2, self.d3 = (R("focus_first", f) for f in (
             "D1_focus_drivers.csv", "D2_double_selection.csv", "D3_settings.csv"))
         self.i_tied, self.i_resp, self.i_sens, self.i_rel, self.i_att, self.i_wi = (R("impact", f) for f in (
@@ -276,7 +281,7 @@ class Story:
         for f in (self.s_title, self.s_question, self.s_impact_headline, self.s_overview, self.s_target, self.s_events, self.s_macro,
                   self.s_signs, self.s_literature, self.s_transforms, self.s_stationarity, self.s_lags,
                   self.s_funnel, self.s_screen, self.s_bestform, self.s_clusters, self.s_shortlist, self.s_en,
-                  self.s_stability, self.s_bayes, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
+                  self.s_stability, self.s_bayes, self.s_factors, self.s_stable, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
                   self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
                   self.s_scorecard, self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
@@ -1678,6 +1683,70 @@ class Story:
                      for _, r in d.iloc[::-1].iterrows()],
                  read="Bars: the explanatory model's estimate; whiskers: its 90% band. Chapter 11 has the details.",
                  chart=self.save(f, p), table=T)
+
+    def _chosen(self, model):
+        r = self.mlist[self.mlist["model"] == model] if not self.mlist.empty else self.mlist
+        return [d for d in str(r["drivers"].iloc[0]).split(", ") if "|" in d] if len(r) else []
+
+    def s_factors(self):
+        E = self.e1
+        if E.empty:
+            return
+        f, ax, p = self.fig("factors", 9, 0.38 * len(E) + 1.4)
+        d = E.sort_values("members")
+        ax.barh(d["mnemonic"].str.replace("FAC.", "", regex=False), d["members"], color=C["teal"], label="in the index")
+        ax.barh(d["mnemonic"].str.replace("FAC.", "", regex=False), d["of"] - d["members"], left=d["members"],
+                color=C["line"], label="not related to the target")
+        ax.legend(fontsize=8, loc="lower right")
+        ax.set_title("Series summarised by each theme index", loc="left")
+        ch = self._chosen("Factors first")
+        T = pd.DataFrame({"Index": E["mnemonic"], "Series": E["members"].astype(int).astype(str) + " of " +
+                          E["of"].astype(int).astype(str), "Variance explained": E["variance_share"].map("{:.0%}".format),
+                          "Expected sign": E["expected_sign"].map({1: "+", -1: "-", 0: "?"})})
+        self.add("5. Choosing drivers: factors first (theme indexes)",
+                 f"{len(E)} theme indexes summarise {int(E['members'].sum())} series",
+                 "Instead of choosing one of many near-identical series, use all of them through one index per theme.",
+                 what=["For each theme, the series related to the target (|t| at least 1.65 at their best lag) are "
+                       "standardised and summarised by their first principal component (targeted predictors, Bai & "
+                       "Ng 2008; diffusion indexes, Stock & Watson 2002).",
+                       "The indexes are candidates for every approach, and 'Factors first' builds a model from them "
+                       "only: each index at its best lag, then the lowest-BIC subset with the expected signs."],
+                 why=["Macro data are dense: many series carry a little of the same information. An index uses all of "
+                      "it, does not depend on which city happened to fit best, and stays easy to explain."],
+                 result=[f"Factors first chose: {', '.join(self.label(c) for c in ch)}." if ch else ""],
+                 chart=self.save(f, p), table=T)
+
+    def s_stable(self):
+        T0 = self.f1
+        if T0.empty:
+            return
+        info = self.f2.iloc[0] if not self.f2.empty else {}
+        d = T0.head(12).iloc[::-1]
+        thr = float(info.get("threshold", 0.6))
+        f, ax, p = self.fig("stability_probabilities", 9, 0.36 * len(d) + 1.4)
+        ax.barh([self.short(str(x), 40) for x in d["description"]], d["probability"],
+                color=[C["green"] if v >= thr else C["line"] for v in d["probability"]])
+        ax.axvline(thr, color=C["red"], lw=1, ls="--")
+        ax.set_xlim(0, 1)
+        ax.set_title(f"Share of {int(info.get('draws', 100))} half-samples in which each group was picked", loc="left")
+        ch = self._chosen("Stable first")
+        st_ = T0[T0["probability"] >= thr]
+        self.add("5. Choosing drivers: stable first (stability selection)",
+                 f"{len(st_)} driver group(s) picked in at least {thr:.0%} of the half-samples",
+                 "A driver worth keeping is one the data pick again and again, not once.",
+                 what=[f"A lasso is run on {int(info.get('draws', 100))} random halves of the history (in 4-quarter "
+                       f"blocks); each time the first {int(info.get('q', 8))} variables to enter are recorded "
+                       "(Meinshausen & Bühlmann 2010).",
+                       "Variables count, not forms or lags; closely related variables (correlation above 0.75) vote "
+                       f"together: {int(info.get('variables', 0))} variables in {int(info.get('groups', 0))} groups.",
+                       "The kept groups get their best form and lag; the lowest-BIC subset with the expected signs is "
+                       "the model."],
+                 why=["One selection on one sample is fragile with 80 quarters and thousands of candidates. The share "
+                      "of half-samples that pick a driver says how sure the data are about it."],
+                 result=[f"Expected number of falsely kept groups at most {float(info.get('expected_false_kept_at_most', np.nan)):.1f} "
+                         "(Meinshausen-Bühlmann bound).",
+                         f"Stable first chose: {', '.join(self.label(c) for c in ch)}." if ch else ""],
+                 chart=self.save(f, p))
 
     def s_focus(self):
         D1, D2 = self.d1, self.d2

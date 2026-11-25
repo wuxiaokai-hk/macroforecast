@@ -554,6 +554,23 @@ Results on the example (simulated) data are in **Example results** below. The lo
 
 Elastic Net first chose more stable drivers across origins (average overlap with the previous origin 0.59, against 0.18 for screen first).
 
+## Handling hundreds of macro series: theme factors, stability selection, one form per variable
+
+With 200+ series, each tried in several forms and at lags 0-4, the search runs over thousands of candidates with
+about 80 quarters of data, and many candidates are near-copies (house prices in a dozen cities). Picking one of them
+is partly luck, and the pick changes from quarter to quarter. Macro data are usually *dense* (many series carry a
+little of the same information: Giannone, Lenza & Primiceri 2021, Econometrica). Three tools address this:
+
+| Tool | What it does | Where |
+|---|---|---|
+| **Theme factors** | One index per theme (housing, labour, income, rates, ...) from all its series: the first principal component of the members that relate to the target (targeted predictors, Bai & Ng 2008; diffusion indexes, Stock & Watson 2002). Added as candidates `FAC.<THEME>` for every approach, and as the **Factors first** approach (the model built from factors only). Rebuilt from its members everywhere, so scenarios and what-if shocks to a member move it; re-estimated at every out-of-sample origin. Loadings: `factors_first/E2_loadings.csv` | `factors:` |
+| **Stability selection** | The **Stable first** approach: a lasso on 100 half-samples of the history (drawn in 4-quarter blocks); a variable is kept if picked in ≥ 60% of them (Meinshausen & Bühlmann 2010). Counts variables, not forms or lags, and lets closely related variables (correlation > 0.75) vote together, so a dozen city house-price series do not split their votes. Reports the bound on falsely kept variables. Probabilities: `stable_first/F1_selection_probabilities.csv` | `stability:` |
+| **One form per variable** | `features.form_rule: by_type` tries growth for levels and change for rates only (about 4× fewer candidates); `features.lags: [0, 1, 4]` restricts the lags | `features:` |
+
+The new approaches compete with the others on the scorecard and in the out-of-sample test, so whether they help on
+your data is measured rather than assumed. A what-if can shock a factor directly (`--shock FAC.HOUSING:+1:2`: the
+index one point higher, built up over two quarters).
+
 ## How the economy affects the target: satellite-model analysis (`src/impact/`, `python tools/impact.py`)
 
 In stress testing, a model that carries macro scenarios into an institution's own numbers is a *satellite model*.
