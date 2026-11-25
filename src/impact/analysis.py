@@ -624,8 +624,11 @@ def run(cfg, ctx, models, run_dir, log=print, what_if=None, episodes=None):
     tables = {"1_tied_models": tied, "2_responses": resp, "3_sensitivity": sens, "4_reliability": rel,
               "5_attribution": att, "6_what_if": wi}
     for k, v in tables.items():
+        f = os.path.join(out, f"{k}.csv")
         if isinstance(v, pd.DataFrame) and len(v):
-            v.round(6).to_csv(os.path.join(out, f"{k}.csv"), index=False)
+            v.round(6).to_csv(f, index=False)
+        elif os.path.exists(f):
+            os.remove(f)    # an empty table this run: drop the old file so the app does not show a stale one
     try:
         from . import charts
         charts.all(out, cfg, ctx, tables, ex.name, hz_main)

@@ -161,12 +161,11 @@ def multi_key(x):
 def impact_section(out, cfg_path):
     """How the economy affects the target: sensitivities, reliability, scenario attribution and a what-if form."""
     d = os.path.join(out, "impact")
-    if not os.path.exists(os.path.join(d, "3_sensitivity.csv")):
+    sens = read_result(os.path.join(d, "3_sensitivity.csv"), need=("horizon", "concept", "series"))
+    if not len(sens):
         return
     st.subheader("How the economy affects the target")
-    sens = pd.read_csv(os.path.join(d, "3_sensitivity.csv"))
-    rel = pd.read_csv(os.path.join(d, "4_reliability.csv")) if os.path.exists(os.path.join(d, "4_reliability.csv")) \
-        else pd.DataFrame()
+    rel = read_result(os.path.join(d, "4_reliability.csv"), need=("concept", "label", "reasons"))
     hs = sorted(sens["horizon"].unique())
     h = st.select_slider("Quarters after the shock", hs, value=8 if 8 in hs else hs[-1], key="imp_h")
     from src.impact.analysis import sentence
@@ -186,9 +185,9 @@ def impact_section(out, cfg_path):
     with st.expander("Reliability checks and the models compared"):
         if len(rel):
             st.dataframe(rel, hide_index=True, use_container_width=True)
-        t = os.path.join(d, "1_tied_models.csv")
-        if os.path.exists(t):
-            st.dataframe(pd.read_csv(t), hide_index=True, use_container_width=True)
+        t = read_result(os.path.join(d, "1_tied_models.csv"))
+        if len(t):
+            st.dataframe(t, hide_index=True, use_container_width=True)
     with st.form("what_if_form"):
         st.markdown("**What-if**: shift one or more variables and see the response (about 15 seconds).")
         opts = list(dict.fromkeys(list(sens["concept"]) + list(sens["series"])))
@@ -217,13 +216,12 @@ def impact_section(out, cfg_path):
             st.warning("Set at least one shock or an episode.")
         elif run_script(os.path.join("tools", "impact.py"), cfg_path, args) != 0:
             st.error("The what-if could not be run: see the log above.")
-    wf = os.path.join(d, "6_what_if.csv")
-    if os.path.exists(wf):
-        w = pd.read_csv(wf)
+    w = read_result(os.path.join(d, "6_what_if.csv"), need=("kind", "quarter", "model", "shock", "balance_effect"))
+    if len(w):
         w = w[(w["kind"] == "point") & (w["quarter"].isin(hs))]
         if len(w):
             st.markdown("**What-if results** (balance effect; explanatory model and the range of the most accurate models)")
-            ex = w[w["model"].str.startswith("Explanatory")].pivot_table(index="shock", columns="quarter",
+            ex = w[w["model"].astype(str).str.startswith("Explanatory")].pivot_table(index="shock", columns="quarter",
                                                                        values="balance_effect", sort=False)
             rng = w[w["balance_effect"].abs() > 1e-9].groupby(["shock", "quarter"])["balance_effect"].agg(
                 ["min", "max", "count"]).round(2)
@@ -367,10 +365,9 @@ def panel_results(out, cfg):
     unit = "%" if man.get("target_form", "dlog") == "dlog" else " (target units)"
     st.caption(f"Panel drivers (chosen on the estimation sample): {', '.join(man.get('panel_drivers') or []) or 'none'}. "
                f"Literature core: {', '.join(man.get('core') or []) or 'none'}.")
-    scf = os.path.join(pdir, "0_sample_choice.csv")
-    if os.path.exists(scf):
-        sc_ = pd.read_csv(scf)
-        ch = sc_[sc_["chosen"]].iloc[0]
+    sc_ = read_result(os.path.join(pdir, "0_sample_choice.csv"), need=("chosen", "label", "banks", "reason"))
+    if len(sc_) and sc_["chosen"].astype(bool).any():
+        ch = sc_[sc_["chosen"].astype(bool)].iloc[0]
         st.info(f"**Estimation sample: {ch['label']}** ({int(ch['banks'])} credit unions). {ch['reason']}.")
         if len(sc_) > 1:
             with st.expander("How the sample was chosen"):
@@ -461,10 +458,10 @@ def panel_results(out, cfg):
     for p_ in (os.path.join(pdir, "panel_forecasts.png"),):
         if os.path.exists(p_):
             wide_image(p_)
-    sc = os.path.join(pdir, "7_scenario_forecasts.csv")
-    if os.path.exists(sc):
-        S_ = pd.read_csv(sc)
-        models_b = sorted(S_[S_["bank"] == b]["model"].unique())
+    S_ = read_result(os.path.join(pdir, "7_scenario_forecasts.csv"),
+                     need=("bank", "model", "date", "scenario", "level_forecast"))
+    models_b = sorted(S_[S_["bank"] == b]["model"].unique()) if len(S_) else []
+    if models_b:
         mdl = st.selectbox("Model for the scenario chart", models_b,
                            index=models_b.index(best) if best in models_b else 0, key="panel_bank_model")
         d = S_[(S_["bank"] == b) & (S_["model"] == mdl)].pivot_table(index="date", columns="scenario",
@@ -479,18 +476,17 @@ def panel_results(out, cfg):
         except Exception:
             pass
         st.line_chart(d)
-    sh = os.path.join(pdir, "6_shrinkage.csv")
-    if os.path.exists(sh):
-        T = pd.read_csv(sh)
+    T = read_result(os.path.join(pdir, "6_shrinkage.csv"),
+                    need=("bank", "model", "term", "own", "own_se", "pooled", "weight_on_own", "shrunk"))
+    if len(T):
         T = T[T["bank"] == b]
         if len(T):
             st.markdown("**Partial pooling for this bank**: its own estimate, the pooled one, and the weight on its own "
                         "(w = τ² / (τ² + se²); a short or noisy history gets a small weight).")
             st.dataframe(T[["model", "term", "own", "own_se", "pooled", "weight_on_own", "shrunk"]].round(4),
                          hide_index=True, use_container_width=True)
-    co = os.path.join(pdir, "5_coefficients.csv")
-    if os.path.exists(co):
-        C = pd.read_csv(co)
+    C = read_result(os.path.join(pdir, "5_coefficients.csv"), need=("bank",))
+    if len(C):
         with st.expander("Coefficients"):
             st.markdown("**Shared coefficients** (pooled fixed effects, and the total in top-down), with Driscoll–Kraay "
                         "standard errors (robust to the same shock hitting every bank in a quarter)")
@@ -500,14 +496,14 @@ def panel_results(out, cfg):
     with st.expander("Driver selection on all banks"):
         for f_, lab in (("P3_search.csv", "Combinations that pass the rules (lowest pooled BIC first; the chosen one marked)"),
                         ("P2_shortlist.csv", "Shortlist"), ("P1_panel_screen.csv", "Screen (top 50)")):
-            p_ = os.path.join(pdir, f_)
-            if os.path.exists(p_):
+            t_ = read_result(os.path.join(pdir, f_))
+            if len(t_):
                 st.markdown(f"**{lab}**")
-                st.dataframe(pd.read_csv(p_).head(50), hide_index=True, use_container_width=True)
-        p_ = os.path.join(pdir, "oos", "5_drivers_by_origin.csv")
-        if os.path.exists(p_):
+                st.dataframe(t_.head(50), hide_index=True, use_container_width=True)
+        t_ = read_result(os.path.join(pdir, "oos", "5_drivers_by_origin.csv"))
+        if len(t_):
             st.markdown("**Drivers chosen at each out-of-sample origin**")
-            st.dataframe(pd.read_csv(p_), hide_index=True, use_container_width=True)
+            st.dataframe(t_, hide_index=True, use_container_width=True)
     st.subheader("Downloads")
     import io
     import zipfile
@@ -550,8 +546,31 @@ def _read(out, *p):
     Returns:
         DataFrame.
     """
-    f = os.path.join(out, *p)
-    return pd.read_csv(f) if os.path.exists(f) else pd.DataFrame()
+    return read_result(os.path.join(out, *p))
+
+
+def read_result(f, need=()):
+    """A result CSV, or an empty table if it is missing, empty (0 bytes / no columns) or lacks a needed column.
+
+    A run that stopped half-way, or an older run made before a column existed, then shows nothing for that table
+    instead of crashing the app with EmptyDataError or KeyError.
+
+    Args:
+        f: path of the CSV. need: column names the caller will index; if any is absent, an empty table is returned.
+
+    Returns:
+        DataFrame.
+    """
+    if not f or not os.path.exists(f) or os.path.getsize(f) == 0:
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(f)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
+    df.columns = df.columns.str.strip()
+    if any(c not in df.columns for c in need):
+        return pd.DataFrame()
+    return df
 
 
 def formula_section(out):
@@ -1005,8 +1024,14 @@ if mode == "New data set":
             if P["metadata"]["file"] and os.path.basename(P["metadata"]["file"]).endswith("_metadata_draft.csv"):
                 st.warning(f"Some metadata was missing, so the app drafted it: `{setup.rel(P['metadata']['file'])}`. "
                            "Review the expected signs: they decide what can be selected.")
-            mcols = list(pd.read_csv(P["metadata"]["file"], nrows=0).columns) if P["metadata"]["file"].endswith(".csv") \
-                else list(pd.read_excel(P["metadata"]["file"], nrows=0).columns)
+            try:
+                mcols = list(pd.read_csv(P["metadata"]["file"], nrows=0).columns) if P["metadata"]["file"].endswith(".csv") \
+                    else list(pd.read_excel(P["metadata"]["file"], nrows=0).columns)
+            except pd.errors.EmptyDataError:
+                mcols = []
+            if not mcols:
+                st.error(f"The metadata file `{setup.rel(P['metadata']['file'])}` is empty: upload it again in ①.")
+                st.stop()
             cc = st.columns(6)
             for i, k in enumerate(["mnemonic", "description", "geography", "theme", "transform", "expected_sign"]):
                 cur = P["metadata"]["columns"].get(k, mcols[0])
@@ -1372,16 +1397,17 @@ with tabs[4]:
             if pick_run != "Latest results":
                 out = snaps[opts.index(pick_run) - 1]["path"]
                 st.caption(f"Showing the saved run in `{os.path.relpath(out, HERE)}` (inputs used: its `inputs/` folder).")
-    if not out or not os.path.exists(os.path.join(out, "comparison", "1_model_comparison.csv")):
-        st.info("No results yet: run the pipeline in ④.")
+    comp = read_result(os.path.join(out, "comparison", "1_model_comparison.csv"), need=("model", "family")) \
+        if out else pd.DataFrame()
+    hz = [int(c.split("_")[2]) for c in comp.columns if c.startswith("avg_1_") and c.endswith("_pct")]
+    if not len(comp) or not hz:
+        st.info("No results yet (or the last run stopped before writing the model comparison): run the pipeline in ④.")
     else:
-        comp = pd.read_csv(os.path.join(out, "comparison", "1_model_comparison.csv"))
-        oosf = os.path.join(out, "oos", "1_oos_summary.csv")
-        H = max(int(c.split("_")[2]) for c in comp.columns if c.startswith("avg_1_") and c.endswith("_pct"))
+        H = max(hz)
         cols = ["model", "family"] + [c for c in comp.columns if c.startswith("avg_1_")]
-        if os.path.exists(oosf):
-            oo = pd.read_csv(oosf)
-            oo = oo[oo["family"] != "Look-ahead check"]
+        oo = read_result(os.path.join(out, "oos", "1_oos_summary.csv"), need=("model", "family", f"avg_1_{H}_pct"))
+        oo = oo[oo["family"] != "Look-ahead check"] if len(oo) else oo
+        if len(oo):
             from src.reporting.report import rank_column
             oo = oo.sort_values(rank_column(oo, H))
             best = oo.iloc[0]
