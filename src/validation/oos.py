@@ -15,7 +15,8 @@ Results:
   5. a holdout test: everything selected and estimated on data up to hist_end - holdout_quarters.
 
 Forecasts use the realised macro values (conditional forecasts), so they measure model error, not the
-error of the macro scenario itself.
+error of the macro scenario itself. With oos.macro_vintages (src/validation/vintages.py) every origin also
+forecasts with the macro forecast available at the time, which shows the error a user would really have had.
 """
 import contextlib
 import copy
@@ -120,17 +121,17 @@ def models_at(cfg, ctx, approaches, end_pos, cache, full_sample_drivers=None):
     return models, sel, est
 
 
-def forecast_errors(ctx, model, origin_pos, H, est_start, detail=False):
+def forecast_errors(ctx, model, origin_pos, H, est_start, detail=False, mdf=None):
     """Fit on est_start..origin and forecast H quarters; return level % errors (organic balance).
 
     Args:
         origin_pos: position of the forecast origin. est_start: first estimation quarter.
-        detail: also return the forecast and actual log growth.
+        detail: also return the forecast and actual log growth. mdf: macro frame (default ctx.base).
 
     Returns:
         errors (fractions), or (errors, forecast growth, actual growth) with detail=True.
     """
-    P = model.panel(ctx, ctx.base).loc[:ctx.idx[ctx.end]]
+    P = model.panel(ctx, ctx.base if mdf is None else mdf).loc[:ctx.idx[ctx.end]]
     model.fit(P, pd.Period(est_start, freq="Q"), ctx.idx[origin_pos])
     fc = model.forecast(P, ctx.idx[origin_pos], H)
     act = ctx.y.values[origin_pos + 1:origin_pos + 1 + len(fc)]
@@ -160,7 +161,15 @@ def dm_test(e_model, e_bench, h):
     return stat, 2 * stats.t.sf(abs(stat), df=n - 1), n
 
 
-def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None):
+def forecast_with(ctx, model, origin_pos, H, mdf):
+    """Forecast H quarters from the origin with an already fitted model and another macro frame; level % errors."""
+    P = model.panel(ctx, mdf).loc[:ctx.idx[ctx.end]]
+    fc = np.asarray(model.forecast(P, ctx.idx[origin_pos], H), dtype=float)
+    act = ctx.y.values[origin_pos + 1:origin_pos + 1 + len(fc)]
+    return tg.error(np.cumsum(fc), np.cumsum(act)), fc, act
+
+
+def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintage_out=None):
     """Out-of-sample test: at each origin, re-run selection and re-estimate every model with data up to
     the origin only, then forecast 1..H quarters.
 
@@ -169,6 +178,8 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None):
         full_sample_drivers: drivers chosen with all data (for the look-ahead check). cache: StepCache.
         store: optional dict, filled with {origin: {model name: pickle bytes}} (each model as estimated at that
             origin) and store["__coefficients__"]: list of coefficient rows by origin.
+        vintage_out: optional dict; with oos.macro_vintages it receives "errors" (the same rows forecast with the
+            macro forecast of each origin's time) and "coverage" (vintage used and drivers not covered).
 
     Returns:
         (errors by model/origin/horizon, drivers picked at each origin, horizon).
@@ -182,18 +193,47 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None):
     dq = [pd.Period(q, freq="Q") for q in cfg["sample"]["dummy_quarters"]]
     a, b = (min(dq), max(dq)) if dq else (None, None)
     rows, picks, failed = [], [], {}
+    from . import vintages as vt
+    vints = vt.load(cfg, log) if vintage_out is not None else {}
+    vrows, vcov = [], []
     log(f"Out-of-sample: {len(origins)} origins {ctx.idx[origins[0]]}..{ctx.idx[origins[-1]]}, step {o['step']}, "
         f"horizon {H}, {o['window']} window")
     for k, op in enumerate(origins):
         lab = ctx.idx[op]
         models, sel, est = models_at(cfg, ctx, approaches, op, cache, full_sample_drivers)
         est_full = cfg["sample"]["estimation_start"] if o["window"] == "expanding" else est
+        # macro frame with the theme factors as estimated at this origin (their weights use data up to it)
+        base_at = truncated(ctx, op, cfg).base if getattr(ctx, "factor_specs", None) else ctx.base
+        V, vinfo = vt.frame_at(ctx if base_at is ctx.base else _with_base(ctx, base_at), vints, lab, cfg) \
+            if vints else (None, {"vintage": None})
         for m in models:
             try:
-                e, fc, act = forecast_errors(ctx, m, op, H, est_full, detail=True)
+                e, fc, act = forecast_errors(ctx, m, op, H, est_full, detail=True, mdf=base_at)
             except Exception as ex:                          # one model failing must not stop the test
                 failed[m.name] = f"{type(ex).__name__}: {ex}"
                 continue
+            if V is not None:                                # the same model, forecasting with the macro forecast
+                try:
+                    e2, fc2, _ = forecast_with(ctx, m, op, H, V)
+                    L0_ = float(ctx.level.loc[lab]) if lab in ctx.level.index else np.nan
+                    cov, out_ = vt.coverage(m, vinfo)
+                    vcov.append({"origin": str(lab), "model": m.name, "vintage": vinfo["vintage"],
+                                 "age_quarters": vinfo["age_quarters"], "drivers_from_vintage": cov,
+                                 "drivers_not_in_vintage": ", ".join(out_)})
+                    for h, v in enumerate(e2, 1):
+                        win = ctx.idx[op + 1:op + h + 1]
+                        vrows.append({"origin": str(lab), "model": m.name, "family": m.family, "horizon_q": h,
+                                      "error": v, "error_pct": v * 100, "date": str(ctx.idx[op + h]),
+                                      "covid_window": bool(a is not None and ((win >= a) & (win <= b)).any()),
+                                      "vintage": vinfo["vintage"], "drivers": ", ".join(m.drivers()),
+                                      "forecast_growth_pct": float(tg.growth_display(fc2[h - 1])),
+                                      "actual_growth_pct": float(tg.growth_display(act[h - 1])),
+                                      "balance_at_origin": L0_,
+                                      "forecast_balance": tg.level_after(L0_, np.cumsum(fc2)[h - 1]),
+                                      "actual_balance_organic": tg.level_after(L0_, np.cumsum(act)[h - 1]),
+                                      "actual_balance_reported": float(ctx.level.get(ctx.idx[op + h], np.nan))})
+                except Exception as ex:
+                    failed[f"{m.name} (macro forecast)"] = f"{type(ex).__name__}: {ex}"
             if store is not None:
                 from ..modelling.evaluate import freeze
                 store.setdefault(str(lab), {})[m.name] = freeze(ctx, m)
@@ -221,7 +261,18 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None):
             "; ".join(f"{PRETTY[ap]}: {', '.join(s['features'])}" for ap, s in sel.items()))
     for m, why in failed.items():
         log(f"  {m}: left out of the test ({why[:200]})")
+    if vintage_out is not None:
+        vintage_out["errors"], vintage_out["coverage"] = pd.DataFrame(vrows), pd.DataFrame(vcov)
+        if vints and not vrows:
+            log("  macro vintages: no origin had a vintage within oos.macro_vintages.max_age quarters")
     return pd.DataFrame(rows), pd.DataFrame(picks), H
+
+
+def _with_base(ctx, base):
+    """A shallow copy of ctx with another base macro frame."""
+    c = copy.copy(ctx)
+    c.base = base
+    return c
 
 
 def summarise(E, picks, H, horizons):

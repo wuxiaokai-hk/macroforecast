@@ -15,7 +15,7 @@
   "changed": "2026-11-25"
  },
  "run_oos.run": {
-  "hash": "9d025d0081cf",
+  "hash": "0338f745d39b",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -1120,9 +1120,9 @@
   "changed": "2026-11-02"
  },
  "src.validation.oos.forecast_errors": {
-  "hash": "641a03e30aef",
+  "hash": "ef248552ebed",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.validation.oos.dm_test": {
   "hash": "cef54985246c",
@@ -1130,9 +1130,9 @@
   "changed": ""
  },
  "src.validation.oos.run_oos": {
-  "hash": "1f1dcf647041",
+  "hash": "3574d26ebbca",
   "added": "",
-  "changed": "2026-11-03"
+  "changed": "2026-11-25"
  },
  "src.validation.oos.summarise": {
   "hash": "0125431fd6a9",
@@ -3285,7 +3285,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "ae7bead33a88",
+  "hash": "02acb360c4b3",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -3340,7 +3340,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.build": {
-  "hash": "bc9daff9a14c",
+  "hash": "4f4c509bd619",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -4624,92 +4624,57 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.validation.oos.forecast_with": {
+  "hash": "7dbc831cfa16",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.oos._with_base": {
+  "hash": "ec33b23f6a95",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages.settings": {
+  "hash": "7802c010effe",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages._quarter": {
+  "hash": "b8fdc01973f2",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages._table": {
+  "hash": "bf87bed8c4ca",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages.load": {
+  "hash": "30881507397c",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages.pick": {
+  "hash": "51c38baac4c5",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages.frame_at": {
+  "hash": "745f8e560b58",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.vintages.coverage": {
+  "hash": "136af2b241cd",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story.s_oos_vintages": {
+  "hash": "ebfeac5b02d6",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master._sign_for",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.extract",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.apply",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.multi.catalog",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.multi.target_config",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "tools.literature_master.names_sheet",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "tools.literature_master.target_names_sheet",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "tools.literature_master.readme",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "tools.literature_master.style_inputs",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.system.run.tr_row",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.system.run.resolve_master",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.utils.master.apply",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "run_pipeline.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "run_pipeline.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "run_oos.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "run_oos.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.models.combination.Combination",
-   "what": "changed"
-  },
   {
    "date": "2026-11-24",
    "id": "src.models.combination.Combination.__init__",
@@ -6123,6 +6088,91 @@
   {
    "date": "2026-11-25",
    "id": "tools.new_data_setup.write_config",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_oos.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.forecast_errors",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.forecast_with",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos._with_base",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.settings",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages._quarter",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages._table",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.load",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.pick",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.frame_at",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.coverage",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_oos_vintages",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.vintages.frame_at",
    "what": "changed"
   }
  ]

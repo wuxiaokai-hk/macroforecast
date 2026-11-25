@@ -77,7 +77,7 @@ DEFAULTS = {
     "recommend": {"weights": {"accuracy": 0.5, "interpretation": 0.25, "sensitivity": 0.25}, "max_error_ratio": 1.5,
                   "min_coverage": 0.25, "max_drivers": 5, "transparency": {}},
     "oos": {"first_origin": None, "step": 4, "horizon": None, "window": "expanding", "window_length": 40,
-            "holdout_quarters": 8},
+            "holdout_quarters": 8, "macro_vintages": {"file": None}},
     "final_model": {"min_vars": 1, "max_vars": 3, "t_min": 1.96, "vif_max": 5.0, "one_per_theme": True,
                     "required_themes": [], "n_oos_candidates": 300, "selection_tolerance": 0.05},
 }

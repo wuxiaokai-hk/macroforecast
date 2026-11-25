@@ -828,6 +828,19 @@ if mode == "New data set":
                                             "Missing columns are suggested.")
             up_events = st.file_uploader("One-off events (optional)", type=["csv", "xlsx", "xls"], key="up_events",
                                          help="Acquisitions and portfolio sales to take out of the growth")
+            up_vint = st.file_uploader(
+                "Macro forecast vintages for the out-of-sample test (optional)", type=["csv", "xlsx", "xls"],
+                accept_multiple_files=True, key="up_vint",
+                help="The macro forecasts that were available at past dates (e.g. each quarter's baseline). With "
+                     "them, the out-of-sample test also forecasts with the macro forecast of each origin's time "
+                     "instead of the values that actually happened. Either one file per vintage with the quarter in "
+                     "its name (baseline_2018Q1.csv), one file with a 'vintage' column, or one Excel file with a "
+                     "sheet per vintage; each with the date column and the macro series, like the scenario files.")
+            if up_vint:
+                _vd = os.path.join(HERE, "data", name, "vintages")
+                _vp = [save_upload(f_, _vd) for f_ in up_vint]
+                S["vintages"] = _vp[0] if len(_vp) == 1 else _vd
+                st.caption(f"{len(_vp)} vintage file(s) saved; used by the out-of-sample test (③ Settings).")
         with c2:
             up_macro = st.file_uploader("Scenario files (required, one per scenario)", type=["csv", "xlsx", "xls"],
                                         accept_multiple_files=True, key="up_macro",
@@ -1188,6 +1201,20 @@ if mode == "New data set":
             ov["sample.horizon"] = str(c1.slider("Forecast horizon (quarters)", 4, 16, 12))
             ov["sample.backtest_step"] = str(c2.selectbox("Backtest origins every", [1, 2, 4], index=0, format_func=lambda x: f"{x} quarter(s)"))
             ov["oos.step"] = str(c3.selectbox("Out-of-sample origins every", [1, 2, 4], index=2, format_func=lambda x: f"{x} quarter(s)"))
+            if S.get("vintages"):
+                v1, v2, v3 = st.columns(3)
+                use_v = v1.checkbox("Out-of-sample test also with the macro forecasts of the time", True, key="v_use",
+                                    help="Uploaded in ①. Each origin forecasts with the latest vintage published by "
+                                         "then, besides the realised macro values.")
+                ov["oos.macro_vintages.file"] = setup.yq(setup.rel(S["vintages"]) if use_v else None)
+                ov["oos.macro_vintages.rank_on"] = setup.yq(v2.selectbox(
+                    "Recommend the model on", ["forecast", "realised"], key="v_rank",
+                    format_func=lambda k: {"forecast": "errors with the macro forecasts of the time",
+                                           "realised": "errors with the realised macro values"}[k]))
+                ov["oos.macro_vintages.missing"] = setup.yq(v3.selectbox(
+                    "Series missing from the vintages", ["actual", "hold"], key="v_miss",
+                    format_func=lambda k: {"actual": "use their realised path (reported)",
+                                           "hold": "hold them flat at the origin value"}[k]))
             d["dummies"] = st.multiselect("One-off quarters (each gets a dummy and is left out of error measures)", allq, default=d["dummies"])
 
             if P["bank"].get("panel_column") and len(P.get("panel_banks") or []) == 1:

@@ -34,7 +34,7 @@ from src.utils.io import Context, log  # noqa: E402
 from src.utils import docs, saved, trace  # noqa: E402
 from src.utils.preflight import preflight  # noqa: E402
 from src.models import horizon, zoo  # noqa: E402
-from src.validation import oos  # noqa: E402
+from src.validation import oos, vintages  # noqa: E402
 
 warnings.filterwarnings("ignore")
 APPROACHES = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first,
@@ -88,7 +88,8 @@ def run(cfg, args):
         log(f"  {n}: {full[n]}")
 
     store = {} if (cfg.get("save") or {}).get("origin_models", True) else None
-    E, picks, H = oos.run_oos(cfg, ctx, approaches, full, cache, store)
+    vout = {}
+    E, picks, H = oos.run_oos(cfg, ctx, approaches, full, cache, store, vintage_out=vout)
     if store:                                    # every model as estimated at every origin
         coefs = store.pop("__coefficients__", [])
         saved.save_origin_models(os.path.join(out, "fitted_models"), store, log)
@@ -108,7 +109,38 @@ def run(cfg, args):
         tables["7_holdout"] = hold.round(4)
     if hc_choices is not None:
         tables["8_horizon_choices"] = hc_choices
+    summ_fc = None
+    EV = vout.get("errors")
+    if EV is not None and len(EV):                # the same test with the macro forecast of each origin's time
+        hv, _ = horizon.combine(EV, cfg, H,
+                                lambda n: zoo.wanted(cfg, n, horizon.FAMILY))
+        if hv is not None:
+            EV = pd.concat([EV, hv.drop(columns=["chosen"]).assign(drivers=hv["chosen"])], ignore_index=True)
+        by_h_fc, summ_fc, dm_fc, _ = oos.summarise(EV, picks, H, hz)
+        col = f"avg_1_{max(hz)}_pct"
+        cmp_ = summ[["model", "family", col]].merge(summ_fc[["model", col]], on="model",
+                                                     suffixes=("_realised_macro", "_forecast_macro"))
+        cmp_["macro_forecast_cost_pct"] = cmp_[f"{col}_forecast_macro"] - cmp_[f"{col}_realised_macro"]
+        cmp_ = cmp_.sort_values(f"{col}_forecast_macro")
+        cov = vout.get("coverage")
+        tables.update({"9_oos_summary_forecast_macro": summ_fc.round(4),
+                       "10_oos_by_horizon_forecast_macro": by_h_fc.round(4),
+                       "11_dm_tests_forecast_macro": dm_fc.round(4),
+                       "12_realised_vs_forecast_macro": cmp_.round(4),
+                       "13_vintage_coverage": cov, "14_all_forecast_errors_forecast_macro": EV})
+        log(f"\nWith the macro forecast available at each origin (vintages {', '.join(sorted(EV['vintage'].dropna().unique())[:3])}"
+            f"...): average error over 1-{max(hz)} quarters, realised macro -> forecast macro")
+        for _, r in cmp_.head(12).iterrows():
+            log(f"  {r['model']:<46s} {r[f'{col}_realised_macro']:6.2f}% -> {r[f'{col}_forecast_macro']:6.2f}%")
+        if cov is not None and len(cov) and (cov["drivers_from_vintage"] < 1).any():
+            low = cov[cov["drivers_from_vintage"] < 1]
+            log(f"  note: {low['model'].nunique()} model(s) use series missing from the vintages "
+                f"({', '.join(sorted(set(', '.join(low['drivers_not_in_vintage']).split(', ')) - {''})[:6])}); "
+                f"those take their {vintages.settings(cfg)['missing']} path (see 13_vintage_coverage)")
     report.write_tables(out, tables)
+    if summ_fc is not None:
+        report.chart_family_bars(os.path.join(out, "oos_model_comparison_forecast_macro.png"),
+                                 summ_fc[summ_fc["family"] != "Look-ahead check"], hz)
     report.chart_oos(os.path.join(out, "oos_mape_by_horizon.png"), by_h, summ, H)
     report.chart_family_bars(os.path.join(out, "oos_model_comparison.png"),
                              summ[summ["family"] != "Look-ahead check"], hz)
@@ -131,10 +163,12 @@ def run(cfg, args):
             log(f"  {r['model']:<46s} {r['error_pct']:+.2f}%")
     all_fitted = saved.load_models(cfg["out_dir"])
     order, why_rec = None, None
+    use_fc = summ_fc is not None and vintages.settings(cfg)["rank_on"] == "forecast"
     try:
         from src.selection import scorecard
         log("\nThe recommended model, scored out of sample (forecasting, interpretation, sensitivity):")
-        S = scorecard.score(cfg, all_fitted, summ, cfg["out_dir"], "out of sample", log)
+        S = scorecard.score(cfg, all_fitted, summ_fc if use_fc else summ, cfg["out_dir"],
+                            "out of sample, with the macro forecasts of the time" if use_fc else "out of sample", log)
         if S is not None:
             order, why_rec = list(S["model"]), scorecard.why_text(S.iloc[0], S.attrs["weights"], S.attrs["col"])
     except Exception as ex:
@@ -142,7 +176,9 @@ def run(cfg, args):
     fitted = {k: m for k, m in all_fitted.items() if formula.has_formula(m)}
     if fitted:
         try:
-            formula.write(cfg, ctx, fitted, summ, "out of sample", log, order=order, why_rec=why_rec)
+            formula.write(cfg, ctx, fitted, summ_fc if use_fc else summ,
+                          "out of sample, macro forecasts of the time" if use_fc else "out of sample", log,
+                          order=order, why_rec=why_rec)
         except Exception as ex:
             log(f"  formula: not written ({type(ex).__name__}: {ex})")
     else:

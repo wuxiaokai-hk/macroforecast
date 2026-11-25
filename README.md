@@ -531,7 +531,7 @@ The out-of-sample test has its own spacing: `oos.first_origin` and `oos.step` (d
 The backtest in the main pipeline re-estimates the coefficients at every origin, but it chooses the drivers once using all the data. That makes it optimistic. `run_oos.py` runs a true out-of-sample test instead:
 
 1. **Re-select at every origin.** At each forecast origin (every `oos.step` quarters from `oos.first_origin`), the whole selection is re-run with data up to that origin only: stationarity tests, candidate features, both approaches, the final search, the hybrid searches and the construction of every competing model.
-2. **Forecast.** Every model forecasts the next 1–12 quarters (`sample.horizon`), using realised macro values.
+2. **Forecast.** Every model forecasts the next 1–12 quarters (`sample.horizon`), using realised macro values (and, with `oos.macro_vintages`, also the macro forecasts of the time: see below).
 3. **Compare** against:
    - the same approach with the drivers chosen on the full sample (shows how much the full-sample backtest flatters the model);
    - the AR(1) benchmark.
@@ -542,6 +542,32 @@ The backtest in the main pipeline re-estimates the coefficients at every origin,
    - a holdout: select and estimate on data up to `hist_end - holdout_quarters`, then forecast the held-out quarters.
 
 Set `oos.window: rolling` (with `window_length`) for a fixed-length estimation window instead of an expanding one.
+
+### With the macro forecasts of the time (`oos.macro_vintages`)
+
+The test above forecasts with the macro values that actually happened, so it measures the model's error but not
+the error of the macro forecast a user would have had to use. Upload **macro forecast vintages** - the forecasts
+that were available at past dates, e.g. each quarter's published baseline - and every origin also forecasts with
+the latest vintage published by then (at most `max_age` quarters old):
+
+```yaml
+oos:
+  macro_vintages:
+    file: data/vintages/          # a folder, one file per vintage with the quarter in its name (baseline_2018Q1.csv),
+                                  #   or one file with a 'vintage' column, or one xlsx with a sheet per vintage
+    max_age: 2
+    splice: true                  # the vintage's growth (levels) / changes (rates) applied from the actual value
+                                  #   at the origin, so revisions to history do not create jumps
+    missing: actual               # series not in the vintages: actual (realised, reported) or hold (flat)
+    rank_on: forecast             # the scorecard and the formula use these errors
+```
+
+Each vintage has the layout of a scenario file (date column + macro series; quarters after the vintage date are its
+forecast). The models are estimated exactly as before; only the macro path they forecast with changes. Outputs in
+`oos/`: `9_oos_summary_forecast_macro`, `10_..._by_horizon`, `11_dm_tests_forecast_macro`,
+**`12_realised_vs_forecast_macro`** (each model's error both ways and the difference: the cost of the macro forecast
+error) and `13_vintage_coverage` (the vintage used at each origin and any driver series it did not contain). In the
+app, upload the vintages in ① and choose the options in ③.
 
 Each origin's selection is cached, so the first run takes a few minutes (about 4 minutes for 12 origins on the example data) and re-runs take seconds. `step: 1` gives more origins and more powerful tests, but takes about four times longer the first time.
 

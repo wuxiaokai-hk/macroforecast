@@ -283,7 +283,7 @@ class Story:
                   self.s_funnel, self.s_screen, self.s_bestform, self.s_clusters, self.s_shortlist, self.s_en,
                   self.s_stability, self.s_bayes, self.s_factors, self.s_stable, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families, self.s_twins,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
-                  self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
+                  self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_oos_vintages, self.s_driver_stability, self.s_holdout,
                   self.s_scorecard, self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
                   self.s_scen_inputs, self.s_scen_forecast, self.s_contrib, self.s_scen_check,
                   self.s_impact_responses, self.s_impact_reliability, self.s_impact_attribution, self.s_impact_whatif,
@@ -1195,6 +1195,44 @@ class Story:
                  why=["This is exactly what would have happened if the process had been used in real time. Its ranking "
                       "is the basis for the recommendation."],
                  numbers=[("Origins", str(n)), ("Basis", "re-selection")])
+
+    def s_oos_vintages(self):
+        V = self.read("oos", "12_realised_vs_forecast_macro.csv")
+        if V.empty:
+            return
+        cols = [c for c in V.columns if c.endswith("_realised_macro")]
+        if not cols:
+            return
+        r_, f_ = cols[0], cols[0].replace("_realised_macro", "_forecast_macro")
+        d = V.sort_values(f_).head(14).iloc[::-1]
+        f, ax, p = self.fig("oos_vintages", 9, 0.4 * len(d) + 1.6)
+        for i, r in enumerate(d.itertuples()):
+            ax.plot([getattr(r, r_), getattr(r, f_)], [i, i], color=C["line"], lw=2.5, zorder=1)
+        ax.scatter(d[r_], range(len(d)), color=C["sky"], s=40, label="with the realised macro values", zorder=2)
+        ax.scatter(d[f_], range(len(d)), color=C["red"], s=50, label="with the macro forecasts of the time", zorder=3)
+        ax.set_yticks(range(len(d)))
+        ax.set_yticklabels(d["model"], fontsize=8.5)
+        ax.legend(fontsize=8, loc="lower right")
+        ax.set_title(f"Average error 1-{self.HM}Q out of sample", loc="left")
+        cov = self.read("oos", "13_vintage_coverage.csv")
+        vs = sorted(cov["vintage"].dropna().unique()) if not cov.empty else []
+        best = V.sort_values(f_).iloc[0]
+        med = float(V["macro_forecast_cost_pct"].median())
+        res = [f"Most accurate with the macro forecasts of the time: {best['model']} ({self.err(best[f_])}; "
+               f"{self.err(best[r_])} with the realised values).",
+               f"Typical cost of the macro forecast error: {med:+.2f} percentage points of balance error."]
+        if not cov.empty and (cov["drivers_from_vintage"] < 1).any():
+            res.append(f"{cov.loc[cov['drivers_from_vintage'] < 1, 'model'].nunique()} model(s) use series that were "
+                       "not in the vintages (13_vintage_coverage).")
+        self.add("8. Testing", "With the macro forecasts that were available at the time",
+                 "A real forecast does not know the macro path: the test is repeated with the forecasts of the time.",
+                 what=[f"At each origin the models use the latest macro forecast vintage published by then "
+                       f"({len(vs)} vintages, {vs[0] if vs else ''}..{vs[-1] if vs else ''}), spliced on the actual "
+                       "values at the origin; they are estimated exactly as before."],
+                 why=["The standard test gives the models the macro values that actually happened, so it measures the "
+                      "model alone. This version adds the error of the macro forecast, which is what a user would "
+                      "really have faced; a model that leans on hard-to-forecast drivers loses more."],
+                 result=res, chart=self.save(f, p))
 
     def s_oos_gap(self):
         if not self.HAVE_OOS:

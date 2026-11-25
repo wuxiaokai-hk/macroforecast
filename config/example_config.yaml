@@ -206,6 +206,15 @@ oos:                                # out-of-sample test (python run_oos.py): re
   window: expanding                 # expanding, or rolling (fixed length below)
   window_length: 40                 # quarters, for a rolling window
   holdout_quarters: 12              # final holdout: select on data up to hist_end - 12, forecast the last 12
+  macro_vintages:                   # optional: the macro forecasts available at past dates (src/validation/vintages.py)
+    file: null                      # a folder (one file per vintage, quarter in the name: baseline_2018Q1.csv), one
+                                    #   file with a 'vintage' column, or one xlsx with a sheet per vintage; each in the
+                                    #   layout of the scenario files. Then every origin also forecasts with the vintage
+                                    #   of its time instead of the realised macro values
+    max_age: 2                      # use a vintage at most 2 quarters older than the origin
+    splice: true                    # its growth (levels) / changes (rates) applied from the actual value at the origin
+    missing: actual                 # series not in the vintages: actual (realised path, reported) or hold (flat)
+    rank_on: forecast               # recommend the model on these errors (forecast) or on the realised-macro ones
 
 trace:                              # detailed log of every function call (outputs/<run>/trace/<date_time>/trace.html)
   enabled: true
