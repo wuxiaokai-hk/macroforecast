@@ -156,6 +156,9 @@ literature:
 models:                             # which model families compete (all use the same backtest and OOS test)
   only: []                          # run only these: model names or families, e.g. [Literature, "Screen first",
                                     #   "Same growth as a driver"]; [] = all. The AR(1) benchmark is always kept.
+  tested:                           # a "(tested)" twin of every model with drivers: its drivers re-checked until each
+    enabled: true                   #   passes the final_model rules (|t| >= t_min, expected sign, VIF, one per theme);
+                                    #   failing drivers re-lagged or dropped. The original model stays too.
   same_growth: [disposable_income, house_prices]   # loans grow at the same rate as each of these (a literature
                                     #   concept or a series name); two models each: exact, and plus the average gap.
                                     #   Long form: {variable: FYPD.ION, lag: 0, gap: both}. [] to switch off

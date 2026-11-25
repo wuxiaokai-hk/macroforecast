@@ -128,7 +128,8 @@ def score(cfg, models, ranking, run_dir, basis, log=print):
     if len(allr) and h_imp not in set(allr["horizon"]):
         h_imp = int(allr["horizon"].max())
     focus_n = allr["shock"].nunique() if len(allr) else 0
-    ex_name = next((n for n in R["model"] if str(n).startswith("Explanatory")), None)
+    ex_name = next((n for n in R["model"] if str(n).startswith("Explanatory") and not str(n).endswith("(tested)")),
+                   None)
     base = cfg["data"]["macro"]["base_scenario"]
     gaps = {}
     if len(scen):

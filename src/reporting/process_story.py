@@ -281,7 +281,7 @@ class Story:
         for f in (self.s_title, self.s_question, self.s_impact_headline, self.s_overview, self.s_target, self.s_events, self.s_macro,
                   self.s_signs, self.s_literature, self.s_transforms, self.s_stationarity, self.s_lags,
                   self.s_funnel, self.s_screen, self.s_bestform, self.s_clusters, self.s_shortlist, self.s_en,
-                  self.s_stability, self.s_bayes, self.s_factors, self.s_stable, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
+                  self.s_stability, self.s_bayes, self.s_factors, self.s_stable, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families, self.s_twins,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
                   self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
                   self.s_scorecard, self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
@@ -1065,6 +1065,45 @@ class Story:
                  read="A good model's lines stay close to the black line and do not all err in the same direction.",
                  chart=self.save(f, p))
 
+    def s_twins(self):
+        T = self.read("comparison", "10_tested_twins.csv")
+        if T.empty:
+            return
+        added = T[T["outcome"] == "twin added"]
+        if added.empty:
+            return
+        src = self.rank.set_index("model")
+        col = f"avg_1_{self.HM}_pct"
+        rows = []
+        for _, r in added.iterrows():
+            if r["model"] in src.index and r["twin"] in src.index:
+                rows.append({"model": r["model"], "original": src.loc[r["model"], col], "tested": src.loc[r["twin"], col]})
+        R = pd.DataFrame(rows)
+        res = []
+        if len(R):
+            R["better"] = R["tested"] < R["original"]
+            res = [f"The tested twin is more accurate for {int(R['better'].sum())} of {len(R)} models ({self.basis}).",
+                   "Largest gains: " + ", ".join(f"{r['model']} ({self.err(r['original'])} -> {self.err(r['tested'])})"
+                                                 for _, r in R.assign(g=R['tested'] / R['original']).sort_values('g')
+                                                 .head(3).iterrows()) + "."]
+        Tt = pd.DataFrame({"Model": added["model"], "Drivers kept after the tests": [
+            ", ".join(self.short(d, 34) for d in str(x).split(", ") if "|" in d) for x in added["tested_drivers"]]})
+        if len(R):
+            Tt["Original error"] = added["model"].map(dict(zip(R["model"], R["original"].map(self.err)))).fillna("")
+            Tt["Tested error"] = added["model"].map(dict(zip(R["model"], R["tested"].map(self.err)))).fillna("")
+        self.add("7. The competition", f"{len(added)} models also run as a tested twin",
+                 "Every model with drivers competes twice: as specified, and with only drivers that pass the tests.",
+                 what=["The data-driven approaches keep only drivers that pass the tests (|t| at least 1.96, the "
+                       "expected sign, VIF at most 5, one per theme). Literature, Auto-ARDL, regime, ARIMAX and "
+                       "machine-learning models keep their drivers whatever the tests say.",
+                       "Each of them also runs as a '(tested)' twin: starting from its own drivers, the weakest failing "
+                       "driver is tried at its other lags and dropped if no lag passes, until every driver passes. The "
+                       "twin keeps the model's form."],
+                 why=["A driver that the data cannot pin down adds noise to the forecast and an effect nobody can "
+                      "defend; but theory or a flexible model may still use it well. Running both lets the tests "
+                      "decide which matters more for each model."],
+                 result=res, table=Tt)
+
     def s_leaderboard(self):
         base = self.comp.copy()
         col = f"avg_1_{self.HM}_pct"
@@ -1630,7 +1669,8 @@ class Story:
 
     def _ex_name(self):
         r = self.i_resp
-        names = [m for m in r["model"].unique() if str(m).startswith("Explanatory")] if not r.empty else []
+        names = [m for m in r["model"].unique() if str(m).startswith("Explanatory")
+                 and not str(m).endswith("(tested)")] if not r.empty else []
         return names[0] if names else "Explanatory: focus drivers"
 
     def _hm(self):

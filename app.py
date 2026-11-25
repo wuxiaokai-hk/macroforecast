@@ -1307,6 +1307,11 @@ if mode == "New data set":
             deep_on = c3.checkbox("Deep learning (TiDE, N-HiTS, TFT; needs darts, adds about 6 minutes)", False, key="m_deep")
             ov["models.deep.enabled"] = "auto" if deep_on else "false"
             ov["models.foundation.enabled"] = "auto" if c3.checkbox("AI foundation models (Chronos; needs internet once)", False, key="m_fm") else "false"
+            ov["models.tested.enabled"] = "true" if c1.checkbox(
+                "Tested twins", True, key="m_tested",
+                help="Every model with drivers also runs as '(tested)': its drivers re-checked until each passes the "
+                     "same tests as the data-driven approaches (|t| ≥ 1.96, expected sign, VIF ≤ 5, one per theme); "
+                     "failing drivers are re-lagged or dropped. The original stays.") else "false"
 
             st.markdown("**Auto-ARDL (as in EViews)**: the lags of target growth and of each driver are chosen by an "
                         "information criterion, again at every re-estimation; plus an ARDL in levels with the "

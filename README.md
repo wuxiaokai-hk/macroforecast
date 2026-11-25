@@ -554,6 +554,20 @@ Results on the example (simulated) data are in **Example results** below. The lo
 
 Elastic Net first chose more stable drivers across origins (average overlap with the previous origin 0.59, against 0.18 for screen first).
 
+## Tested twins: every model in two versions
+
+The data-driven approaches only keep drivers that pass the final_model tests (|t| ≥ 1.96, the expected sign,
+VIF ≤ 5, one driver per theme). Other models keep their drivers whatever the tests say: literature models on
+theory, Auto-ARDL (only its lags are chosen), regime switching, machine learning, ARIMAX, ... With
+`models.tested.enabled: true` (default) each of them also runs as a **"(tested)" twin** (`src/models/tested.py`):
+starting from the model's own drivers, the weakest failing driver is tried at its other lags and dropped if no lag
+passes, until every driver passes. The twin keeps the model's form (an Auto-ARDL twin still chooses its lags, a
+random-forest twin is still a forest) and competes on equal terms in the backtest, the out-of-sample test and the
+scorecard, next to the original. What happened to each model: `comparison/10_tested_twins.csv`. Not twinned:
+benchmarks, own-history models, the levels ARDL (its bounds test is its own test), combinations, same-growth rules,
+foundation models, and the screen/Elastic Net/Bayesian approaches (they already pass). A twin identical to a model
+already in the run is skipped.
+
 ## Handling hundreds of macro series: theme factors, stability selection, one form per variable
 
 With 200+ series, each tried in several forms and at lags 0-4, the search runs over thousands of candidates with

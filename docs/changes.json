@@ -585,7 +585,7 @@
   "changed": ""
  },
  "src.models.zoo.build": {
-  "hash": "991ae6c7d644",
+  "hash": "f0c388857828",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -3285,7 +3285,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "7f977efd893d",
+  "hash": "ae7bead33a88",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -3340,7 +3340,7 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.build": {
-  "hash": "e335fec06246",
+  "hash": "bc9daff9a14c",
   "added": "2026-11-18",
   "changed": "2026-11-25"
  },
@@ -4270,9 +4270,9 @@
   "changed": "2026-11-24"
  },
  "src.impact.analysis.explanatory": {
-  "hash": "acffc3780ec4",
+  "hash": "97a8b9bd9435",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.impact.analysis._draws": {
   "hash": "756493f10b18",
@@ -4375,9 +4375,9 @@
   "changed": "2026-11-24"
  },
  "src.reporting.process_story.Story._ex_name": {
-  "hash": "b5da3cc04755",
+  "hash": "93b99bf6fd92",
   "added": "2026-11-24",
-  "changed": "2026-11-24"
+  "changed": "2026-11-25"
  },
  "src.reporting.process_story.Story._hm": {
   "hash": "185f3f8ef403",
@@ -4440,7 +4440,7 @@
   "changed": "2026-11-25"
  },
  "src.selection.scorecard.score": {
-  "hash": "faa8b22f32d1",
+  "hash": "ab795750610f",
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
@@ -4579,87 +4579,37 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.models.tested._drivers": {
+  "hash": "9392c5a65385",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.models.tested._rebuild": {
+  "hash": "416d2e116969",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.models.tested.twin": {
+  "hash": "51872199aae5",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.models.tested.twins": {
+  "hash": "b2ac85b6fea8",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.models.tested._check": {
+  "hash": "355059b86c79",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.reporting.process_story.Story.s_twins": {
+  "hash": "21c4441db17d",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.apply",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master.rename_config",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "src.utils.master._rename_plain",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.literature_master._tokens",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.literature_master.names_sheet",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-18",
-   "id": "tools.literature_master.main",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.system.panel.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.system.run.resolve_master",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.system.run.apply_names",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.system.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master._norm",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master.rename_tree",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master.write_names",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "tools.literature_master.names_sheet",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "tools.literature_master.add_views",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-19",
-   "id": "src.utils.master._rename_settings",
-   "what": "added"
-  },
   {
    "date": "2026-11-19",
    "id": "src.utils.master.extract",
@@ -6079,6 +6029,86 @@
    "date": "2026-11-25",
    "id": "src.features.factors.attach",
    "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.impact.analysis.explanatory",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested._drivers",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested._rebuild",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twin",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twins",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.zoo.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story._ex_name",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.selection.scorecard.score",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested._check",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twin",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twins",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.models.tested.twin",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.process_story.Story.s_twins",
+   "what": "added"
   }
  ]
 }

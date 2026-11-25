@@ -391,4 +391,9 @@ def build(cfg, ctx, sel, log=print):
                     f"Small network trained on this data, average of several seeds; {how}")
     if table is not None:
         extra["literature_variables"] = litmod.status(table, set(ctx.hist.columns), used)
+    if (mc.get("tested") or {}).get("enabled", True):     # every model with drivers gets a tested twin
+        from . import tested
+        tw, extra["tested_twins"] = tested.twins(cfg, ctx, [m_ for m_ in models], log)
+        for m_, how_ in tw:
+            add(m_, how_)
     return models, pd.DataFrame(notes), extra

@@ -233,7 +233,8 @@ def tied_models(cfg, tests, models, best_rank=None):
 
 def explanatory(models):
     """The explanatory model (focus drivers), or None."""
-    return next((m for m in models.values() if getattr(m, "family", "") == "Explanatory"), None)
+    exp = [m for m in models.values() if getattr(m, "family", "") == "Explanatory"]
+    return next((m for m in exp if not m.name.endswith("(tested)")), exp[0] if exp else None)
 
 
 def _draws(model, n, seed):
