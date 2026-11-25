@@ -64,6 +64,10 @@ DEFAULTS = {
     "trace": {"enabled": True, "folder": "trace", "preview_rows": 20, "save_tables": True, "detail_calls": 1,
               "distinct_labels": 8, "keep_runs": 10, "max_table_cells": 200000,
               "local_variables": True, "local_preview_rows": 8, "library_functions": "default", "follow": "auto"},
+    "impact": {"enabled": True, "focus": [], "max_controls": 4, "control_corr": 0.9, "controls_same_theme": False, "excluded_control_themes": "auto",
+               "compare_horizon": 8, "tied_alpha": 0.10, "tied_max": 8, "tied_max_ratio": 2.0, "tied_min": 3,
+               "control_t": 1.0, "horizons": [1, 4, 8, 12],
+               "lookalike_corr": 0.75, "draws": 300, "seed": 42, "attribution": True, "attribution_models": "explanatory+best", "what_if": [], "episodes": []},
     "oos": {"first_origin": None, "step": 4, "horizon": None, "window": "expanding", "window_length": 40,
             "holdout_quarters": 8},
     "final_model": {"min_vars": 1, "max_vars": 3, "t_min": 1.96, "vif_max": 5.0, "one_per_theme": True,
@@ -221,5 +225,10 @@ def load_config(path):
     cfg["oos"]["first_origin"] = str(cfg["oos"]["first_origin"])
     if cfg["oos"]["window"] not in ("expanding", "rolling"):
         raise ValueError("oos.window must be 'expanding' or 'rolling'")
+    imp = cfg["impact"]                                    # the explanatory model is one more approach
+    if imp.get("enabled", True) and "focus_first" not in cfg["approaches"]:
+        cfg["approaches"] = list(cfg["approaches"]) + ["focus_first"]
+    if not imp.get("enabled", True):
+        cfg["approaches"] = [a for a in cfg["approaches"] if a != "focus_first"]
     cfg["config_file"] = os.path.abspath(path)
     return cfg

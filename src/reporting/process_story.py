@@ -35,7 +35,8 @@ C = dict(ink="#1B2A41", navy="#0E3B4F", teal="#1F6F8B", gold="#E3A72F", green="#
 FAM_COL = {"Benchmark": C["grey"], "Data-driven": C["teal"], "Literature": C["gold"], "Hybrid": C["green"],
            "Machine learning": C["purple"], "AI foundation model": C["red"], "Statistical time series": C["orange"],
            "Deep learning": C["plum"], "Regime switching": C["sea"], "Auto ARDL": "#3B5BA5",
-           "Same growth as a driver": "#8A6D3B", "Horizon combination": "#B5487A", "Look-ahead check": "#C9D3DC"}
+           "Same growth as a driver": "#8A6D3B", "Horizon combination": "#B5487A", "Look-ahead check": "#C9D3DC",
+           "Explanatory": "#2F6B4F"}
 FAM_ORDER = list(FAM_COL)
 SCEN_COL = [C["navy"], C["green"], C["gold"], C["red"], C["purple"], C["orange"], C["sea"]]
 TR_WORDS = {
@@ -222,6 +223,11 @@ class Story:
             "1_oos_summary.csv", "2_oos_by_horizon.csv", "3_dm_tests_vs_benchmark.csv", "4_drivers_by_origin.csv",
             "5_driver_stability.csv", "7_holdout.csv"))
         self.terms, self.nextq = R("formula", "1_terms.csv"), R("formula", "2_next_quarters.csv")
+        self.d1, self.d2, self.d3 = (R("focus_first", f) for f in (
+            "D1_focus_drivers.csv", "D2_double_selection.csv", "D3_settings.csv"))
+        self.i_tied, self.i_resp, self.i_sens, self.i_rel, self.i_att, self.i_wi = (R("impact", f) for f in (
+            "1_tied_models.csv", "2_responses.csv", "3_sensitivity.csv", "4_reliability.csv", "5_attribution.csv",
+            "6_what_if.csv"))
         rc = f"avg_1_{self.HM}_pct"
         if self.comp.empty:
             raise SystemExit(f"No results in {self.out}: run run_pipeline.py with this config first")
@@ -259,14 +265,16 @@ class Story:
     # ================================================================================================ sections
     def build(self):
         self.load()
-        for f in (self.s_title, self.s_question, self.s_overview, self.s_target, self.s_events, self.s_macro,
+        for f in (self.s_title, self.s_question, self.s_impact_headline, self.s_overview, self.s_target, self.s_events, self.s_macro,
                   self.s_signs, self.s_literature, self.s_transforms, self.s_stationarity, self.s_lags,
                   self.s_funnel, self.s_screen, self.s_bestform, self.s_clusters, self.s_shortlist, self.s_en,
-                  self.s_stability, self.s_bayes, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
+                  self.s_stability, self.s_bayes, self.s_focus, self.s_search_rules, self.s_search_rank, self.s_search_pick, self.s_families,
                   self.s_backtest_design, self.s_one_origin, self.s_all_origins, self.s_leaderboard,
                   self.s_by_horizon, self.s_oos_design, self.s_oos_gap, self.s_driver_stability, self.s_holdout,
                   self.s_rec_model, self.s_rec_effects, self.s_rec_fit, self.s_coef_paths, self.s_diagnostics,
-                  self.s_scen_inputs, self.s_scen_forecast, self.s_contrib, self.s_scen_check, self.s_limits,
+                  self.s_scen_inputs, self.s_scen_forecast, self.s_contrib, self.s_scen_check,
+                  self.s_impact_responses, self.s_impact_reliability, self.s_impact_attribution, self.s_impact_whatif,
+                  self.s_limits,
                   self.s_recommend, self.s_glossary, self.s_settings):
             try:
                 f()
@@ -1532,14 +1540,14 @@ class Story:
                           f"{self.err(best[col])}) is not the recommended one ({self.err(self.REC[col])}); the "
                           "difference is the price of an explainable equation."))
         T = pd.DataFrame(items, columns=["Limitation", "What it means and how it is managed"])
-        self.add("11. Conclusion", "Known limitations and how they are managed",
+        self.add("12. Conclusion", "Known limitations and how they are managed",
                  "No model is perfect; these are the points to keep in mind when using the forecast.", table=T)
 
     def s_recommend(self):
         rec = self.REC["model"]
         col = f"avg_1_{self.HM}_pct"
         ar = self.AR[col] if self.AR is not None else np.nan
-        self.add("11. Conclusion", f"Recommendation: use {rec}",
+        self.add("12. Conclusion", f"Recommendation: use {rec}",
                  f"{self.err(self.REC[col])} average error over 1-{self.HM} quarters, "
                  + (f"{(1 - self.REC[col] / ar) * 100:.0f}% less than the benchmark, " if ar == ar else "")
                  + "with drivers that make economic sense.",
@@ -1548,6 +1556,216 @@ class Story:
                        "Re-run the process each quarter when new data arrive; check whether the drivers and the ranking change.",
                        "Keep the runner-up models as challengers and report their forecasts alongside."],
                  kind="closing")
+
+    # ---------------------------------------------------------------------------------------------- impact
+    IMP = "11. How the economy affects the target"
+
+    def _ex_name(self):
+        r = self.i_resp
+        names = [m for m in r["model"].unique() if str(m).startswith("Explanatory")] if not r.empty else []
+        return names[0] if names else "Explanatory: focus drivers"
+
+    def _hm(self):
+        hs = sorted(self.i_sens["horizon"].unique()) if not self.i_sens.empty else []
+        h = int((self.cfg.get("impact") or {}).get("compare_horizon", 8))
+        return h if h in hs else (hs[-1] if hs else h)
+
+    def _label(self, concept):
+        r = self.i_rel[self.i_rel["concept"] == concept] if not self.i_rel.empty else self.i_rel
+        return (r["label"].iloc[0], r["reasons"].iloc[0]) if len(r) else ("", "")
+
+    def s_impact_headline(self):
+        S = self.i_sens
+        if S.empty:
+            return
+        h = self._hm()
+        d = S[S["horizon"] == h].copy()
+        d = d.reindex(d["typical_explanatory"].abs().sort_values().index)
+        f, ax, p = self.fig("impact_sensitivity", 9, 0.7 * len(d) + 1.6)
+        y = np.arange(len(d))
+        ax.barh(y, d["typical_explanatory"], color=[C["green"] if v >= 0 else C["red"] for v in d["typical_explanatory"]],
+                height=0.5)
+        if "typical_band_lo" in d:
+            ax.errorbar(d["typical_explanatory"], y, xerr=[d["typical_explanatory"] - d["typical_band_lo"],
+                                                           d["typical_band_hi"] - d["typical_explanatory"]],
+                        fmt="none", ecolor=C["ink"], capsize=3, lw=1)
+        ax.set_yticks(y)
+        ax.set_yticklabels([_wrapl(f"{r['description']} ({r['typical_shock']})", 38) for _, r in d.iterrows()],
+                           fontsize=8.5)
+        ax.axvline(0, color=C["mid"], lw=0.8)
+        ax.set_title(f"Effect of a typical rise in each driver on the {self.TARGET} after {h} quarters "
+                     f"({self.EU or self.UNITS}); bars = 90% band", loc="left")
+        top = d.iloc[-1]
+        T = pd.DataFrame({"Driver": d["description"].iloc[::-1].values,
+                          "Typical rise": d["typical_shock"].iloc[::-1].values,
+                          f"Effect after {h}q": [f"{v:+.2f}{self.EU}" for v in d["typical_explanatory"].iloc[::-1]],
+                          "Can we trust it?": [self._label(c)[0] for c in d["concept"].iloc[::-1]]})
+        from ..impact.analysis import sentence
+        self.add("1. The question", f"How the economy affects the {self.TARGET}: {top['description']} matters most",
+                 "The first question a user asks: if the economy moves, what happens to us, and when?",
+                 what=[sentence(None, r, h, f"the {self.TARGET}") for _, r in d.iloc[::-1].iterrows()],
+                 why=["These effects come from an explanatory model built for the purpose: the drivers of interest "
+                      "are always in, and the variables held fixed around them are chosen so their effects are not "
+                      "biased (double selection, chapter 5). The forecast competition (chapters 7-8) answers a "
+                      "different question: what forecasts best.",
+                      f"A 'typical rise' is one standard deviation of the driver's change over four quarters, so the "
+                      "drivers can be compared with each other."],
+                 result=[f"{r['description']}: {self._label(r['concept'])[0]}" + (
+                     f" ({self._label(r['concept'])[1]})" if self._label(r['concept'])[0] != "Reliable" else "")
+                     for _, r in d.iloc[::-1].iterrows()],
+                 read="Bars: the explanatory model's estimate; whiskers: its 90% band. Chapter 11 has the details.",
+                 chart=self.save(f, p), table=T)
+
+    def s_focus(self):
+        D1, D2 = self.d1, self.d2
+        if D1.empty:
+            return
+        st_ = self.d3.iloc[0] if not self.d3.empty else {}
+        used = D2[D2["used"]] if not D2.empty and "used" in D2 else D2
+        T = pd.DataFrame({"Role": ["focus"] * len(D1) + ["control"] * len(used),
+                          "Driver": [self.short(x, 70) for x in list(D1["feature"]) + list(used.get("feature", []))],
+                          "Why": list(D1["how"].str.split(";").str[0]) + [f"predicts {x}" for x in used.get("selected_by", [])]})
+        self.add("5. Choosing drivers: focus first (explanatory model)",
+                 f"{len(D1)} focus drivers always in, {len(used)} control(s) chosen around them",
+                 "A fourth model is built to measure effects, not to win the forecast race.",
+                 what=["The focus drivers are the variables whose effect we want to know (impact.focus; by default "
+                       "the literature core). Each gets the form and lag with the strongest effect of the expected sign.",
+                       "Controls are chosen by double selection: a candidate is kept if it predicts the target or any "
+                       "focus driver (rigorous lasso, Belloni, Chernozhukov & Hansen 2014). Alternative measures of "
+                       "the same concept and other outcomes of the economy (credit, deposits) are not allowed as "
+                       "controls; controls with |t| below 1 are dropped."],
+                 why=["A forecasting search keeps whatever forecasts best, which may be a variable that moves with "
+                      "the target for reasons unrelated to the economy we want to describe. Holding fixed the "
+                      "variables that predict both the target and a driver is what keeps the driver's effect unbiased."],
+                 result=[f"{int(st_.get('candidates', 0)):,} candidates considered as controls; "
+                         f"{int(st_.get('selected_any', 0))} picked by at least one equation; "
+                         f"{int(st_.get('controls_used', 0))} used."],
+                 table=T)
+
+    def s_impact_responses(self):
+        R = self.i_resp
+        if R.empty:
+            return
+        ex = self._ex_name()
+        R = R[R["shock_type"] == "typical"]
+        shocks = list(dict.fromkeys(R["shock"]))
+        n = len(shocks)
+        cols = min(n, 2)
+        rows = int(np.ceil(n / cols))
+        f, axes = plt.subplots(rows, cols, figsize=(9, 2.6 * rows), squeeze=False)
+        for ax, sh in zip(axes.flat, shocks):
+            d = R[R["shock"] == sh]
+            for m, g in d[(d["kind"] == "point") & (d["model"] != ex)].groupby("model"):
+                ax.plot(g["quarter"], g["balance_effect"], color=C["line"], lw=1)
+            lo, hi = (d[(d["model"] == ex) & (d["kind"] == k)] for k in ("band_lo", "band_hi"))
+            if len(lo) and len(hi):
+                ax.fill_between(lo["quarter"], lo["balance_effect"], hi["balance_effect"], color=C["teal"],
+                                alpha=0.18, lw=0)
+            e = d[(d["model"] == ex) & (d["kind"] == "point")]
+            ax.plot(e["quarter"], e["balance_effect"], color=C["teal"], lw=2.2)
+            ax.axhline(0, color=C["mid"], lw=0.7)
+            ax.set_title(f"{sh} {d['shock_label'].iloc[0]}", loc="left", fontsize=10)
+        for ax in list(axes.flat)[n:]:
+            ax.axis("off")
+        p = os.path.join(self.charts, "impact_responses.png")
+        self.add(self.IMP, "How the effect builds up, quarter by quarter",
+                 "Effects arrive with the drivers' lags and then settle as the target's own persistence fades.",
+                 what=["Each driver's whole future path is shifted up by a typical amount from the first forecast "
+                       "quarter, and stays there; the other drivers keep their baseline paths. The response is the "
+                       "shocked forecast minus the baseline forecast.",
+                       "A shock to one series also moves its look-alikes (same theme, correlated history), so a model "
+                       "that measures the concept with another series responds too."],
+                 why=["The shape answers 'when': how many quarters before the effect shows, and whether it keeps "
+                      "growing or levels off."],
+                 read=f"Thick line: the explanatory model, with its 90% band; thin grey lines: the most accurate "
+                      f"models ({len(self.i_tied[self.i_tied['in_set']]) if not self.i_tied.empty else 0}).",
+                 chart=self.save(f, p))
+
+    def s_impact_reliability(self):
+        Rl = self.i_rel
+        if Rl.empty:
+            return
+        T = pd.DataFrame({"Driver": Rl["description"], "t": [f"{v:.1f}" for v in Rl["t"]],
+                          "Sign stable": [f"{v:.0%}" if pd.notna(v) else "" for v in Rl["sign_stability"]],
+                          "VIF": [f"{v:.1f}" if pd.notna(v) else "" for v in Rl["vif"]],
+                          "Models agree": [f"{v:.0%}" if pd.notna(v) else "" for v in Rl["tied_models_agree"]],
+                          "Verdict": Rl["label"], "Why": Rl["reasons"]})
+        n_ok = int((Rl["label"] == "Reliable").sum())
+        tied = self.i_tied[self.i_tied["in_set"]] if not self.i_tied.empty else self.i_tied
+        self.add(self.IMP, f"{n_ok} of {len(Rl)} effects pass every reliability check",
+                 "An effect is only worth acting on if the data pin it down.",
+                 what=["Six checks per driver: significance (|t| ≥ 1.96); the expected sign; the sign held when the "
+                       "model was re-estimated through the backtest (≥ 80%); not entangled with other drivers "
+                       "(VIF ≤ 5); the effect does not depend on the controls (it moves by less than half without "
+                       "them); and the most accurate models agree on its direction (≥ 75%).",
+                       "Reliable = all checks passed; use with care = one failed; weak = two or more."],
+                 why=["With a few decades of quarterly data, some effects are estimated precisely and others are "
+                      "not. Saying which is which keeps a weak effect from being presented as a fact."],
+                 result=[f"Models used for the range: {', '.join(tied['model'])}." if len(tied) else ""],
+                 table=T)
+
+    def s_impact_attribution(self):
+        A = self.i_att
+        if A.empty:
+            return
+        ex, h = self._ex_name(), self._hm()
+        a = A[(A["model"] == ex) & (A["horizon"] == h)]
+        if a.empty:
+            return
+        scen = list(dict.fromkeys(a["scenario"]))
+        groups = list(a.groupby("group")["contribution"].apply(lambda v: v.abs().max()).sort_values(ascending=False).index)
+        pal = [C["teal"], C["gold"], C["green"], C["red"], C["purple"], C["orange"], C["grey"], C["sea"]]
+        f, ax, p = self.fig("impact_attribution", 9, 0.8 * len(scen) + 1.8)
+        for i, sc in enumerate(scen[::-1]):
+            g = a[a["scenario"] == sc].set_index("group")["contribution"]
+            pos = neg = 0.0
+            for j, gr in enumerate(groups):
+                v = float(g.get(gr, 0.0))
+                ax.barh(i, v, left=pos if v >= 0 else neg, color=pal[j % len(pal)], label=gr if i == 0 else None)
+                pos, neg = (pos + v, neg) if v >= 0 else (pos, neg + v)
+            ax.plot(float(a.loc[a["scenario"] == sc, "total"].iloc[0]), i, "D", color=C["ink"],
+                    label="total" if i == 0 else None)
+        ax.set_yticks(range(len(scen)))
+        ax.set_yticklabels(scen[::-1])
+        ax.axvline(0, color=C["mid"], lw=0.8)
+        ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.0, 1.0))
+        ax.set_title(f"Difference from the base scenario after {h} quarters ({self.EU or self.UNITS}), by driver",
+                     loc="left")
+        res = []
+        for sc in scen:
+            g = a[a["scenario"] == sc].sort_values("contribution", key=abs, ascending=False)
+            res.append(f"{sc}: {g['total'].iloc[0]:+.2f}{self.EU} in total; "
+                       + ", ".join(f"{r['group']} {r['contribution']:+.2f}" for _, r in g.head(3).iterrows()))
+        self.add(self.IMP, "Why the scenarios differ, driver by driver",
+                 "Each scenario's gap from the base scenario, split into the part each driver explains.",
+                 what=["For each scenario, the drivers are switched from their base path to the scenario path one "
+                       "group at a time, in every possible order; each group's contribution is its average effect "
+                       "(Shapley value), so the parts add up exactly to the total."],
+                 why=["In a real scenario the drivers move together. This split is more realistic than single-driver "
+                      "shocks, and it shows which assumption of the scenario does the work."],
+                 result=res, chart=self.save(f, p))
+
+    def s_impact_whatif(self):
+        W = self.i_wi
+        if W.empty:
+            return
+        ex = self._ex_name()
+        hs = [h for h in self.HZ if h in set(W["quarter"])]
+        w = W[(W["kind"] == "point") & (W["quarter"].isin(hs))]
+        rows = []
+        for sh, g in w.groupby("shock", sort=False):
+            e = g[g["model"] == ex].set_index("quarter")["balance_effect"]
+            rows.append([sh] + [f"{e.get(h, np.nan):+.2f}{self.EU}" for h in hs]
+                        + [(lambda o: f"{o.min():+.2f} to {o.max():+.2f}" if len(o) else "no other model responds")(
+                            g.loc[(g["model"] != ex) & (g["balance_effect"].abs() > 1e-9), "balance_effect"])])
+        T = pd.DataFrame(rows, columns=["What-if"] + [f"after {h}q" for h in hs] + ["range across models"])
+        self.add(self.IMP, "What-if: the shocks you asked about",
+                 "Your own combinations of shocks, and historical episodes replayed on top of the base scenario.",
+                 what=["Set in the config (impact.what_if, impact.episodes), in the app, or with "
+                       "python tools/impact.py --shock VARIABLE:SIZE:QUARTERS --episode START:END.",
+                       "An episode replays each macro series' quarter-by-quarter changes from that period on top of "
+                       "the last actual values, then the base scenario resumes."],
+                 table=T)
 
     def s_glossary(self):
         G = [("Organic growth", "Growth of the balance after removing one-off events such as acquisitions."),
@@ -1566,7 +1784,14 @@ class Story:
              ("Out of sample", "A backtest in which the drivers are also re-chosen at each origin."),
              ("Average error (MAPE)", "Average absolute percentage gap between forecast and actual level."),
              ("AR(1) benchmark", "Forecast that carries last quarter's growth forward with its estimated persistence."),
-             ("Dummy quarter", "A quarter given its own indicator so a one-time shock does not distort the estimates.")]
+             ("Dummy quarter", "A quarter given its own indicator so a one-time shock does not distort the estimates."),
+             ("Explanatory model", "The focus drivers always in, controls chosen by double selection: built to measure "
+                                   "effects, not to forecast best."),
+             ("Double selection", "Keeping every control that predicts the target or a focus driver, so the driver's "
+                                  "effect is not biased by what was left out (Belloni, Chernozhukov & Hansen 2014)."),
+             ("Typical rise", "One standard deviation of a driver's change over four quarters."),
+             ("Shapley value", "A driver's average contribution over every order in which the drivers can be switched; "
+                               "the contributions add up to the total.")]
         self.add("Appendix", "Glossary", "", table=pd.DataFrame(G, columns=["Term", "Meaning"]))
 
     def s_settings(self):

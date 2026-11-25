@@ -158,6 +158,82 @@ def multi_key(x):
     return str(x).strip().lower().replace(" ", "_").replace("-", "_")
 
 
+def impact_section(out, cfg_path):
+    """How the economy affects the target: sensitivities, reliability, scenario attribution and a what-if form."""
+    d = os.path.join(out, "impact")
+    if not os.path.exists(os.path.join(d, "3_sensitivity.csv")):
+        return
+    st.subheader("How the economy affects the target")
+    sens = pd.read_csv(os.path.join(d, "3_sensitivity.csv"))
+    rel = pd.read_csv(os.path.join(d, "4_reliability.csv")) if os.path.exists(os.path.join(d, "4_reliability.csv")) \
+        else pd.DataFrame()
+    hs = sorted(sens["horizon"].unique())
+    h = st.select_slider("Quarters after the shock", hs, value=8 if 8 in hs else hs[-1], key="imp_h")
+    from src.impact.analysis import sentence
+    for _, r in sens[sens["horizon"] == h].iterrows():
+        lab = rel.loc[rel["concept"] == r["concept"]] if len(rel) else rel
+        label = lab["label"].iloc[0] if len(lab) else ""
+        icon = {"Reliable": "🟢", "Use with care": "🟡", "Weak": "🔴"}.get(label, "")
+        why = f" — {lab['reasons'].iloc[0]}" if len(lab) and label != "Reliable" else ""
+        st.markdown(f"{icon} {sentence(None, r, h)} **{label}**{why}")
+    st.caption("Main estimate: the explanatory model (focus drivers + double-selection controls), with a 90% band from "
+               "its coefficient uncertainty. Range: the most accurate models. A typical rise = one standard deviation "
+               "of the series' 4-quarter change; the shift is permanent and also moves the series' look-alikes. "
+               "Associations estimated from history, holding the other drivers at their baseline.")
+    for p in ("sensitivity.png", "attribution.png", "responses.png"):
+        if os.path.exists(os.path.join(d, p)):
+            wide_image(os.path.join(d, p))
+    with st.expander("Reliability checks and the models compared"):
+        if len(rel):
+            st.dataframe(rel, hide_index=True, use_container_width=True)
+        t = os.path.join(d, "1_tied_models.csv")
+        if os.path.exists(t):
+            st.dataframe(pd.read_csv(t), hide_index=True, use_container_width=True)
+    with st.form("what_if_form"):
+        st.markdown("**What-if**: shift one or more variables and see the response (about 15 seconds).")
+        opts = list(dict.fromkeys(list(sens["concept"]) + list(sens["series"])))
+        rows = []
+        for i in range(3):
+            c1, c2, c3 = st.columns([2, 1, 1])
+            v = c1.selectbox(f"Variable {i + 1}", ["(none)"] + opts, key=f"wi_v{i}",
+                             help="A focus concept, or type any series name in the box below")
+            size = c2.number_input("Size", value=0.0, step=0.25, key=f"wi_s{i}",
+                                   help="Points for rates (+1 = one percentage point), percent of the level otherwise")
+            q = c3.number_input("Build-up (quarters)", 1, 12, 1, key=f"wi_q{i}")
+            if v != "(none)" and size != 0:
+                rows.append(f"{v}:{size:+g}:{int(q)}")
+        other = st.text_input("Other shocks (VARIABLE:SIZE:QUARTERS, comma-separated)", "", key="wi_other")
+        rows += [x.strip() for x in other.split(",") if x.strip()]
+        ep = st.text_input("Replay a historical episode (START:END, e.g. 2008Q3:2009Q4)", "", key="wi_ep")
+        name = st.text_input("Name", "My what-if", key="wi_name")
+        go = st.form_submit_button("Run the what-if")
+    if go:
+        args = ["--run-dir", out]
+        if rows:
+            args += ["--shock", f"{name}=" + ",".join(rows)]
+        if ep.strip():
+            args += ["--episode", ep.strip()]
+        if len(args) == 2:
+            st.warning("Set at least one shock or an episode.")
+        elif run_script(os.path.join("tools", "impact.py"), cfg_path, args) != 0:
+            st.error("The what-if could not be run: see the log above.")
+    wf = os.path.join(d, "6_what_if.csv")
+    if os.path.exists(wf):
+        w = pd.read_csv(wf)
+        w = w[(w["kind"] == "point") & (w["quarter"].isin(hs))]
+        if len(w):
+            st.markdown("**What-if results** (balance effect; explanatory model and the range of the most accurate models)")
+            ex = w[w["model"].str.startswith("Explanatory")].pivot_table(index="shock", columns="quarter",
+                                                                       values="balance_effect", sort=False)
+            rng = w[w["balance_effect"].abs() > 1e-9].groupby(["shock", "quarter"])["balance_effect"].agg(
+                ["min", "max", "count"]).round(2)
+            st.dataframe(ex.round(2).add_prefix("after q"), use_container_width=True)
+            with st.expander("Range across models"):
+                st.dataframe(rng, use_container_width=True)
+            if os.path.exists(os.path.join(d, "what_if.png")):
+                wide_image(os.path.join(d, "what_if.png"))
+
+
 def story_theme_picker():
     """The look of the process story: a theme name, or "all" for one copy of each to compare."""
     from src.reporting import themes as TH
@@ -1129,6 +1205,22 @@ if mode == "New data set":
                 help="screen_first: one variable at a time; en_first: Elastic Net on all at once; bayes_first: Bayesian "
                      "model averaging (inclusion probabilities), which also adds the 'Bayesian model average' model"))
 
+            st.subheader("How the economy affects the target")
+            st.caption("An explanatory model built to measure effects rather than to win the forecast race: the focus "
+                       "drivers are always in, and controls are chosen by double selection (they predict the target or a "
+                       "focus driver). After the run: sensitivities, what-if shocks, why the scenarios differ, and how "
+                       "far each effect can be trusted.")
+            e1, e2, e3 = st.columns([1.2, 3, 1])
+            imp_on = e1.checkbox("Explanatory model and impact analysis", True, key="imp_on")
+            ov["impact.enabled"] = "true" if imp_on else "false"
+            ftxt = e2.text_input("Focus drivers (comma-separated)", "", key="imp_focus",
+                                 placeholder="e.g. unemployment, house_prices, FRMORT5Y.IC   (empty = the literature core)",
+                                 help="Literature concept ids, series names, or exact features such as FLBR.ION|diff|L1. "
+                                      "A concept or series without a form and lag gets the form and lag with the "
+                                      "strongest effect of the expected sign.")
+            ov["impact.focus"] = setup.yq([x.strip() for x in ftxt.split(",") if x.strip()])
+            ov["impact.max_controls"] = str(e3.number_input("Most controls", 0, 8, 4, key="imp_mc"))
+
             st.subheader("Competing models")
             c1, c2, c3 = st.columns(3)
             for k, lab in [("benchmarks", "Benchmarks (AR(1), mean growth)"), ("literature", "Literature models"), ("hybrids", "Hybrids")]:
@@ -1303,8 +1395,9 @@ with tabs[4]:
             st.dataframe(friendly(oo[[c for c in cols if c in oo.columns]]), hide_index=True, use_container_width=True)
         else:
             st.info("Run the out-of-sample test in ④ for the fair ranking; below is the backtest only.")
+        impact_section(out, cfg_path)
         formula_section(out)
-        st.subheader("Rolling backtest (drivers chosen with all the data: optimistic for data-driven models)")
+        st.subheader("Rolling backtest' (drivers chosen with all the data: optimistic for data-driven models)")
         st.dataframe(friendly(comp.sort_values(f"avg_1_{H}_pct")[cols]), hide_index=True, use_container_width=True)
         imgs = [p for p in [os.path.join(out, "comparison", "model_comparison.png"), os.path.join(out, "comparison", "scenarios.png"),
                             os.path.join(out, "oos", "oos_mape_by_horizon.png"), os.path.join(out, "oos", "holdout.png"),

@@ -7,6 +7,9 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [run_oos.py](#runoospy)
 - [src/__init__.py](#srcinitpy)
 - [src/features/transforms.py](#srcfeaturestransformspy)
+- [src/impact/__init__.py](#srcimpactinitpy)
+- [src/impact/analysis.py](#srcimpactanalysispy)
+- [src/impact/charts.py](#srcimpactchartspy)
 - [src/modelling/ardl.py](#srcmodellingardlpy)
 - [src/modelling/evaluate.py](#srcmodellingevaluatepy)
 - [src/modelling/search.py](#srcmodellingsearchpy)
@@ -32,6 +35,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/panel/select.py](#srcpanelselectpy)
 - [src/pipelines/bayes_first.py](#srcpipelinesbayesfirstpy)
 - [src/pipelines/en_first.py](#srcpipelinesenfirstpy)
+- [src/pipelines/focus_first.py](#srcpipelinesfocusfirstpy)
 - [src/pipelines/screen_first.py](#srcpipelinesscreenfirstpy)
 - [src/reporting/formula.py](#srcreportingformulapy)
 - [src/reporting/process_story.py](#srcreportingprocessstorypy)
@@ -42,6 +46,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/reporting/themes.py](#srcreportingthemespy)
 - [src/selection/bayes.py](#srcselectionbayespy)
 - [src/selection/clustering.py](#srcselectionclusteringpy)
+- [src/selection/double_selection.py](#srcselectiondoubleselectionpy)
 - [src/selection/elastic_net.py](#srcselectionelasticnetpy)
 - [src/selection/screening.py](#srcselectionscreeningpy)
 - [src/system/__init__.py](#srcsysteminitpy)
@@ -62,6 +67,7 @@ The searchable version with examples from the last run is `docs/reference.html`.
 - [src/validation/oos.py](#srcvalidationoospy)
 - [tools/check_config.py](#toolscheckconfigpy)
 - [tools/fetch_statcan.py](#toolsfetchstatcanpy)
+- [tools/impact.py](#toolsimpactpy)
 - [tools/literature_master.py](#toolsliteraturemasterpy)
 - [tools/literature_template.py](#toolsliteraturetemplatepy)
 - [tools/make_deck.py](#toolsmakedeckpy)
@@ -91,7 +97,7 @@ Command line entry: parse arguments, load the config, start the trace and run th
 
 **Calls:** `run`, `load_config`, `refresh`, `preflight`, `finish`, `start`
 
-<sub>run_pipeline.py:55</sub>
+<sub>run_pipeline.py:56</sub>
 
 ### `run`
 
@@ -106,13 +112,13 @@ The full pipeline: data -> features -> both selection approaches -> model zoo ->
 | `cfg` |  | configuration. |
 | `args` |  | parsed command-line arguments. |
 
-**Config:** `approaches`, `cache.dir`, `cache.enabled`, `data.bank.target_column`, `en_first.stability.threshold`, `features.deflator`, `models.horizon_combination`, `out_dir`, `run_name`, `sample.horizon`, `sample.report_horizons`, `save`
+**Config:** `approaches`, `cache.dir`, `cache.enabled`, `data.bank.target_column`, `en_first.stability.threshold`, `features.deflator`, `impact`, `literature`, `models.horizon_combination`, `out_dir`, `run_name`, `sample.horizon`, `sample.report_horizons`, `save`
 
-**Calls:** `all_features`, `candidate_forms`, `evaluate`, `horizon_summary`, `buckets`, `by_horizon`, `combine`, `describe`, `final_choice`, `scenarios`, `build`, `selection_info`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_family_bars`, `chart_horizon`, `chart_regimes`, `chart_scenarios`, `chart_stability`, `scenario_models`, `summary_md`, `write_tables`, `build`, `StepCache`, `StepCache.write_manifest`, `hash_code`, `hash_frame`, `hash_obj`, `Context`, `log`, `save_all`, `snapshot`, `add_story`
+**Calls:** `all_features`, `candidate_forms`, `run`, `evaluate`, `horizon_summary`, `buckets`, `by_horizon`, `combine`, `describe`, `final_choice`, `scenarios`, `build`, `selection_info`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_family_bars`, `chart_horizon`, `chart_regimes`, `chart_scenarios`, `chart_stability`, `scenario_models`, `summary_md`, `write_tables`, `build`, `StepCache`, `StepCache.write_manifest`, `hash_code`, `hash_frame`, `hash_obj`, `Context`, `log`, `save_all`, `snapshot`, `add_story`
 
 **Called by:** `main`
 
-<sub>run_pipeline.py:79</sub>
+<sub>run_pipeline.py:80</sub>
 
 
 ## run_oos.py
@@ -131,7 +137,7 @@ Command line entry for the out-of-sample test.
 
 **Calls:** `run`, `load_config`, `refresh`, `preflight`, `finish`, `start`
 
-<sub>run_oos.py:43</sub>
+<sub>run_oos.py:44</sub>
 
 ### `run`
 
@@ -152,7 +158,7 @@ Out-of-sample test with re-selection at every origin, Diebold-Mariano tests, hol
 
 **Called by:** `main`
 
-<sub>run_oos.py:65</sub>
+<sub>run_oos.py:66</sub>
 
 
 ## src/__init__.py
@@ -301,7 +307,7 @@ sign_of() for a feature name.
 
 **Calls:** `parse_feature`, `sign_of`
 
-**Called by:** `_expected_sign`, `screen`, `run`, `prepare`, `_prepare`, `screen`
+**Called by:** `focus_table`, `_expected_sign`, `screen`, `run`, `prepare`, `resolve_focus`, `_prepare`, `screen`
 
 <sub>src/features/transforms.py:82</sub>
 
@@ -476,6 +482,622 @@ All stationary (variable, transform) pairs at every lag, with no gaps in the est
 <sub>src/features/transforms.py:236</sub>
 
 
+## src/impact/__init__.py
+
+How the economy affects the target: sensitivities, what-if shocks, scenario attribution, reliability.
+See src/impact/analysis.py.
+
+
+## src/impact/analysis.py
+
+How the economy affects the target ("satellite model" questions), from the models of a finished run.
+
+### `is_level`
+
+```python
+is_level(ctx, code)
+```
+
+Level-type series (positive, modelled in growth) vs rate-type (modelled in changes).
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+
+**Called by:** `_chg4`, `apply_shocks`, `episode_macro`, `lookalikes`, `unit_label`
+
+<sub>src/impact/analysis.py:41</sub>
+
+### `_chg4`
+
+```python
+_chg4(ctx, code)
+```
+
+4-quarter change over the history: log change x100 for levels, difference for rates.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+
+**Calls:** `is_level`
+
+**Called by:** `lookalikes`, `typical_size`
+
+<sub>src/impact/analysis.py:48</sub>
+
+### `typical_size`
+
+```python
+typical_size(ctx, code)
+```
+
+One standard deviation of the 4-quarter change (the 'typical' shock).
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+
+**Calls:** `_chg4`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:54</sub>
+
+### `unit_label`
+
+```python
+unit_label(ctx, code, size)
+```
+
+'+1.00 pt' or '+1.00%'.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+| `size` |  |  |
+
+**Calls:** `is_level`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:60</sub>
+
+### `describe`
+
+```python
+describe(ctx, code)
+```
+
+Series description from the metadata.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+
+**Called by:** `reliability`, `run`
+
+<sub>src/impact/analysis.py:65</sub>
+
+### `lookalikes`
+
+```python
+lookalikes(cfg, ctx, code)
+```
+
+{series: slope} of series that move with `code` (same theme and kind, correlated 4-quarter changes).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `code` |  |  |
+
+**Config:** `impact`
+
+**Calls:** `_chg4`, `is_level`
+
+**Called by:** `apply_shocks`, `run`
+
+<sub>src/impact/analysis.py:74</sub>
+
+### `resolve_variable`
+
+```python
+resolve_variable(ctx, v)
+```
+
+A concept id (literature table), a series name, or a feature name -> series name (or None).
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `v` |  |  |
+
+**Calls:** `resolve`
+
+**Called by:** `apply_shocks`
+
+<sub>src/impact/analysis.py:95</sub>
+
+### `apply_shocks`
+
+```python
+apply_shocks(cfg, ctx, mdf, shocks, with_lookalikes=True)
+```
+
+A copy of the macro frame with the shocks added in the forecast quarters.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `mdf` |  | macro frame (history + scenario). |
+| `shocks` |  | list of dicts {variable, size, quarters (build-up, default 1), start (first forecast quarter hit, default 1)}. |
+| `with_lookalikes` | `True` |  |
+
+**Returns:** DataFrame.
+
+**Calls:** `is_level`, `lookalikes`, `resolve_variable`
+
+**Called by:** `responses`
+
+<sub>src/impact/analysis.py:111</sub>
+
+### `forecast`
+
+```python
+forecast(ctx, model, mdf, H)
+```
+
+Quarterly changes of the target (model form) over H quarters from the end of history.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `model` |  | a model following the model interface. |
+| `mdf` |  | macro DataFrame (quarters x macro mnemonics): the history or one scenario. |
+| `H` |  | forecast horizon in quarters. |
+
+**Called by:** `attribution`, `responses`, `run`
+
+<sub>src/impact/analysis.py:144</sub>
+
+### `effect`
+
+```python
+effect(ctx, base_path, shocked_path)
+```
+
+Growth effect (pp per quarter or target units) and balance effect (% or target units) by quarter.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `base_path` |  |  |
+| `shocked_path` |  |  |
+
+**Calls:** `is_log`, `path`
+
+**Called by:** `attribution`, `responses`, `run`
+
+<sub>src/impact/analysis.py:150</sub>
+
+### `has_drivers`
+
+```python
+has_drivers(model)
+```
+
+False for models without macro drivers (benchmarks, own-history models).
+
+| argument | default | meaning |
+|---|---|---|
+| `model` |  | a model following the model interface. |
+
+**Called by:** `tied_models`
+
+<sub>src/impact/analysis.py:163</sub>
+
+### `tied_models`
+
+```python
+tied_models(cfg, tests, models, best_rank=None)
+```
+
+Models not significantly worse than the best at impact.compare_horizon (DM-HLN, one-sided).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `tests` |  | backtest forecasts (comparison/12_backtest_forecasts). |
+| `models` |  | {name: fitted model}. |
+| `best_rank` | `None` |  |
+
+**Returns:** DataFrame: model, family, mse, ratio_to_best, dm_stat, p_worse, tied, in_set.
+
+**Config:** `impact`, `sample.horizon`
+
+**Calls:** `has_drivers`, `dm_test`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:171</sub>
+
+### `explanatory`
+
+```python
+explanatory(models)
+```
+
+The explanatory model (focus drivers), or None.
+
+| argument | default | meaning |
+|---|---|---|
+| `models` |  |  |
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:219</sub>
+
+### `_draws`
+
+```python
+_draws(model, n, seed)
+```
+
+Coefficient draws from the model's covariance (regressions with HAC results); [] if not available.
+
+| argument | default | meaning |
+|---|---|---|
+| `model` |  | a model following the model interface. |
+| `n` |  |  |
+| `seed` |  |  |
+
+**Called by:** `responses`
+
+<sub>src/impact/analysis.py:224</sub>
+
+### `responses`
+
+```python
+responses(cfg, ctx, models, shocks, names, label, H, draws=0)
+```
+
+Response of each named model to a set of shocks (and the explanatory model's band from coefficient draws).
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `models` |  |  |
+| `shocks` |  |  |
+| `names` |  |  |
+| `label` |  |  |
+| `H` |  | forecast horizon in quarters. |
+| `draws` | `0` |  |
+
+**Returns:** DataFrame: shock, model, kind (point/draw_lo/draw_hi), quarter, growth_effect, balance_effect.
+
+**Config:** `impact`
+
+**Calls:** `_draws`, `apply_shocks`, `effect`, `forecast`, `BankFeatures.array`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:238</sub>
+
+### `used_codes`
+
+```python
+used_codes(model, cols)
+```
+
+Macro series a model uses (found in its features, long-run terms and members).
+
+| argument | default | meaning |
+|---|---|---|
+| `model` |  | a model following the model interface. |
+| `cols` |  |  |
+
+**Calls:** `search`
+
+**Called by:** `attribution`
+
+<sub>src/impact/analysis.py:286</sub>
+
+### `attribution`
+
+```python
+attribution(cfg, ctx, models, names, focus_groups, H, hz)
+```
+
+Each scenario minus the base scenario, split by concept (focus concepts) or theme, by Shapley value.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `models` |  |  |
+| `names` |  |  |
+| `focus_groups` |  | {series: concept label} for the focus series and their look-alikes. |
+| `H` |  | forecast horizon in quarters. |
+| `hz` |  |  |
+
+**Returns:** DataFrame: scenario, model, group, horizon, contribution, total.
+
+**Config:** `data.macro.base_scenario`, `features.deflator`
+
+**Calls:** `effect`, `forecast`, `used_codes`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:319</sub>
+
+### `reliability`
+
+```python
+reliability(cfg, ctx, model, focus, run_dir, resp_typ, set_names, hz_main)
+```
+
+How far each focus effect can be trusted: significance, sign, stability over time, collinearity, inclusion probability and agreement between the tied models.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `model` |  | a model following the model interface. |
+| `focus` |  |  |
+| `run_dir` |  |  |
+| `resp_typ` |  |  |
+| `set_names` |  |  |
+| `hz_main` |  |  |
+
+**Returns:** DataFrame: one row per focus driver with the checks, a label and the reasons.
+
+**Calls:** `describe`, `vif`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:402</sub>
+
+### `episode_macro`
+
+```python
+episode_macro(cfg, ctx, start, end)
+```
+
+The base scenario with each series' changes replaced by its changes during a historical episode (start..end), for as many quarters as the episode lasts; afterwards the base scenario's own changes resume.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `start` |  | first quarter of the estimation window (Period). |
+| `end` |  | last quarter of the estimation window (Period). |
+
+**Calls:** `is_level`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:480</sub>
+
+### `focus_table`
+
+```python
+focus_table(run_dir, ctx, model)
+```
+
+The focus drivers (focus_first/D1_focus_drivers.csv, or the model's own list).
+
+| argument | default | meaning |
+|---|---|---|
+| `run_dir` |  |  |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `model` |  | a model following the model interface. |
+
+**Calls:** `feature_sign`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:511</sub>
+
+### `run`
+
+```python
+run(cfg, ctx, models, run_dir, log=print, what_if=None, episodes=None)
+```
+
+Everything in this module for a finished run; writes outputs/<run>/impact/.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `models` |  | {name: fitted model} (estimated on all history). |
+| `run_dir` |  | the run's output folder. |
+| `log` | `print` | function used to print progress messages. |
+| `what_if` | `None` | override impact.what_if / impact.episodes. |
+| `episodes` | `None` | override impact.what_if / impact.episodes. |
+
+**Returns:** dict of tables.
+
+**Config:** `impact`, `sample.horizon`
+
+**Calls:** `_u`, `attribution`, `describe`, `effect`, `episode_macro`, `explanatory`, `focus_table`, `forecast`, `lookalikes`, `reliability`, `responses`, `tied_models`, `typical_size`, `unit_label`, `write_summary`, `all`
+
+**Called by:** `run`, `make`
+
+<sub>src/impact/analysis.py:522</sub>
+
+### `_u`
+
+```python
+_u()
+```
+
+**Calls:** `is_log`
+
+**Called by:** `run`, `sentence`, `write_summary`
+
+<sub>src/impact/analysis.py:645</sub>
+
+### `sentence`
+
+```python
+sentence(ctx, row, h, unit_name='the balance')
+```
+
+'A typical rise in X (+0.85 pt) changes the balance by -0.31% after 8 quarters (90% band ...)'.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `row` |  |  |
+| `h` |  |  |
+| `unit_name` | `'the balance'` |  |
+
+**Calls:** `_u`
+
+**Called by:** `write_summary`, `Story.s_impact_headline`
+
+<sub>src/impact/analysis.py:649</sub>
+
+### `write_summary`
+
+```python
+write_summary(path, cfg, ctx, T, ex_name, h, set_names)
+```
+
+Plain-language summary of the impact analysis.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `T` |  |  |
+| `ex_name` |  |  |
+| `h` |  |  |
+| `set_names` |  |  |
+
+**Config:** `data.bank.target_column`
+
+**Calls:** `_u`, `sentence`
+
+**Called by:** `run`
+
+<sub>src/impact/analysis.py:665</sub>
+
+
+## src/impact/charts.py
+
+Charts of the impact analysis: sensitivity, response paths, scenario attribution, what-if.
+
+### `_unit`
+
+```python
+_unit()
+```
+
+**Calls:** `is_log`
+
+**Called by:** `attribution`, `response_paths`, `sensitivity`
+
+<sub>src/impact/charts.py:16</sub>
+
+### `sensitivity`
+
+```python
+sensitivity(path, sens, h)
+```
+
+Effect of a typical rise in each focus driver after h quarters: explanatory model with its 90% band, and the range of the tied models.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `sens` |  |  |
+| `h` |  |  |
+
+**Calls:** `_unit`
+
+**Called by:** `all`
+
+<sub>src/impact/charts.py:20</sub>
+
+### `response_paths`
+
+```python
+response_paths(path, resp, ex_name, title, kind='typical')
+```
+
+Quarter-by-quarter response to each shock: tied models in grey, the explanatory model with its band.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `resp` |  |  |
+| `ex_name` |  |  |
+| `title` |  |  |
+| `kind` | `'typical'` |  |
+
+**Calls:** `_unit`
+
+**Called by:** `all`
+
+<sub>src/impact/charts.py:51</sub>
+
+### `attribution`
+
+```python
+attribution(path, att, ex_name, h)
+```
+
+Each scenario against the base, split by driver group (explanatory model).
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | file to write or read. |
+| `att` |  |  |
+| `ex_name` |  |  |
+| `h` |  |  |
+
+**Calls:** `_unit`
+
+**Called by:** `all`
+
+<sub>src/impact/charts.py:85</sub>
+
+### `all`
+
+```python
+all(out, cfg, ctx, T, ex_name, h)
+```
+
+Draw every impact chart that has data.
+
+| argument | default | meaning |
+|---|---|---|
+| `out` |  |  |
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `T` |  |  |
+| `ex_name` |  |  |
+| `h` |  |  |
+
+**Calls:** `attribution`, `response_paths`, `sensitivity`
+
+**Called by:** `card_text`, `run`, `scenarios`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL.fit`, `build`, `Story.s_scen_check`, `_split_args`, `_write_if_changed`, `find_member`, `main`
+
+<sub>src/impact/charts.py:120</sub>
+
+
 ## src/modelling/ardl.py
 
 ARDL model used as the final model by both approaches:
@@ -513,7 +1135,7 @@ Variance inflation factors of the columns of F (multicollinearity check).
 
 **Returns:** array of k VIFs (1 when k < 2, inf if the correlation matrix is singular).
 
-**Called by:** `diagnostics`, `exhaustive_search`, `core_plus_addons`, `search`, `main`
+**Called by:** `reliability`, `diagnostics`, `exhaustive_search`, `core_plus_addons`, `search`, `main`
 
 <sub>src/modelling/ardl.py:31</sub>
 
@@ -2892,7 +3514,7 @@ Scenario forecasts of the horizon combinations, spliced from the chosen models' 
 
 **Returns:** DataFrame in the same format (empty if nothing to splice).
 
-**Calls:** `_bucket`, `wanted`, `level_after`, `path`
+**Calls:** `all`, `_bucket`, `wanted`, `level_after`, `path`
 
 **Called by:** `run`
 
@@ -3166,7 +3788,7 @@ concept_id -> series name (None if switched off or not mapped); anything else is
 | `token` |  | concept_id or a series name. |
 | `table` |  | the literature table. |
 
-**Called by:** `resolve_feature`, `build`, `same_growth_models`
+**Called by:** `resolve_variable`, `resolve_feature`, `build`, `same_growth_models`
 
 <sub>src/models/literature.py:270</sub>
 
@@ -3185,7 +3807,7 @@ resolve_feature(name, table)
 
 **Calls:** `resolve`
 
-**Called by:** `build`, `literature_models`
+**Called by:** `build`, `literature_models`, `resolve_focus`
 
 <sub>src/models/literature.py:282</sub>
 
@@ -3557,8 +4179,6 @@ Complete rows of start..end: switching regressors S (const, lagged growth, drive
 
 **Calls:** `_dummies`
 
-**Called by:** `BreakAdaptiveARDL.fit`, `SmoothTransitionARDL.fit`, `ThresholdARDL.fit`, `TimeVaryingARDL.fit`
-
 <sub>src/models/regime.py:95</sub>
 
 ### `_Regime._row`
@@ -3714,7 +4334,7 @@ Part of the model interface (see src/models/zoo.py): grid search of the threshol
 
 **Returns:** self.
 
-**Calls:** `_Regime._named`, `_Regime._window`, `_ols`
+**Calls:** `_Regime._named`, `_ols`
 
 <sub>src/models/regime.py:199</sub>
 
@@ -3842,7 +4462,7 @@ Part of the model interface (see src/models/zoo.py): grid search of slope gamma 
 
 **Returns:** self.
 
-**Calls:** `SmoothTransitionARDL._G`, `_Regime._named`, `_Regime._window`, `_ols`
+**Calls:** `SmoothTransitionARDL._G`, `_Regime._named`, `_ols`
 
 <sub>src/models/regime.py:305</sub>
 
@@ -4015,7 +4635,7 @@ Part of the model interface (see src/models/zoo.py): maximum likelihood with sev
 
 **Returns:** self.
 
-**Calls:** `MarkovSwitchingARDL._exog`, `MarkovSwitchingARDL._model`, `MarkovSwitchingARDL._std`, `MarkovSwitchingARDL._unpack`, `_dummies`, `_ols`
+**Calls:** `all`, `MarkovSwitchingARDL._exog`, `MarkovSwitchingARDL._model`, `MarkovSwitchingARDL._std`, `MarkovSwitchingARDL._unpack`, `_dummies`, `_ols`
 
 <sub>src/models/regime.py:441</sub>
 
@@ -4069,7 +4689,7 @@ Probability of each regime at the origin.
 
 **Returns:** array (low, high).
 
-**Calls:** `MarkovSwitchingARDL._probs`, `BankFeatures.array`
+**Calls:** `all`, `MarkovSwitchingARDL._probs`, `BankFeatures.array`
 
 <sub>src/models/regime.py:540</sub>
 
@@ -4216,7 +4836,7 @@ Part of the model interface (see src/models/zoo.py): choose q by likelihood, the
 
 **Returns:** self.
 
-**Calls:** `TimeVaryingARDL._kalman`, `_Regime._named`, `_Regime._window`
+**Calls:** `TimeVaryingARDL._kalman`, `_Regime._named`
 
 <sub>src/models/regime.py:671</sub>
 
@@ -4324,7 +4944,7 @@ Part of the model interface (see src/models/zoo.py): sup-F (Quandt-Andrews) test
 
 **Returns:** self.
 
-**Calls:** `_Regime._named`, `_Regime._window`, `_ols`
+**Calls:** `_Regime._named`, `_ols`
 
 <sub>src/models/regime.py:752</sub>
 
@@ -4561,7 +5181,7 @@ What the zoo needs from one approach's result (kept small so it can be cached at
 
 **Called by:** `run`, `select_at`
 
-<sub>src/models/zoo.py:41</sub>
+<sub>src/models/zoo.py:43</sub>
 
 ### `_valid`
 
@@ -4582,7 +5202,7 @@ Split features into those whose series exist in the macro data and those that do
 
 **Called by:** `build`, `literature_models`
 
-<sub>src/models/zoo.py:58</sub>
+<sub>src/models/zoo.py:62</sub>
 
 ### `literature_models`
 
@@ -4605,7 +5225,7 @@ Literature specifications with concepts resolved to series names through the lit
 
 **Called by:** `build`, `run`, `build_node`
 
-<sub>src/models/zoo.py:71</sub>
+<sub>src/models/zoo.py:75</sub>
 
 ### `_screen_tables`
 
@@ -4627,7 +5247,7 @@ Shortlist and per-variable screen results, from screen first if it ran, otherwis
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:99</sub>
+<sub>src/models/zoo.py:103</sub>
 
 ### `wanted`
 
@@ -4652,7 +5272,7 @@ Entries match a family name, a model name, or the start of a model name (case do
 
 **Called by:** `run`, `run`, `combine`, `scenarios`, `build`
 
-<sub>src/models/zoo.py:111</sub>
+<sub>src/models/zoo.py:115</sub>
 
 ### `same_growth_models`
 
@@ -4678,7 +5298,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:138</sub>
+<sub>src/models/zoo.py:142</sub>
 
 ### `build`
 
@@ -4697,11 +5317,11 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 
 **Config:** `bayes_first`, `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
 
-**Calls:** `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
+**Calls:** `all`, `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
 
 **Called by:** `run`, `models_at`
 
-<sub>src/models/zoo.py:181</sub>
+<sub>src/models/zoo.py:185</sub>
 
 
 ## src/panel/__init__.py
@@ -6178,7 +6798,7 @@ array(cols, nb=None)
 | `cols` |  |  |
 | `nb` | `None` |  |
 
-**Called by:** `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `weights`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `mc3`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
+**Called by:** `responses`, `refit_flags`, `Combination._weights`, `MarkovSwitchingARDL._start_state`, `MarkovSwitchingARDL._unpack`, `TimeVaryingARDL._kalman`, `Panel.__init__`, `PanelModel._shrink`, `PanelModel._topdown`, `driscoll_kraay`, `_arr`, `weights`, `BankFeatures.stacked`, `quick_error`, `screen`, `search`, `worked`, `worked_levels`, `Story.s_contrib`, `mc3`, `rlasso`, `_prepare`, `_select_at_target`, `VECM.fit`, `VECM.forecast`, `sur_scenarios`, `_err_rows`, `build_node`, `chain_forecast`, `run`, `BVARX.fit`, `BVARX.forecast`, `reconcile_all`, `rebuild`, `scen_path`, `main`
 
 <sub>src/panel/select.py:43</sub>
 
@@ -6446,7 +7066,7 @@ Every valid combination of shortlisted drivers, ranked by pooled BIC, then the b
 
 **Calls:** `vif`, `BankFeatures.array`, `BankFeatures.frame`, `_FastPooled`, `_FastPooled.slopes`, `_FastPooled.tstats`, `_fs`, `quick_error`
 
-**Called by:** `check_package`, `select`, `target_names_sheet`, `find_date_column`, `guess_transform`, `match_concepts`, `read_bank`, `scenario_name`, `yq`
+**Called by:** `check_package`, `used_codes`, `select`, `target_names_sheet`, `find_date_column`, `guess_transform`, `match_concepts`, `read_bank`, `scenario_name`, `yq`
 
 <sub>src/panel/select.py:231</sub>
 
@@ -6565,6 +7185,36 @@ Elastic Net first approach: Elastic Net (glmnet-style) -> stability selection ->
 **Called by:** `main`
 
 <sub>src/pipelines/en_first.py:14</sub>
+
+
+## src/pipelines/focus_first.py
+
+Approach D - 'Focus first' (the explanatory model):
+the drivers whose effect the user wants to know (impact.focus) are always in; the controls around them are chosen
+by double selection (src/selection/double_selection.py). No search may drop a focus driver, so the model answers
+"how does this variable affect the target", while the other approaches answer "what forecasts best".
+It is backtested and ranked like every other model, so its accuracy is known; src/impact uses it for the effects.
+
+### `run`
+
+```python
+run(cfg, ctx, F, forms)
+```
+
+Focus drivers + double-selection controls.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | configuration. |
+| `ctx` |  | Context. |
+| `F` |  | all candidate features. |
+| `forms` |  | transforms per series. |
+
+**Returns:** dict with the features (focus first, then controls) and the tables written to focus_first/.
+
+**Calls:** `double_selection`, `resolve_focus`, `log`
+
+<sub>src/pipelines/focus_first.py:12</sub>
 
 
 ## src/pipelines/screen_first.py
@@ -6953,7 +7603,7 @@ Plain name and meaning of a transform code (moving windows included).
 
 **Called by:** `Story.label`, `Story.s_bestform`, `Story.s_stationarity`, `Story.s_transforms`, `Story.short`
 
-<sub>src/reporting/process_story.py:57</sub>
+<sub>src/reporting/process_story.py:58</sub>
 
 ### `apply_theme`
 
@@ -6971,7 +7621,7 @@ Chart colours from a theme (src/reporting/themes.py); call before Story(...).bui
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:71</sub>
+<sub>src/reporting/process_story.py:72</sub>
 
 ### `_style`
 
@@ -6981,7 +7631,7 @@ _style()
 
 **Called by:** `Story.__init__`, `apply_theme`
 
-<sub>src/reporting/process_story.py:89</sub>
+<sub>src/reporting/process_story.py:90</sub>
 
 ### `pct`
 
@@ -6996,7 +7646,7 @@ pct(v, d=2)
 
 **Called by:** `Story.err`
 
-<sub>src/reporting/process_story.py:102</sub>
+<sub>src/reporting/process_story.py:103</sub>
 
 ### `num`
 
@@ -7011,7 +7661,7 @@ num(v, d=0)
 
 **Called by:** `equation_text`, `Story.err`, `Story.s_overview`
 
-<sub>src/reporting/process_story.py:106</sub>
+<sub>src/reporting/process_story.py:107</sub>
 
 ### `plural`
 
@@ -7027,7 +7677,7 @@ plural(n, word, many=None)
 
 **Called by:** `Story.s_events`, `Story.s_literature`, `Story.s_question`, `Story.s_search_pick`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:112</sub>
+<sub>src/reporting/process_story.py:113</sub>
 
 ### `parse`
 
@@ -7043,7 +7693,7 @@ parse(f)
 
 **Called by:** `Story.label`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.short`, `_code_only`, `code_hash`, `scan`
 
-<sub>src/reporting/process_story.py:116</sub>
+<sub>src/reporting/process_story.py:117</sub>
 
 ### `Story`
 
@@ -7059,11 +7709,11 @@ Reads a run and builds its sections.
 | `out` |  | the run's output folder. |
 | `charts` |  | folder for the PNGs. |
 
-**Config:** `bayes_first`, `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
+**Config:** `bayes_first`, `data.bank.target_column`, `data.events`, `data.macro.base_scenario`, `data.macro.scenarios`, `en_first`, `features`, `final_model`, `impact`, `oos`, `sample.backtest_start`, `sample.backtest_step`, `sample.balance_at_origin`, `sample.balance_forecast`, `sample.bic`, `sample.covid_window`, `sample.date`, `sample.dlog_forecast`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.forecast_balance`, `sample.hist_end`, `sample.horizon`, `sample.horizon_q`, `sample.oos_mape_pct`, `sample.origin`, `sample.reestimate_every`, `sample.report_horizons`, `screen_first`, `target`
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:127</sub>
+<sub>src/reporting/process_story.py:128</sub>
 
 ### `Story.__init__`
 
@@ -7079,7 +7729,7 @@ __init__(cfg, out, charts)
 
 **Calls:** `_style`
 
-<sub>src/reporting/process_story.py:134</sub>
+<sub>src/reporting/process_story.py:135</sub>
 
 ### `Story.read`
 
@@ -7093,7 +7743,7 @@ read(*p)
 
 **Called by:** `check_package`, `_file_hash`, `code_hash`, `_re_evaluate`, `_img`, `hash_code`, `fingerprint`, `is_stale`, `scan`, `_rename_plain`, `extract`, `post`, `write_config`, `install_hook`, `write_config`, `build`, `main`
 
-<sub>src/reporting/process_story.py:142</sub>
+<sub>src/reporting/process_story.py:143</sub>
 
 ### `Story.add`
 
@@ -7116,9 +7766,9 @@ add(part, title, takeaway='', what=(), why=(), result=(), read='', numbers=(), c
 | `table_note` | `''` |  |
 | `kind` | `'content'` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_bestform`, `Story.s_by_horizon`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_diagnostics`, `Story.s_driver_stability`, `Story.s_en`, `Story.s_events`, `Story.s_families`, `Story.s_focus`, `Story.s_funnel`, `Story.s_glossary`, `Story.s_holdout`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_reliability`, `Story.s_impact_responses`, `Story.s_impact_whatif`, `Story.s_lags`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_literature`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_design`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_question`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_scen_check`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_settings`, `Story.s_shortlist`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`, `Story.s_title`, `Story.s_transforms`
 
-<sub>src/reporting/process_story.py:146</sub>
+<sub>src/reporting/process_story.py:147</sub>
 
 ### `Story.fig`
 
@@ -7132,9 +7782,9 @@ fig(name, w=9, h=4.4)
 | `w` | `9` |  |
 | `h` | `4.4` |  |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_scen_forecast`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`
 
-<sub>src/reporting/process_story.py:153</sub>
+<sub>src/reporting/process_story.py:154</sub>
 
 ### `Story.save`
 
@@ -7147,9 +7797,9 @@ save(f, path)
 | `f` |  |  |
 | `path` |  | file to write or read. |
 
-**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
+**Called by:** `Story.s_all_origins`, `Story.s_backtest_design`, `Story.s_bayes`, `Story.s_by_horizon`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_driver_stability`, `Story.s_funnel`, `Story.s_impact_attribution`, `Story.s_impact_headline`, `Story.s_impact_responses`, `Story.s_leaderboard`, `Story.s_macro`, `Story.s_one_origin`, `Story.s_oos_gap`, `Story.s_overview`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_forecast`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_rank`, `Story.s_search_rules`, `Story.s_signs`, `Story.s_stability`, `Story.s_stationarity`, `Story.s_target`
 
-<sub>src/reporting/process_story.py:157</sub>
+<sub>src/reporting/process_story.py:158</sub>
 
 ### `Story.label`
 
@@ -7167,7 +7817,7 @@ Plain label of a feature: 'House price index, Ontario: quarterly growth, 1 quart
 
 **Called by:** `Story.s_rec_model`, `Story.s_recommend`, `Story.s_screen`
 
-<sub>src/reporting/process_story.py:163</sub>
+<sub>src/reporting/process_story.py:164</sub>
 
 ### `Story.short`
 
@@ -7182,9 +7832,9 @@ short(f, n=46)
 
 **Calls:** `parse`, `tr_words`
 
-**Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
+**Called by:** `Story._term`, `Story.s_bayes`, `Story.s_clusters`, `Story.s_coef_paths`, `Story.s_contrib`, `Story.s_en`, `Story.s_focus`, `Story.s_rec_effects`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `Story.s_screen`, `Story.s_search_pick`, `Story.s_search_rank`, `Story.s_shortlist`, `Story.s_stability`
 
-<sub>src/reporting/process_story.py:172</sub>
+<sub>src/reporting/process_story.py:173</sub>
 
 ### `Story.load`
 
@@ -7198,7 +7848,7 @@ load()
 
 **Called by:** `Story.build`
 
-<sub>src/reporting/process_story.py:182</sub>
+<sub>src/reporting/process_story.py:183</sub>
 
 ### `Story._n_vars`
 
@@ -7210,7 +7860,7 @@ _n_vars(s)
 |---|---|---|
 | `s` |  |  |
 
-<sub>src/reporting/process_story.py:249</sub>
+<sub>src/reporting/process_story.py:255</sub>
 
 ### `Story.err`
 
@@ -7226,7 +7876,7 @@ err(v)
 
 **Called by:** `Story.s_all_origins`, `Story.s_leaderboard`, `Story.s_limits`, `Story.s_oos_gap`, `Story.s_rec_model`, `Story.s_recommend`, `Story.s_search_pick`, `Story.s_search_rank`
 
-<sub>src/reporting/process_story.py:256</sub>
+<sub>src/reporting/process_story.py:262</sub>
 
 ### `Story.build`
 
@@ -7238,7 +7888,7 @@ build()
 
 **Called by:** `make`
 
-<sub>src/reporting/process_story.py:260</sub>
+<sub>src/reporting/process_story.py:266</sub>
 
 ### `Story.s_title`
 
@@ -7248,7 +7898,7 @@ s_title()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:278</sub>
+<sub>src/reporting/process_story.py:286</sub>
 
 ### `Story.s_question`
 
@@ -7260,7 +7910,7 @@ s_question()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:287</sub>
+<sub>src/reporting/process_story.py:295</sub>
 
 ### `Story.s_overview`
 
@@ -7270,7 +7920,7 @@ s_overview()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrap`, `num`, `Report.text`
 
-<sub>src/reporting/process_story.py:314</sub>
+<sub>src/reporting/process_story.py:322</sub>
 
 ### `Story.s_target`
 
@@ -7282,7 +7932,7 @@ s_target()
 
 **Calls:** `Story.add`, `Story.save`, `plural`
 
-<sub>src/reporting/process_story.py:349</sub>
+<sub>src/reporting/process_story.py:357</sub>
 
 ### `Story.s_events`
 
@@ -7294,7 +7944,7 @@ s_events()
 
 **Calls:** `Story.add`, `plural`, `read_table`, `to_quarters`
 
-<sub>src/reporting/process_story.py:388</sub>
+<sub>src/reporting/process_story.py:396</sub>
 
 ### `Story.s_macro`
 
@@ -7306,7 +7956,7 @@ s_macro()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:425</sub>
+<sub>src/reporting/process_story.py:433</sub>
 
 ### `Story.s_signs`
 
@@ -7316,7 +7966,7 @@ s_signs()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:455</sub>
+<sub>src/reporting/process_story.py:463</sub>
 
 ### `Story.s_literature`
 
@@ -7326,7 +7976,7 @@ s_literature()
 
 **Calls:** `Story.add`, `plural`
 
-<sub>src/reporting/process_story.py:486</sub>
+<sub>src/reporting/process_story.py:494</sub>
 
 ### `Story.s_transforms`
 
@@ -7336,7 +7986,7 @@ s_transforms()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:510</sub>
+<sub>src/reporting/process_story.py:518</sub>
 
 ### `Story.s_stationarity`
 
@@ -7346,7 +7996,7 @@ s_stationarity()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `tr_words`, `Report.text`
 
-<sub>src/reporting/process_story.py:528</sub>
+<sub>src/reporting/process_story.py:536</sub>
 
 ### `Story.s_lags`
 
@@ -7356,7 +8006,7 @@ s_lags()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:554</sub>
+<sub>src/reporting/process_story.py:562</sub>
 
 ### `Story.s_funnel`
 
@@ -7366,7 +8016,7 @@ s_funnel()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:570</sub>
+<sub>src/reporting/process_story.py:578</sub>
 
 ### `Story._rule`
 
@@ -7381,7 +8031,7 @@ _rule(T, key)
 
 **Called by:** `Story.s_funnel`, `Story.s_search_pick`
 
-<sub>src/reporting/process_story.py:609</sub>
+<sub>src/reporting/process_story.py:617</sub>
 
 ### `Story.s_screen`
 
@@ -7391,7 +8041,7 @@ s_screen()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.label`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:616</sub>
+<sub>src/reporting/process_story.py:624</sub>
 
 ### `Story.s_bestform`
 
@@ -7401,7 +8051,7 @@ s_bestform()
 
 **Calls:** `Story.add`, `tr_words`
 
-<sub>src/reporting/process_story.py:650</sub>
+<sub>src/reporting/process_story.py:658</sub>
 
 ### `Story.s_clusters`
 
@@ -7413,7 +8063,7 @@ s_clusters()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:670</sub>
+<sub>src/reporting/process_story.py:678</sub>
 
 ### `Story.s_shortlist`
 
@@ -7423,7 +8073,7 @@ s_shortlist()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:693</sub>
+<sub>src/reporting/process_story.py:701</sub>
 
 ### `Story.s_en`
 
@@ -7435,7 +8085,7 @@ s_en()
 
 **Calls:** `Story.add`, `Story.short`
 
-<sub>src/reporting/process_story.py:708</sub>
+<sub>src/reporting/process_story.py:716</sub>
 
 ### `Story.s_stability`
 
@@ -7447,7 +8097,7 @@ s_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:731</sub>
+<sub>src/reporting/process_story.py:739</sub>
 
 ### `Story.s_bayes`
 
@@ -7459,7 +8109,7 @@ s_bayes()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:760</sub>
+<sub>src/reporting/process_story.py:768</sub>
 
 ### `Story.s_search_rules`
 
@@ -7471,7 +8121,7 @@ s_search_rules()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `_wrapl`, `Report.text`
 
-<sub>src/reporting/process_story.py:802</sub>
+<sub>src/reporting/process_story.py:810</sub>
 
 ### `Story.s_search_rank`
 
@@ -7483,7 +8133,7 @@ s_search_rank()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:843</sub>
+<sub>src/reporting/process_story.py:851</sub>
 
 ### `Story.s_search_pick`
 
@@ -7495,7 +8145,7 @@ s_search_pick()
 
 **Calls:** `Story._rule`, `Story.add`, `Story.err`, `Story.short`, `plural`
 
-<sub>src/reporting/process_story.py:878</sub>
+<sub>src/reporting/process_story.py:886</sub>
 
 ### `Story.s_families`
 
@@ -7505,7 +8155,7 @@ s_families()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:910</sub>
+<sub>src/reporting/process_story.py:918</sub>
 
 ### `Story.s_backtest_design`
 
@@ -7517,7 +8167,7 @@ s_backtest_design()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Report.text`
 
-<sub>src/reporting/process_story.py:935</sub>
+<sub>src/reporting/process_story.py:943</sub>
 
 ### `Story.s_one_origin`
 
@@ -7527,7 +8177,7 @@ s_one_origin()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:973</sub>
+<sub>src/reporting/process_story.py:981</sub>
 
 ### `Story.s_all_origins`
 
@@ -7537,7 +8187,7 @@ s_all_origins()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1016</sub>
+<sub>src/reporting/process_story.py:1024</sub>
 
 ### `Story.s_leaderboard`
 
@@ -7547,7 +8197,7 @@ s_leaderboard()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1047</sub>
+<sub>src/reporting/process_story.py:1055</sub>
 
 ### `Story.s_by_horizon`
 
@@ -7557,7 +8207,7 @@ s_by_horizon()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1079</sub>
+<sub>src/reporting/process_story.py:1087</sub>
 
 ### `Story.s_oos_design`
 
@@ -7569,7 +8219,7 @@ s_oos_design()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1117</sub>
+<sub>src/reporting/process_story.py:1125</sub>
 
 ### `Story.s_oos_gap`
 
@@ -7579,7 +8229,7 @@ s_oos_gap()
 
 **Calls:** `Story.add`, `Story.err`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1139</sub>
+<sub>src/reporting/process_story.py:1147</sub>
 
 ### `Story.s_driver_stability`
 
@@ -7589,7 +8239,7 @@ s_driver_stability()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1173</sub>
+<sub>src/reporting/process_story.py:1181</sub>
 
 ### `Story.s_holdout`
 
@@ -7601,7 +8251,7 @@ s_holdout()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1205</sub>
+<sub>src/reporting/process_story.py:1213</sub>
 
 ### `Story.s_rec_model`
 
@@ -7611,7 +8261,7 @@ s_rec_model()
 
 **Calls:** `Story._term`, `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1224</sub>
+<sub>src/reporting/process_story.py:1232</sub>
 
 ### `Story._term`
 
@@ -7627,7 +8277,7 @@ _term(t)
 
 **Called by:** `Story.s_rec_model`
 
-<sub>src/reporting/process_story.py:1255</sub>
+<sub>src/reporting/process_story.py:1263</sub>
 
 ### `Story.s_rec_effects`
 
@@ -7637,7 +8287,7 @@ s_rec_effects()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1264</sub>
+<sub>src/reporting/process_story.py:1272</sub>
 
 ### `Story.s_rec_fit`
 
@@ -7647,7 +8297,7 @@ s_rec_fit()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `parse`
 
-<sub>src/reporting/process_story.py:1285</sub>
+<sub>src/reporting/process_story.py:1293</sub>
 
 ### `Story.s_coef_paths`
 
@@ -7657,7 +8307,7 @@ s_coef_paths()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1309</sub>
+<sub>src/reporting/process_story.py:1317</sub>
 
 ### `Story.s_diagnostics`
 
@@ -7667,7 +8317,7 @@ s_diagnostics()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1339</sub>
+<sub>src/reporting/process_story.py:1347</sub>
 
 ### `Story.s_scen_inputs`
 
@@ -7677,7 +8327,7 @@ s_scen_inputs()
 
 **Calls:** `feature_matrix`, `Story.add`, `Story.save`, `Story.short`, `_wrapl`, `parse`
 
-<sub>src/reporting/process_story.py:1371</sub>
+<sub>src/reporting/process_story.py:1379</sub>
 
 ### `Story.s_scen_forecast`
 
@@ -7687,7 +8337,7 @@ s_scen_forecast()
 
 **Calls:** `Story.add`, `Story.fig`, `Story.save`
 
-<sub>src/reporting/process_story.py:1396</sub>
+<sub>src/reporting/process_story.py:1404</sub>
 
 ### `Story.s_contrib`
 
@@ -7701,7 +8351,7 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 
 **Calls:** `feature_matrix`, `BankFeatures.array`, `Story.add`, `Story.fig`, `Story.save`, `Story.short`
 
-<sub>src/reporting/process_story.py:1431</sub>
+<sub>src/reporting/process_story.py:1439</sub>
 
 ### `Story.s_scen_check`
 
@@ -7709,9 +8359,9 @@ Forecast growth taken apart: constant + persistence x last growth + coefficient 
 s_scen_check()
 ```
 
-**Calls:** `Story.add`
+**Calls:** `all`, `Story.add`
 
-<sub>src/reporting/process_story.py:1493</sub>
+<sub>src/reporting/process_story.py:1501</sub>
 
 ### `Story.s_limits`
 
@@ -7721,7 +8371,7 @@ s_limits()
 
 **Calls:** `Story.add`, `Story.err`
 
-<sub>src/reporting/process_story.py:1519</sub>
+<sub>src/reporting/process_story.py:1527</sub>
 
 ### `Story.s_recommend`
 
@@ -7731,7 +8381,103 @@ s_recommend()
 
 **Calls:** `Story.add`, `Story.err`, `Story.label`
 
-<sub>src/reporting/process_story.py:1538</sub>
+<sub>src/reporting/process_story.py:1546</sub>
+
+### `Story._ex_name`
+
+```python
+_ex_name()
+```
+
+**Called by:** `Story.s_impact_attribution`, `Story.s_impact_responses`, `Story.s_impact_whatif`
+
+<sub>src/reporting/process_story.py:1563</sub>
+
+### `Story._hm`
+
+```python
+_hm()
+```
+
+**Config:** `impact`
+
+**Called by:** `Story.s_impact_attribution`, `Story.s_impact_headline`
+
+<sub>src/reporting/process_story.py:1568</sub>
+
+### `Story._label`
+
+```python
+_label(concept)
+```
+
+| argument | default | meaning |
+|---|---|---|
+| `concept` |  |  |
+
+**Called by:** `Story.s_impact_headline`
+
+<sub>src/reporting/process_story.py:1573</sub>
+
+### `Story.s_impact_headline`
+
+```python
+s_impact_headline()
+```
+
+**Calls:** `sentence`, `Story._hm`, `Story._label`, `Story.add`, `Story.fig`, `Story.save`, `_wrapl`
+
+<sub>src/reporting/process_story.py:1577</sub>
+
+### `Story.s_focus`
+
+```python
+s_focus()
+```
+
+**Calls:** `Story.add`, `Story.short`
+
+<sub>src/reporting/process_story.py:1619</sub>
+
+### `Story.s_impact_responses`
+
+```python
+s_impact_responses()
+```
+
+**Calls:** `Story._ex_name`, `Story.add`, `Story.save`
+
+<sub>src/reporting/process_story.py:1645</sub>
+
+### `Story.s_impact_reliability`
+
+```python
+s_impact_reliability()
+```
+
+**Calls:** `Story.add`
+
+<sub>src/reporting/process_story.py:1684</sub>
+
+### `Story.s_impact_attribution`
+
+```python
+s_impact_attribution()
+```
+
+**Calls:** `Story._ex_name`, `Story._hm`, `Story.add`, `Story.fig`, `Story.save`
+
+<sub>src/reporting/process_story.py:1707</sub>
+
+### `Story.s_impact_whatif`
+
+```python
+s_impact_whatif()
+```
+
+**Calls:** `Story._ex_name`, `Story.add`
+
+<sub>src/reporting/process_story.py:1748</sub>
 
 ### `Story.s_glossary`
 
@@ -7741,7 +8487,7 @@ s_glossary()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1552</sub>
+<sub>src/reporting/process_story.py:1770</sub>
 
 ### `Story.s_settings`
 
@@ -7751,7 +8497,7 @@ s_settings()
 
 **Calls:** `Story.add`
 
-<sub>src/reporting/process_story.py:1572</sub>
+<sub>src/reporting/process_story.py:1797</sub>
 
 ### `_wrap`
 
@@ -7766,7 +8512,7 @@ _wrap(s, n)
 
 **Called by:** `Story.s_overview`, `_wrapl`
 
-<sub>src/reporting/process_story.py:1589</sub>
+<sub>src/reporting/process_story.py:1814</sub>
 
 ### `_wrapl`
 
@@ -7781,9 +8527,9 @@ _wrapl(s, n)
 
 **Calls:** `_wrap`
 
-**Called by:** `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
+**Called by:** `Story.s_impact_headline`, `Story.s_rec_effects`, `Story.s_scen_inputs`, `Story.s_search_rules`
 
-<sub>src/reporting/process_story.py:1600</sub>
+<sub>src/reporting/process_story.py:1825</sub>
 
 
 ## src/reporting/report.py
@@ -8847,6 +9593,160 @@ Within each cluster keep the highest score, unless a primary-geography member sc
 **Called by:** `shortlist`, `run`, `run`, `run`, `prepare`, `main`
 
 <sub>src/selection/clustering.py:22</sub>
+
+
+## src/selection/double_selection.py
+
+Focus drivers and their controls, chosen for a reliable effect rather than the best forecast.
+
+### `_window`
+
+```python
+_window(ctx, F)
+```
+
+Target, base regressors (constant, lagged growth, dummies) and candidates on the estimation window.
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+
+**Called by:** `double_selection`, `single_t`
+
+<sub>src/selection/double_selection.py:33</sub>
+
+### `_partial`
+
+```python
+_partial(M, W)
+```
+
+Residuals of every column of M on W (Frisch-Waugh-Lovell).
+
+| argument | default | meaning |
+|---|---|---|
+| `M` |  |  |
+| `W` |  |  |
+
+**Called by:** `double_selection`, `single_t`
+
+<sub>src/selection/double_selection.py:47</sub>
+
+### `single_t`
+
+```python
+single_t(ctx, F, features)
+```
+
+t-statistic of each feature added alone to y ~ const + y_lag1 + dummies (classical errors, fast).
+
+| argument | default | meaning |
+|---|---|---|
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `features` |  | driver feature names ("code\|transform\|Llag"). |
+
+**Calls:** `_partial`, `_window`
+
+**Called by:** `resolve_focus`
+
+<sub>src/selection/double_selection.py:54</sub>
+
+### `rlasso`
+
+```python
+rlasso(X, y, c=1.1, gamma=None, iters=5)
+```
+
+Rigorous (plug-in penalty) lasso of Belloni-Chernozhukov-Hansen on standardised X; y and X already partialled.
+
+| argument | default | meaning |
+|---|---|---|
+| `X` |  | n x p array. |
+| `y` |  | n vector. |
+| `c` | `1.1` | penalty constants (gamma default 0.1/log(n)). |
+| `gamma` | `None` | penalty constants (gamma default 0.1/log(n)). |
+| `iters` | `5` | sigma updates. |
+
+**Returns:** indices of the selected columns.
+
+**Calls:** `BankFeatures.array`
+
+**Called by:** `double_selection`
+
+<sub>src/selection/double_selection.py:74</sub>
+
+### `resolve_focus`
+
+```python
+resolve_focus(cfg, ctx, F, forms, log=print)
+```
+
+The focus drivers as features, with how each was chosen.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `forms` |  | chosen transforms per series. |
+| `log` | `print` | function used to print progress messages. |
+
+**Returns:** DataFrame: concept, series, feature, expected_sign, t, how.
+
+**Config:** `impact`, `literature`
+
+**Calls:** `feature_sign`, `resolve_feature`, `single_t`
+
+**Called by:** `run`
+
+<sub>src/selection/double_selection.py:113</sub>
+
+### `outcome_themes`
+
+```python
+outcome_themes(cfg, ctx)
+```
+
+Themes not allowed as controls because they are other outcomes of the same economy (credit aggregates, deposits, ...): they carry part of the macro effect, so holding them fixed would hide it ("bad controls"). impact.excluded_control_themes: "auto" (themes whose name mentions credit, loans, deposits, lending or banks), a list of theme names, or [] for none.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+
+**Config:** `impact`
+
+**Called by:** `double_selection`
+
+<sub>src/selection/double_selection.py:189</sub>
+
+### `double_selection`
+
+```python
+double_selection(cfg, ctx, F, focus, log=print)
+```
+
+Controls chosen by double selection around the focus drivers.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+| `F` |  | candidate features (DataFrame, one column per feature). |
+| `focus` |  |  |
+| `log` | `print` | function used to print progress messages. |
+
+**Returns:** (controls list, table of every selected candidate with the equations that picked it, settings dict).
+
+**Config:** `impact`
+
+**Calls:** `_partial`, `_window`, `outcome_themes`, `rlasso`
+
+**Called by:** `run`
+
+<sub>src/selection/double_selection.py:201</sub>
 
 
 ## src/selection/elastic_net.py
@@ -10702,7 +11602,7 @@ YAML turns the words true, yes, on (and ON, the Ontario code) into True, and fal
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:84</sub>
+<sub>src/utils/config.py:88</sub>
 
 ### `_merge`
 
@@ -10721,7 +11621,7 @@ Recursively merge a user config over the defaults (user values win).
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:118</sub>
+<sub>src/utils/config.py:122</sub>
 
 ### `_path`
 
@@ -10739,7 +11639,7 @@ Resolve a path relative to the project folder.
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:133</sub>
+<sub>src/utils/config.py:137</sub>
 
 ### `load_config`
 
@@ -10755,13 +11655,13 @@ Read a YAML config, fill defaults, check required keys and normalise values.
 
 **Returns:** dict (also holds out_dir and config_file).
 
-**Config:** `cache.dir`, `config_file`, `data.bank`, `data.events`, `data.macro`, `data.metadata.file`, `literature.master`, `literature.models`, `literature.table`, `literature.target`, `literature.workbook`, `oos.first_origin`, `oos.window`, `out_dir`, `output_dir`, `run_name`, `sample.backtest_end`, `sample.backtest_start`, `sample.dummy_quarters`, `sample.horizon`, `sample.reestimate_quarter`, `sample.report_horizons`
+**Config:** `approaches`, `cache.dir`, `config_file`, `data.bank`, `data.events`, `data.macro`, `data.metadata.file`, `impact.enabled`, `literature.master`, `literature.models`, `literature.table`, `literature.target`, `literature.workbook`, `oos.first_origin`, `oos.window`, `out_dir`, `output_dir`, `run_name`, `sample.backtest_end`, `sample.backtest_start`, `sample.dummy_quarters`, `sample.horizon`, `sample.reestimate_quarter`, `sample.report_horizons`
 
 **Calls:** `apply_settings`, `read_workbook`, `_fix_switches`, `_merge`, `_path`, `apply`
 
-**Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `main`, `build_deck`, `main`, `make`, `main`
+**Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `make`, `main`, `build_deck`, `main`, `make`, `main`
 
-<sub>src/utils/config.py:147</sub>
+<sub>src/utils/config.py:151</sub>
 
 
 ## src/utils/docs.py
@@ -10860,6 +11760,8 @@ Assign the text of an Args section to parameter names.
 | `params` |  | valid parameter names. |
 
 **Returns:** dict name -> description.
+
+**Calls:** `all`
 
 **Called by:** `parse_docstring`
 
@@ -11469,7 +12371,7 @@ Print a progress message immediately (also captured by the trace).
 |---|---|---|
 | `msg` |  | text. |
 
-**Called by:** `run`, `run`, `run`, `run`, `run`, `Context.__init__`, `add_constructed`, `holdout`, `run_oos`
+**Called by:** `run`, `run`, `run`, `run`, `run`, `run`, `Context.__init__`, `add_constructed`, `holdout`, `run_oos`
 
 <sub>src/utils/io.py:8</sub>
 
@@ -11649,7 +12551,7 @@ Everything both approaches need: target, macro data, metadata, sample indices.
 
 **Config:** `data.macro.base_scenario`, `form`, `literature`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.hist_end`, `transform`
 
-**Called by:** `run`, `run`, `Panel.__init__`, `Story.load`, `Member.__init__`, `main`
+**Called by:** `run`, `run`, `Panel.__init__`, `Story.load`, `Member.__init__`, `make`, `main`
 
 <sub>src/utils/io.py:152</sub>
 
@@ -11946,6 +12848,8 @@ Write the workbook only when its content changed (keeps the file hash, and so th
 |---|---|---|
 | `f` |  |  |
 | `sheets` |  |  |
+
+**Calls:** `all`
 
 **Called by:** `_rename_plain`, `extract`
 
@@ -12562,7 +13466,7 @@ Models that cannot be unpickled on this computer (other package versions) are re
 
 **Calls:** `rebuild`
 
-**Called by:** `run`, `Member.__init__`
+**Called by:** `run`, `Member.__init__`, `make`
 
 <sub>src/utils/saved.py:272</sub>
 
@@ -12667,7 +13571,7 @@ is_log()
 
 True for dlog targets (levels in logs, errors in percent).
 
-**Called by:** `_driver_rows`, `aggregate`, `build_models`, `equation_text`, `write`, `write_calculator`, `chart_regimes`, `build`, `annualised`, `change`, `describe`, `error`, `from_display`, `from_state`, `growth`, `growth_display`, `level_after`, `path`, `pct`, `per_year`, `state`, `target_deflator`, `units`
+**Called by:** `_u`, `effect`, `_unit`, `_driver_rows`, `aggregate`, `build_models`, `equation_text`, `write`, `write_calculator`, `chart_regimes`, `build`, `annualised`, `change`, `describe`, `error`, `from_display`, `from_state`, `growth`, `growth_display`, `level_after`, `path`, `pct`, `per_year`, `state`, `target_deflator`, `units`
 
 <sub>src/utils/target.py:34</sub>
 
@@ -12774,7 +13678,7 @@ Level after each quarter, starting from L0 and adding up the changes.
 
 **Calls:** `is_log`
 
-**Called by:** `scenario_forecasts`, `test_rows`, `_splice`, `scenarios`, `scenarios`, `chain_forecast`, `_bvarx_rows`, `joint_forecast`, `scenario_paths`
+**Called by:** `effect`, `scenario_forecasts`, `test_rows`, `_splice`, `scenarios`, `scenarios`, `chain_forecast`, `_bvarx_rows`, `joint_forecast`, `scenario_paths`
 
 <sub>src/utils/target.py:73</sub>
 
@@ -13496,7 +14400,7 @@ Run one approach using data up to end_pos only. Cached by the truncated data + s
 | `cache` |  | the StepCache. |
 | `approach` |  | selection approach: screen_first or en_first. |
 
-**Config:** `oos.window`, `oos.window_length`
+**Config:** `impact`, `literature`, `oos.window`, `oos.window_length`
 
 **Calls:** `all_features`, `candidate_forms`, `selection_info`, `hash_code`, `hash_frame`, `hash_obj`, `truncated`
 
@@ -13525,7 +14429,7 @@ Every model, specified with data up to end_pos only (plus the look-ahead variant
 
 **Called by:** `joint_oos`, `holdout`, `run_oos`
 
-<sub>src/validation/oos.py:95</sub>
+<sub>src/validation/oos.py:97</sub>
 
 ### `forecast_errors`
 
@@ -13550,7 +14454,7 @@ Fit on est_start..origin and forecast H quarters; return level % errors (organic
 
 **Called by:** `run_oos`
 
-<sub>src/validation/oos.py:115</sub>
+<sub>src/validation/oos.py:117</sub>
 
 ### `dm_test`
 
@@ -13566,9 +14470,9 @@ Diebold-Mariano on squared level errors, HAC variance with h-1 lags, HLN correct
 | `e_bench` |  | benchmark errors. |
 | `h` |  | horizon. |
 
-**Called by:** `summarise`
+**Called by:** `tied_models`, `summarise`
 
-<sub>src/validation/oos.py:133</sub>
+<sub>src/validation/oos.py:135</sub>
 
 ### `run_oos`
 
@@ -13595,7 +14499,7 @@ Out-of-sample test: at each origin, re-run selection and re-estimate every model
 
 **Called by:** `run`, `main`
 
-<sub>src/validation/oos.py:155</sub>
+<sub>src/validation/oos.py:157</sub>
 
 ### `summarise`
 
@@ -13618,7 +14522,7 @@ Summarise out-of-sample errors: MAPE, RMSE, bias and Theil's U by horizon, and t
 
 **Called by:** `run`, `main`
 
-<sub>src/validation/oos.py:219</sub>
+<sub>src/validation/oos.py:221</sub>
 
 ### `holdout`
 
@@ -13641,7 +14545,7 @@ Select and estimate every model on data up to hist_end - holdout_quarters; forec
 
 **Called by:** `run`
 
-<sub>src/validation/oos.py:279</sub>
+<sub>src/validation/oos.py:281</sub>
 
 
 ## tools/check_config.py
@@ -13748,7 +14652,7 @@ The member of a dimension named by `want` (exact name, else every word of a stri
 | `dim` |  |  |
 | `want` |  |  |
 
-**Calls:** `_words`
+**Calls:** `all`, `_words`
 
 **Called by:** `coordinate`
 
@@ -13896,6 +14800,83 @@ main()
 **Calls:** `build`, `describe`
 
 <sub>tools/fetch_statcan.py:276</sub>
+
+
+## tools/impact.py
+
+How the economy affects the target, from a finished run: sensitivities, what-if shocks, historical episodes,
+scenario attribution and how far each effect can be trusted. run_pipeline.py runs it at the end of every run;
+use this to try other shocks without re-running anything.
+
+### `parse_shock`
+
+```python
+parse_shock(text)
+```
+
+'unemployment:+2:4' -> {'variable': 'unemployment', 'size': 2.0, 'quarters': 4}.
+
+| argument | default | meaning |
+|---|---|---|
+| `text` |  |  |
+
+**Called by:** `parse_what_if`
+
+<sub>tools/impact.py:34</sub>
+
+### `parse_what_if`
+
+```python
+parse_what_if(texts)
+```
+
+--shock arguments -> impact.what_if entries.
+
+| argument | default | meaning |
+|---|---|---|
+| `texts` |  |  |
+
+**Calls:** `parse_shock`
+
+**Called by:** `main`
+
+<sub>tools/impact.py:47</sub>
+
+### `make`
+
+```python
+make(config, run_dir=None, what_if=None, episodes=None, log=print)
+```
+
+Run the impact analysis on a finished run.
+
+| argument | default | meaning |
+|---|---|---|
+| `config` |  | config file. |
+| `run_dir` | `None` | the run folder (default outputs/<run_name>). |
+| `what_if` | `None` | list of {name, shocks}; |
+| `episodes` | `None` | list of {name, start, end}; None = the config's. |
+| `log` | `print` | function used to print progress messages. |
+
+**Returns:** dict of tables.
+
+**Config:** `out_dir`
+
+**Calls:** `run`, `load_config`, `Context`, `load_models`
+
+**Called by:** `main`
+
+<sub>tools/impact.py:57</sub>
+
+### `main`
+
+```python
+main()
+```
+
+**Calls:** `make`, `parse_what_if`
+
+<sub>tools/impact.py:76</sub>
 
 
 ## tools/literature_master.py
@@ -15117,7 +16098,7 @@ Run the step-by-step walkthrough on the mini example data and write walkthrough.
 
 **Config:** `cache.dir`, `data.bank.file`, `data.bank.target_column`, `data.constructed`, `data.events.amount_column`, `data.events.date_column`, `data.events.file`, `data.events.series_column`, `data.macro.base_scenario`, `en_first.group_corr`, `en_first.l1_ratio`, `en_first.primary_geography`, `en_first.rep_tolerance`, `en_first.sign_constraints`, `en_first.stability`, `en_first.target_n`, `features.adf_p`, `features.allowed_geographies`, `features.deflator`, `features.excluded_themes`, `features.max_lag`, `features.real_themes`, `features.require_sign_prior`, `features.transforms_level`, `features.transforms_rate`, `final_model.max_vars`, `final_model.min_vars`, `final_model.one_per_theme`, `final_model.selection_tolerance`, `final_model.t_min`, `final_model.vif_max`, `oos.first_origin`, `oos.step`, `out_dir`, `run_name`, `sample.backtest_start`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.hist_end`, `sample.horizon`, `screen_first.cluster_corr`, `screen_first.primary_geography`, `screen_first.rep_tolerance`, `screen_first.screen_p`, `screen_first.shortlist_max`
 
-**Calls:** `all_features`, `candidate_forms`, `describe`, `parse_feature`, `transform`, `ARDL`, `make_panel`, `ols_np`, `vif`, `evaluate`, `exhaustive_search`, `BankFeatures.array`, `run`, `run`, `Story.read`, `cluster`, `representatives`, `_prepare`, `elastic_net_select`, `stability_selection`, `controls`, `screen`, `StepCache`, `load_config`, `Context`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `read_table`, `to_quarters`, `run_oos`, `summarise`, `Recorder`, `Recorder.step`, `_cell`, `chart`, `kv`, `note`, `table`, `text`
+**Calls:** `all_features`, `candidate_forms`, `describe`, `parse_feature`, `transform`, `all`, `ARDL`, `make_panel`, `ols_np`, `vif`, `evaluate`, `exhaustive_search`, `BankFeatures.array`, `run`, `run`, `Story.read`, `cluster`, `representatives`, `_prepare`, `elastic_net_select`, `stability_selection`, `controls`, `screen`, `StepCache`, `load_config`, `Context`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `organic_growth`, `read_table`, `to_quarters`, `run_oos`, `summarise`, `Recorder`, `Recorder.step`, `_cell`, `chart`, `kv`, `note`, `table`, `text`
 
 <sub>tools/walkthrough.py:154</sub>
 
@@ -15693,7 +16674,7 @@ Light or dark card behind a text column; first bold line becomes the card headin
 | `shape` |  | python-pptx shape. |
 | `dark` |  |  |
 
-**Calls:** `rgb`
+**Calls:** `rgb`, `all`
 
 **Called by:** `process_slide`
 

@@ -286,6 +286,27 @@ panel:                              # used only when data.bank.panel_column is s
     benchmark: null                 # model for the "vs" columns (null: the AR(1) benchmark)
     exclude_covid: true             # leave out the forecasts that cover the dummy (COVID) quarters
 
+# How the economy affects the target (src/impact, tools/impact.py): an explanatory model (focus drivers always in,
+# controls by double selection) plus sensitivities, what-if shocks, scenario attribution and reliability checks.
+# Written to outputs/<run>/impact/ at the end of every run.
+impact:
+  enabled: true
+  focus: []                         # drivers whose effect you want: literature concepts, series or exact features,
+                                    #   e.g. [unemployment, house_prices, FRMORT5Y.IC]; [] = the literature core
+  max_controls: 4                   # controls around them, chosen by double selection (predict target or a driver)
+  control_t: 1.0                    # controls with |t| below this are dropped (little bias, only noise)
+  excluded_control_themes: auto     # other outcomes are never controls; auto = themes about credit, loans, deposits
+  compare_horizon: 8                # horizon (quarters) at which models are compared for the range
+  tied_max_ratio: 2.0               # range: models not significantly worse than the best and within 2x its error
+  horizons: [1, 4, 8, 12]           # quarters after the shock shown in the tables
+  what_if:                          # your own shocks: size in points for rates, % of the level otherwise;
+    - name: Mild recession          #   quarters = build-up; the shift is permanent
+      shocks:
+        - {variable: unemployment, size: 2, quarters: 4}
+        - {variable: house_prices, size: -10, quarters: 4}
+  episodes:                         # replay a historical period on top of the base scenario
+    - {name: "Global financial crisis", start: 2008Q3, end: 2009Q4}
+
 # Look of the process story (tools/process_story.py): classic, corporate, midnight, minimal, forest, boardroom,
 # ocean. --theme on the command line overrides it; --theme all builds one copy of each to compare.
 process_story:

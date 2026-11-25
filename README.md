@@ -554,6 +554,46 @@ Results on the example (simulated) data are in **Example results** below. The lo
 
 Elastic Net first chose more stable drivers across origins (average overlap with the previous origin 0.59, against 0.18 for screen first).
 
+## How the economy affects the target: satellite-model analysis (`src/impact/`, `python tools/impact.py`)
+
+In stress testing, a model that carries macro scenarios into an institution's own numbers is a *satellite model*.
+The forecast competition answers "what forecasts best"; this part answers "if the economy moves, what happens to
+us, and when, and how sure are we". It runs at the end of every `run_pipeline.py` and writes `outputs/<run>/impact/`.
+
+**The explanatory model** (approach `focus_first`, family *Explanatory*). The drivers you want answered
+(`impact.focus`: concepts, series or exact features; default the literature core) are always in. The controls
+around them are chosen by **double selection** (Belloni, Chernozhukov & Hansen 2014): a candidate is kept if a
+rigorous lasso picks it for predicting the target *or* any focus driver, so leaving it out cannot bias the focus
+effect. Not allowed as controls: other measures of a focus concept (they would split its effect), other outcomes
+of the economy such as credit aggregates and deposits (`excluded_control_themes: auto`), and controls with
+|t| < `control_t`. The model is backtested and ranked like every other model, and re-selected at every origin of
+the out-of-sample test.
+
+**What is computed** (the macro series themselves are shocked, so every model type responds the same way):
+
+| File | What it holds |
+|---|---|
+| `3_sensitivity.csv`, `sensitivity.png` | A typical rise (1 s.d. of the 4-quarter change) and a 1-unit rise in each focus driver: effect on the balance after 1, 4, 8, 12 quarters. Explanatory model with a 90% band (coefficient draws), and the range of the most accurate models that use the driver |
+| `2_responses.csv`, `responses.png` | The response quarter by quarter, for every model compared |
+| `4_reliability.csv` | Per driver: significance, expected sign, sign stability through the backtest, VIF, robustness to the controls, agreement between models, inclusion probability → *Reliable* / *Use with care* / *Weak*, with the reasons |
+| `5_attribution.csv`, `attribution.png` | Each scenario minus the base, split by driver group (Shapley values: the parts add up to the total) |
+| `6_what_if.csv`, `what_if.png` | Your shocks (`impact.what_if`) and historical episodes replayed on the base scenario (`impact.episodes`) |
+| `1_tied_models.csv` | The models used for the range: not significantly worse than the best (Diebold-Mariano, HLN) and within `tied_max_ratio` × its error; at least `tied_min` |
+
+A shock to one series also moves its look-alikes (same theme and kind, 4-quarter changes correlated above
+`lookalike_corr`), by their historical slope, so a model that measures unemployment with a city series responds too.
+
+```bash
+python tools/impact.py --config config/my.yaml                                       # recompute from the saved models
+python tools/impact.py --config config/my.yaml --shock unemployment:+2:4              # +2 points over 4 quarters
+python tools/impact.py --config config/my.yaml --shock "Rates up=FRBOC.IC:+1:2,FRMORT5Y.IC:+1:2"
+python tools/impact.py --config config/my.yaml --episode 2008Q3:2009Q4
+```
+
+In the app, results show "How the economy affects the target" first, with a what-if form. The process story opens
+with the headline effects and has a chapter on them. Effects are associations estimated from history, holding the
+other drivers at their baseline; the reliability labels say how far each can be trusted.
+
 ## Competing models (`src/models/`)
 
 After the two approaches have chosen their drivers, `src/models/zoo.py` builds every competing model. All of them use the same information (the macro history, and the scenario path in scenario forecasts), the same rolling backtest and the same out-of-sample test.

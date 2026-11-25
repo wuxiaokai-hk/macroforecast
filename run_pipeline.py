@@ -40,7 +40,7 @@ from src.features.transforms import all_features, candidate_forms  # noqa: E402
 from src.modelling.ardl import ARDL  # noqa: E402
 from src.modelling.evaluate import evaluate, horizon_summary  # noqa: E402
 from src.models import horizon, zoo  # noqa: E402
-from src.pipelines import bayes_first, en_first, screen_first  # noqa: E402
+from src.pipelines import bayes_first, en_first, focus_first, screen_first  # noqa: E402
 from src.reporting import formula, report, story  # noqa: E402
 from src.utils.config import load_config  # noqa: E402
 from src.utils.cache import StepCache, hash_code, hash_frame, hash_obj  # noqa: E402
@@ -49,14 +49,15 @@ from src.utils import docs, saved, trace  # noqa: E402
 from src.utils.preflight import preflight  # noqa: E402
 
 warnings.filterwarnings("ignore")
-APPROACHES = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first}
+APPROACHES = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first,
+              "focus_first": focus_first}
 
 
 def main():
     """Command line entry: parse arguments, load the config, start the trace and run the pipeline."""
     ap = argparse.ArgumentParser(description="Macro-driver forecasting pipeline")
     ap.add_argument("--config", default=os.path.join(HERE, "config", "example_config.yaml"))
-    ap.add_argument("--approach", choices=["both", "all", "screen_first", "en_first", "bayes_first"], default=None,
+    ap.add_argument("--approach", choices=["both", "all", "screen_first", "en_first", "bayes_first", "focus_first"], default=None,
                     help="overrides 'approaches' in the config")
     ap.add_argument("--force", action="store_true", help="recompute every step (ignore the cache)")
     ap.add_argument("--force-step", action="append", default=[],
@@ -106,6 +107,8 @@ def run(cfg, args):
     h_hist = hash_frame(ctx.hist)
     h_scen = {k: hash_frame(v) for k, v in ctx.macro.items()}
     cs = {k: hash_obj(cfg[k]) for k in ("sample", "features", "screen_first", "en_first", "bayes_first", "final_model")}
+    cs["focus_first"] = hash_obj({k: cfg["impact"].get(k) for k in ("focus", "max_controls", "control_corr", "controls_same_theme", "excluded_control_themes", "control_t")}
+                                 | {"literature": cfg["literature"].get("models")})
     log("Steps (cached = loaded because nothing it depends on changed):")
     cache.run("data", {"target": h_y, "balance": h_level, "metadata": h_meta, "macro_history": h_hist,
                        "scenarios": hash_obj(h_scen)}, lambda: True, log)
@@ -130,6 +133,7 @@ def run(cfg, args):
                      "modelling/search.py", "modelling/ardl.py", "pipelines/en_first.py"],
         "bayes_first": ["selection/bayes.py", "selection/screening.py", "selection/clustering.py",
                         "modelling/search.py", "modelling/ardl.py", "pipelines/bayes_first.py"],
+        "focus_first": ["selection/double_selection.py", "pipelines/focus_first.py"],
     }
     results = []
     for a in approaches:
@@ -251,6 +255,20 @@ def run(cfg, args):
         formula.write(cfg, ctx, fitted, comp, "backtest", log)
     except Exception as ex:
         log(f"  formula: not written ({type(ex).__name__}: {ex})")
+    if (cfg.get("impact") or {}).get("enabled", True):
+        log("\nHow the economy affects the target (impact/) ...")
+        try:
+            from src.impact import analysis as impact
+            all_fitted = {}
+            for k, v in ev.items():
+                if v.get("fitted") is not None:
+                    try:
+                        all_fitted[k] = pickle.loads(v["fitted"])
+                    except Exception:
+                        pass
+            impact.run(cfg, ctx, all_fitted, out, log)
+        except Exception as ex:
+            log(f"  impact analysis not written ({type(ex).__name__}: {ex})")
     steps = cache.write_manifest(out, log)
     report.write_tables(os.path.join(out, "comparison"), {"8_run_steps": steps})
     saved.snapshot(cfg, "pipeline", log)

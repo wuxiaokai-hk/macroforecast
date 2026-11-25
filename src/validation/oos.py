@@ -34,7 +34,7 @@ from ..utils.io import log
 
 CODE = ["features/transforms.py", "selection/screening.py", "selection/clustering.py", "selection/elastic_net.py",
         "modelling/search.py", "modelling/ardl.py", "pipelines/screen_first.py", "pipelines/en_first.py",
-        "validation/oos.py", "models/zoo.py"]
+        "validation/oos.py", "models/zoo.py", "selection/double_selection.py", "pipelines/focus_first.py"]
 PRETTY = zoo.APPROACH_NAMES
 
 
@@ -76,7 +76,9 @@ def select_at(cfg, ctx, approach_mod, end_pos, cache, approach):
     c = truncated(ctx, end_pos, cfg)
     comp = {"target": hash_frame(ctx.y.iloc[:end_pos + 1]), "macro": hash_frame(ctx.hist.iloc[:end_pos + 1]),
             "metadata": hash_frame(ctx.meta), "end": str(ctx.idx[end_pos]), "est0": str(ctx.idx[c.est0]),
-            "config": hash_obj({**{k: cfg[k] for k in ("features", approach, "final_model", "sample")},
+            "config": hash_obj({**{k: cfg.get(k) for k in ("features", approach, "final_model", "sample")},
+                                "impact": cfg.get("impact") if approach == "focus_first" else None,
+                                "literature": cfg["literature"].get("models") if approach == "focus_first" else None,
                                 "window": cfg["oos"]["window"], "window_length": cfg["oos"]["window_length"]}),
             "code": hash_code(*CODE)}
 

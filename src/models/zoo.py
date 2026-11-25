@@ -35,7 +35,9 @@ from .ml import LABELS, MLModel
 from .simple import SameGrowth
 from . import autoardl
 
-APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first", "bayes_first": "Bayesian first"}
+APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first", "bayes_first": "Bayesian first",
+                  "focus_first": "Explanatory: focus drivers"}
+APPROACH_FAMILY = {"focus_first": "Explanatory"}
 
 
 def selection_info(approach, result):
@@ -45,6 +47,8 @@ def selection_info(approach, result):
         result: the dict returned by the approach's run().
     """
     out = {"features": list(result["features"])}
+    if result.get("focus"):
+        out["focus"] = list(result["focus"])
     if result.get("bma_models"):
         out["bma_models"] = [(list(f), float(w)) for f, w in result["bma_models"]]
     t = result.get("tables", {})
@@ -195,6 +199,12 @@ def build(cfg, ctx, sel, log=print):
         add(ARDL("Mean growth benchmark", [], ar=False, family="Benchmark"),
             "Average historical growth: a random walk with drift in the balance")
     for ap, info in sel.items():
+        if ap == "focus_first":
+            m_ = ARDL(APPROACH_NAMES[ap], info["features"], family=APPROACH_FAMILY[ap])
+            m_.focus = list(info.get("focus") or [])
+            add(m_, f"Focus drivers {', '.join(m_.focus)} always in; controls by double selection (predict the target "
+                    "or a focus driver). Built to measure effects, not to win the forecast race (see focus_first/)")
+            continue
         add(ARDL(APPROACH_NAMES[ap], info["features"], family="Data-driven"),
             "Selected from all candidates by the data (see the approach's folder)")
     bm = (sel.get("bayes_first") or {}).get("bma_models")

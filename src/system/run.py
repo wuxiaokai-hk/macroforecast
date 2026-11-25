@@ -368,10 +368,10 @@ def members_by(members):
 def joint_oos(members, scfg, H, log=print):
     """Out-of-sample: at each origin every target's drivers are re-selected with data up to the origin, then the
     chain forecasts itself."""
-    from ..pipelines import en_first, screen_first
+    from ..pipelines import bayes_first, en_first, focus_first, screen_first
     from ..utils.cache import StepCache
     from ..validation import oos
-    APP = {"screen_first": screen_first, "en_first": en_first}
+    APP = {"screen_first": screen_first, "en_first": en_first, "bayes_first": bayes_first, "focus_first": focus_first}
     c0 = members[0].cfg
     first = pd.Period(c0["oos"]["first_origin"], freq="Q")
     end = members[0].ctx.idx[members[0].ctx.end]
@@ -383,7 +383,7 @@ def joint_oos(members, scfg, H, log=print):
         for m in members:
             tg.set_form(m.form)
             cache = StepCache(m.cfg["cache"]["dir"], enabled=m.cfg["cache"]["enabled"])
-            aps = {n: APP[n] for n in m.cfg["approaches"]}
+            aps = {n: APP[n] for n in m.cfg["approaches"] if n in APP}
             try:
                 ms, sel, est = oos.models_at(m.cfg, m.ctx, aps, m.ctx.idx.get_loc(o), cache)
             except Exception as ex:
