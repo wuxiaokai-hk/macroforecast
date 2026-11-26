@@ -135,8 +135,19 @@ def n_variables(s):
 ranking["n_vars"] = ranking["drivers"].map(n_variables)
 ranking["single_equation"] = ranking["family"].isin(["Data-driven", "Literature", "Hybrid"]) & ranking["n_vars"].notna()
 ranking = ranking.sort_values(f"avg_1_{HM}_pct").reset_index(drop=True)
-within = ranking[ranking["single_equation"] & ranking["n_vars"].between(1, MAXV)]
-REC = within.iloc[0] if len(within) else ranking.iloc[0]
+# the recommended model: every model competes. The model scorecard decides when it was written (accuracy,
+# interpretation and sensitivity, recommendation/recommended.json); otherwise the most accurate model of any type.
+REC, REC_HOW = ranking.iloc[0], "most accurate model of any type"
+_rj = os.path.join(OUT, "recommendation", "recommended.json")
+if os.path.exists(_rj):
+    _want = json.load(open(_rj, encoding="utf-8")).get("model")
+    if _want in set(ranking["model"]):
+        REC, REC_HOW = ranking[ranking["model"] == _want].iloc[0], "best balance of accuracy, interpretation and sensitivity"
+    elif _want in set(comp["model"]):            # scored on the backtest, not in the out-of-sample table
+        _r = comp[comp["model"] == _want].drop(columns=["drivers"], errors="ignore").merge(
+            mlist[["model", "drivers"]], on="model", how="left").iloc[0]
+        _r["n_vars"] = n_variables(_r.get("drivers"))
+        REC, REC_HOW = _r, "best balance of accuracy, interpretation and sensitivity (rolling backtest)"
 BEST = ranking[ranking["family"] != "Benchmark"].iloc[0]
 CHALL = BEST if BEST["model"] != REC["model"] else ranking[ranking["model"] != REC["model"]].iloc[0]
 AR = ranking.set_index("model").loc["AR(1) benchmark"]
@@ -194,7 +205,7 @@ def family_bar_spec(t, title):
             "number_format": '0.00"%"', "axis_format": '0.0"%"', "cat_font_size": 8, "gap_width": 35, "y_min": 0}
 
 
-headline = (f"Within {MAXV} variables, {REC['model']} cuts the {HM}-quarter error by {less(REC)}")
+headline = (f"Recommended: {REC['model']}, {less(REC)} less error than AR(1) over 1–{HM} quarters")
 n_feat = len(read("screen_first", "A1_screen_all.csv"))
 n_rel = forms["mnemonic"].nunique() if not forms.empty else 0
 n_stat = forms[forms["stationary"]]["mnemonic"].nunique() if not forms.empty else 0
@@ -216,7 +227,7 @@ bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" f
 ::: {.column}
 [[tile: `{python} len(ranking)` | models in `{python} ranking["family"].nunique()` families | same tests 4, 8 and 12 quarters ahead]]
 
-[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | best within `{python} MAXV` variables | `{python} REC["model"]`, average over 1–`{python} HM` quarters]]
+[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | recommended | `{python} REC["model"]`, average over 1–`{python} HM` quarters]]
 
 [[tile*: `{python} pct(BEST[f"avg_1_{HM}_pct"])` | most accurate overall | `{python} BEST["model"]`]]
 
@@ -230,9 +241,9 @@ bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" f
 ::: {.column}
 ★ **Recommendation**
 
-`{python} MAXV`-variable limit firm: **`{python} REC["model"]`**, challenger `{python} CHALL["model"]`
+Recommended (`{python} REC_HOW`): **`{python} REC["model"]`**, challenger `{python} CHALL["model"]`
 
-Limit relaxed for a long-run anchor: **`{python} BEST["model"]`**
+Most accurate overall: **`{python} BEST["model"]`**
 :::
 
 ::::
@@ -578,7 +589,7 @@ if HAVE_OOS:
 ::: {.column}
 [[tile*: `{python} pct(BEST[f"avg_1_{HM}_pct"])` | `{python} BEST["model"]` | most accurate, `{python} int(BEST["n_vars"]) if pd.notna(BEST["n_vars"]) else ""` variables]]
 
-[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | `{python} REC["model"]` | best within `{python} MAXV` variables]]
+[[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | `{python} REC["model"]` | recommended]]
 
 [[tile: `{python} pct(AR[f"avg_1_{HM}_pct"])` | AR(1) benchmark | own history only]]
 :::
@@ -682,11 +693,11 @@ chart("scatter", {"type": "scatter", "series": series, "x_title": "Distinct macr
 ::: {.column}
 **The trade-off**
 
-Within `{python} MAXV` variables the best is `{python} REC["model"]` at `{python} pct(REC[f"avg_1_{HM}_pct"])`.
+The recommended model is `{python} REC["model"]` at `{python} pct(REC[f"avg_1_{HM}_pct"])` (`{python} REC_HOW`).
 
-`{python} BEST["model"]` reaches `{python} pct(BEST[f"avg_1_{HM}_pct"])` with `{python} int(BEST["n_vars"]) if pd.notna(BEST["n_vars"]) else ""` variables, its long-run anchor included.
+The most accurate model overall is `{python} BEST["model"]` at `{python} pct(BEST[f"avg_1_{HM}_pct"])`.
 
-The limit is a decision for the model owner.
+When they differ, the recommendation trades a little accuracy for a model that can be explained and responds to the economy.
 :::
 
 ::::
@@ -760,7 +771,7 @@ if not hold.empty:
                       "label_skip": 2})
 ```
 
-## `{python} REC["model"]`: the best model within `{python} MAXV` variables
+## `{python} REC["model"]`: the recommended model
 
 :::: {.columns}
 
@@ -959,11 +970,11 @@ if FORM:
 
 [[dark-slide]]
 
-[[card*@navy2: If the limit is firm | `{python} REC["model"]`; `{python} pct(REC[f"avg_1_{HM}_pct"])` error over 1–`{python} HM` quarters]]
+[[card*@navy2: Recommended | `{python} REC["model"]`; `{python} pct(REC[f"avg_1_{HM}_pct"])` error over 1–`{python} HM` quarters]]
 
 [[card*@navy2: Challenger | `{python} CHALL["model"]`; `{python} pct(CHALL[f"avg_1_{HM}_pct"])`; monitored alongside]]
 
-[[card*@navy2: If a long-run anchor is acceptable | `{python} BEST["model"]`; most accurate at 8–12 quarters]]
+[[card*@navy2: Most accurate overall | `{python} BEST["model"]`; `{python} pct(BEST[f"avg_1_{HM}_pct"])` error over 1–`{python} HM` quarters]]
 
 [[band: Next steps | re-run on actual data; review the literature table and expected signs with the business; agree the variable limit with model risk; add the foundation models; monitor quarterly]]
 

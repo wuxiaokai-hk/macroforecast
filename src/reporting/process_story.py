@@ -247,19 +247,28 @@ class Story:
         rank["n_vars"] = rank["drivers"].map(self._n_vars)
         rank["single_equation"] = rank["family"].isin(["Data-driven", "Literature", "Hybrid"]) & rank["n_vars"].notna()
         self.rank = rank.sort_values(f"avg_1_{self.HM}_pct").reset_index(drop=True)
-        within = self.rank[self.rank["single_equation"] & self.rank["n_vars"].between(1, self.MAXV)]
-        self.REC = (within.iloc[0] if len(within) else self.rank.iloc[0])
+        # every model competes: without a scorecard, the most accurate model of any type (not the look-ahead check)
+        self.REC = self.rank.iloc[0]
+        self.REC_BASIS = None
         self.SC = R("recommendation", "1_scorecard.csv")
         self.SCJ = {}
         rj = os.path.join(self.out, "recommendation", "recommended.json")
         if os.path.exists(rj):                     # the model scorecard decides (src/selection/scorecard.py)
             self.SCJ = json.load(open(rj, encoding="utf-8"))
-            hit = self.rank[self.rank["model"] == self.SCJ.get("model")]
+            want = self.SCJ.get("model")
+            hit = self.rank[self.rank["model"] == want]
             if len(hit):
                 self.REC = hit.iloc[0]
-        self.AR = self.rank.set_index("model").loc["AR(1) benchmark"] if "AR(1) benchmark" in set(self.rank["model"]) else None
-        self.basis = ("out of sample (drivers re-chosen at every origin)" if self.HAVE_OOS
-                      else "rolling backtest (drivers chosen on all the data)")
+            elif want and want in set(self.comp["model"]):   # scored on the backtest, not in the out-of-sample table
+                r = self.comp[self.comp["model"] == want].drop(columns=["drivers"], errors="ignore").merge(
+                    self.mlist[["model", "drivers"]], on="model", how="left").iloc[0]
+                r["n_vars"] = self._n_vars(r.get("drivers"))
+                self.REC = r
+                self.REC_BASIS = "rolling backtest (the scorecard's basis)"
+        arsrc = self.comp if self.REC_BASIS else self.rank         # the benchmark on the same basis as the model
+        self.AR = arsrc.set_index("model").loc["AR(1) benchmark"] if "AR(1) benchmark" in set(arsrc["model"]) else None
+        self.basis = self.REC_BASIS or ("out of sample (drivers re-chosen at every origin)" if self.HAVE_OOS
+                                        else "rolling backtest (drivers chosen on all the data)")
         self.rec_drivers = [d for d in str(self.REC.get("drivers", "")).split(", ") if "|" in d]
         self.u = (lambda v: f"{v / self.SCALE:,.1f}") if self.form == "dlog" else (lambda v: f"{v / self.SCALE:,.2f}")
         self.ulab = self.UNITS
@@ -1338,12 +1347,12 @@ class Story:
         rule = (f"Choice rule: every model competes; the one with the best balance of forecasting accuracy, "
                 f"interpretation and sensitivity to the economy (model scorecard, previous page), {self.basis}."
                 if sc else
-                f"Choice rule: among single-equation models (data-driven, literature, hybrid) with 1 to {self.MAXV} "
-                f"drivers, the one with the lowest average error over 1-{self.HM} quarters, {self.basis}.")
+                f"Choice rule: every model competes (all families); the one with the lowest average error over "
+                f"1-{self.HM} quarters, {self.basis}.")
         self.add("9. The recommended model", f"Recommended: {rec}",
                  ("The best balance of accuracy, interpretation and sensitivity among all models, judged "
                   f"{self.basis}." if sc else
-                  f"The most accurate model with at most {self.MAXV} drivers and a written equation, judged {self.basis}."),
+                  f"The most accurate model of any type, judged {self.basis}."),
                  what=[rule,
                        "Drivers: " + "; ".join(self.label(d) for d in self.rec_drivers) + "." if self.rec_drivers else ""],
                  why=["A single equation can be written down, checked by hand, put in a spreadsheet and explained to a "
