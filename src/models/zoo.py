@@ -35,6 +35,7 @@ from . import deep, regime
 from .ml import LABELS, MLModel
 from .simple import SameGrowth
 from . import autoardl
+from ..utils import target as tg
 
 APPROACH_NAMES = {"screen_first": "Screen first", "en_first": "Elastic Net first", "bayes_first": "Bayesian first",
                   "focus_first": "Explanatory: focus drivers", "factors_first": "Factors first",
@@ -281,12 +282,23 @@ def build(cfg, ctx, sel, log=print):
             nm, feats, sg = sets[key]
             bsig = {autoardl.base_of(f): v for f, v in sg.items()}
             add(autoardl.AutoARDL(nm, feats, mp, mq, ic, signs=bsig), how)
+            if acfg.get("levels_counterpart", True):     # the same drivers in levels: dlog -> ln, diff -> level
+                items, left = autoardl.levels_counterpart(feats, ctx.hist, cfg["features"]["deflator"])
+                if items:
+                    ylab = "ln(organic target)" if tg.is_log() else "the organic target level"
+                    add(autoardl.LevelsARDL(nm.replace("Auto-ARDL:", "Auto-ARDL in levels:"), items,
+                                            cfg["features"]["deflator"], mp, mq, ic, real=False),
+                        f"Levels counterpart of '{nm}': {ylab} on its own lags (AR terms in levels) and on the same "
+                        "drivers un-differenced (" + ", ".join(f"{i['mnemonic']} {i['from']}->{i['form']}" for i in items) +
+                        f"); lags by {ic.upper()}; Pesaran-Shin-Smith bounds test" +
+                        (". Left out: " + "; ".join(f"{f} ({r})" for f, r in left) if left else ""),
+                        "Pesaran, Shin & Smith (2001)")
         if acfg.get("levels", True) and table is not None:
             items = [i for i in litmod.long_run(table) if i["mnemonic"] in ctx.hist.columns]
             defl = litmod.resolve((ecm_cfg or {}).get("deflator", cfg["features"]["deflator"]), table) \
                 or cfg["features"]["deflator"]
             if items and defl in ctx.hist.columns:
-                add(autoardl.LevelsARDL("Auto-ARDL in levels (bounds test)", items, defl, mp, mq, ic),
+                add(autoardl.LevelsARDL("Auto-ARDL in levels: literature long run (real)", items, defl, mp, mq, ic),
                     "ln(real organic target) on the long-run levels of the literature error-correction model, lags by "
                     f"{ic.upper()}; Pesaran-Shin-Smith bounds test for a long-run relation",
                     "Pesaran, Shin & Smith (2001)")

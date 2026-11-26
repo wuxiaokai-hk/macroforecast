@@ -213,7 +213,7 @@ def portable(model):
         return None
     if kind == "LevelsARDL":
         return {"class": kind, "name": model.name, "family": model.family, "long_run": model.long_run,
-                "deflator": model.deflator, "p": int(model.p), "q": {k: int(v) for k, v in model.q.items()},
+                "deflator": model.deflator, "real": bool(getattr(model, "real", True)), "p": int(model.p), "q": {k: int(v) for k, v in model.q.items()},
                 "max_p": model.max_p, "max_q": model.max_q, "ic": model.ic,
                 "params": {k: float(v) for k, v in model.params.items()},
                 "bounds": {k: (float(v) if isinstance(v, (int, float)) else v) for k, v in (model.bounds or {}).items()}}
@@ -247,7 +247,8 @@ def rebuild(d):
     from ..models.simple import SameGrowth
     from ..models.autoardl import AutoARDL, LevelsARDL
     if d["class"] == "LevelsARDL":
-        m = LevelsARDL(d["name"], d["long_run"], d["deflator"], d["max_p"], d["max_q"], d["ic"], family=d["family"])
+        m = LevelsARDL(d["name"], d["long_run"], d["deflator"], d["max_p"], d["max_q"], d["ic"], family=d["family"],
+                       real=d.get("real", True))
         m.p, m.q, m.params, m.bounds, m.frozen = d["p"], d["q"], pd.Series(d["params"]), d.get("bounds"), True
         return m
     if d["class"] == "AutoARDL":

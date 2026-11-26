@@ -585,9 +585,9 @@
   "changed": ""
  },
  "src.models.zoo.build": {
-  "hash": "f0c388857828",
+  "hash": "88673486765b",
   "added": "",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.pipelines.en_first.run": {
   "hash": "681327439870",
@@ -2105,9 +2105,9 @@
   "changed": "2026-11-03"
  },
  "src.reporting.formula.write_calculator": {
-  "hash": "45aa9791b835",
+  "hash": "33dbf3736ddb",
   "added": "2026-10-29",
-  "changed": "2026-11-03"
+  "changed": "2026-11-26"
  },
  "src.reporting.formula.write": {
   "hash": "d0ffbdefe2cc",
@@ -2145,14 +2145,14 @@
   "changed": "2026-10-29"
  },
  "src.utils.saved.portable": {
-  "hash": "4f7afa2c5f39",
+  "hash": "5c11d591d40d",
   "added": "2026-10-29",
-  "changed": "2026-10-31"
+  "changed": "2026-11-26"
  },
  "src.utils.saved.rebuild": {
-  "hash": "dcf3a792a5bf",
+  "hash": "63f086b80692",
   "added": "2026-10-29",
-  "changed": "2026-10-31"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl._ic": {
   "hash": "0816cd443366",
@@ -2215,24 +2215,24 @@
   "changed": "2026-10-31"
  },
  "src.models.autoardl.LevelsARDL": {
-  "hash": "ad7c742e543d",
+  "hash": "961eb12d710b",
   "added": "2026-10-31",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl.LevelsARDL.__init__": {
-  "hash": "7ecc40ae18be",
+  "hash": "75ecd02d4ac2",
   "added": "2026-10-31",
-  "changed": "2026-10-31"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl.LevelsARDL.panel": {
-  "hash": "7538b9a6b773",
+  "hash": "ce47176ac8cb",
   "added": "2026-10-31",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl.LevelsARDL.spec": {
-  "hash": "771ab25e9198",
+  "hash": "fb29c173e88b",
   "added": "2026-10-31",
-  "changed": "2026-10-31"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl.LevelsARDL.drivers": {
   "hash": "fa4b3bf1899e",
@@ -2265,9 +2265,9 @@
   "changed": "2026-10-31"
  },
  "src.models.autoardl.LevelsARDL.detail_rows": {
-  "hash": "4d49ecbb2631",
+  "hash": "75c56a9b5c4f",
   "added": "2026-10-31",
-  "changed": "2026-11-03"
+  "changed": "2026-11-26"
  },
  "src.models.autoardl.uecm_design": {
   "hash": "89fda8d0c1f4",
@@ -2335,9 +2335,9 @@
   "changed": "2026-10-31"
  },
  "src.reporting.formula.terms_levels": {
-  "hash": "bca775cab4d8",
+  "hash": "8e9049c0b0d8",
   "added": "2026-10-31",
-  "changed": "2026-11-03"
+  "changed": "2026-11-26"
  },
  "src.reporting.formula.worked_levels": {
   "hash": "1769594058a6",
@@ -4694,67 +4694,17 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.models.autoardl.LevelsARDL.target_label": {
+  "hash": "5f5173a96e32",
+  "added": "2026-11-26",
+  "changed": "2026-11-26"
+ },
+ "src.models.autoardl.levels_counterpart": {
+  "hash": "2ada2280aaa1",
+  "added": "2026-11-26",
+  "changed": "2026-11-26"
+ },
  "_log": [
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.s_search_pick",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.s_oos_gap",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.s_driver_stability",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.story.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes.prepare",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes._Space",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes._Space.__init__",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes._Space.logpost",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes.mc3",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.selection.bayes.bma_select",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.settings",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.describe",
-   "what": "added"
-  },
   {
    "date": "2026-11-24",
    "id": "src.panel.compare._one",
@@ -6193,6 +6143,66 @@
   {
    "date": "2026-11-25",
    "id": "src.validation.oos.window_check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL.__init__",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL.panel",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL.spec",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL.target_label",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.LevelsARDL.detail_rows",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.autoardl.levels_counterpart",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.zoo.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.formula.terms_levels",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.formula.write_calculator",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.utils.saved.portable",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.utils.saved.rebuild",
    "what": "changed"
   }
  ]

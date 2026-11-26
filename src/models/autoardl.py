@@ -16,6 +16,12 @@ LevelsARDL (levels form, with the bounds test)
     levels zero) and t (lagged y* zero), case III (unrestricted constant, no trend), against the I(0) and I(1)
     critical bounds. F above the I(1) bound: a long-run relation; below the I(0) bound: none; in between: inconclusive.
     Forecasts: y* is iterated forward and target growth is g_t = y*_t - y*_{t-1} + ln(P_t / P_{t-1}).
+
+    The same class also gives the levels counterpart of each growth-form AutoARDL (levels_counterpart()):
+    the target and every driver are "un-differenced" (nominal, no deflator):
+        target  dlog -> y* = ln L        diff -> y* = L
+        driver  dlog, yoy, dlog2, gap -> ln x     rdlog, ryoy -> ln(x / P)     diff, diff2, diff4, lvl, rgap -> x
+    and y*_{t-1}, ..., y*_{t-p} are the autoregressive terms (an ARDL(1, ...) has the AR(1) in levels).
 """
 import itertools
 
@@ -198,14 +204,17 @@ class LevelsARDL:
     Pesaran-Shin-Smith bounds test. Same interface as the other models."""
     kind = "LevelsARDL"
 
-    def __init__(self, name, long_run, deflator, max_p=4, max_q=4, ic="bic", family=FAMILY, note=""):
+    def __init__(self, name, long_run, deflator, max_p=4, max_q=4, ic="bic", family=FAMILY, note="", real=True):
         """Create the model.
 
         Args:
             name: display name. long_run: list of {mnemonic, form} (forms as in the error-correction model: log,
             log_real, level, real_rate). deflator: price index mnemonic. max_p, max_q, ic: lag search.
+            real: True: y* = ln(L/P) (the literature error-correction form); False: y* = ln L for a dlog target,
+            L for a diff target (the levels counterpart of the growth models).
         """
         self.name, self.family, self.note = name, family, note
+        self.real = bool(real)
         self.long_run, self.deflator = list(long_run), deflator
         self.lr_names = [f"lr:{i['mnemonic']}:{i.get('form', 'log')}" for i in self.long_run]
         self.max_p, self.max_q, self.ic = int(max_p), int(max_q), str(ic).lower()
@@ -217,7 +226,7 @@ class LevelsARDL:
         """Part of the model interface (see src/models/zoo.py): target, dummies, y* = ln(L*/P), the long-run levels."""
         P = make_panel(ctx, mdf, [])
         P["__logL"] = ctx.logL.reindex(P.index)
-        P["__lcpi"] = tg.target_deflator(mdf, self.deflator, P.index)
+        P["__lcpi"] = tg.target_deflator(mdf, self.deflator, P.index) if self.real else pd.Series(0.0, index=P.index)
         P["__ys"] = P["__logL"] - P["__lcpi"]
         for item, n in zip(self.long_run, self.lr_names):
             P[n] = long_run_column(mdf, item, self.deflator).reindex(P.index)
@@ -226,7 +235,7 @@ class LevelsARDL:
     def spec(self):
         """Part of the model interface (see src/models/zoo.py)."""
         return {"class": "LevelsARDL", "long_run": self.long_run, "deflator": self.deflator, "max_p": self.max_p,
-                "max_q": self.max_q, "ic": self.ic}
+                "max_q": self.max_q, "ic": self.ic, "real": self.real}
 
     def drivers(self):
         """Part of the model interface (see src/models/zoo.py): the long-run variables with their chosen lags."""
@@ -302,6 +311,12 @@ class LevelsARDL:
         th = {n: sum(p.get(f"{n}|L{k}", 0.0) for k in range(0, self.q[n] + 1)) / (1 - a) for n in self.lr_names}
         return th, -(1 - a), p.get("const", 0.0) / (1 - a)
 
+    def target_label(self):
+        """What y* is, in words."""
+        if self.real:
+            return "ln(real organic target)" if tg.is_log() else "organic target (level)"
+        return "ln(organic target)" if tg.is_log() else "organic target (level)"
+
     def lag_summary(self):
         """EViews notation of the chosen lags, e.g. ARDL(2, 0, 1, 1)."""
         return f"ARDL({self.p}, " + ", ".join(str(self.q[n]) for n in self.lr_names) + f"), chosen by {self.ic.upper()}"
@@ -316,7 +331,7 @@ class LevelsARDL:
             rows.append({"model": self.name, "term": t, "coef": float(r.params[t]), "se_hac": float(r.bse[t]),
                          "t": float(r.tvalues[t]), "p": float(r.pvalues[t]),
                          "reading": ("constant" if t == "const" else
-                                     f"ln(real organic target), {t[-1]} quarter(s) earlier" if t.startswith("ys_lag") else
+                                     f"{self.target_label()}, {t[-1]} quarter(s) earlier" if t.startswith("ys_lag") else
                                      f"{t.split(':')[1]} ({t.split(':')[2].split('|')[0]}), lag {t.rsplit('L', 1)[-1]}")})
         th, speed, c0 = self.long_run_coefs()
         rows.append({"model": self.name, "term": "lag orders", "reading": self.lag_summary()})
@@ -326,7 +341,7 @@ class LevelsARDL:
         for n, v in th.items():
             rows.append({"model": self.name, "term": f"long run: {n[3:]}", "coef": float(v),
                          "reading": f"in the long run, 1 unit higher {n.split(':')[1]} ({n.split(':')[2]}) goes with "
-                                    f"{v:+.3f} in ln(real target)"})
+                                    f"{v:+.3f} in {self.target_label()}"})
         b = self.bounds or {}
         if b:
             rows.append({"model": self.name, "term": "bounds test: F", "coef": b["F"],
@@ -418,6 +433,43 @@ def bounds_test(W, lr_names, p, q):
         return {"F": np.nan, "t": np.nan, "k": k, "decision": f"bounds test failed: {type(ex).__name__}: {ex}",
                 "F_p_I0": np.nan, "F_p_I1": np.nan, **{f"{s_}_{b_}_{lev}": np.nan for s_ in ("F", "t")
                                                        for b_ in ("I0", "I1") for lev in (10, 5, 1)}}
+
+
+# growth-form transform of a driver -> its level form in the levels counterpart (None: no level form, left out)
+LEVEL_FORM = {"dlog": "log", "yoy": "log", "dlog2": "log", "gap": "log",
+              "rdlog": "log_real", "ryoy": "log_real",
+              "diff": "level", "diff2": "level", "diff4": "level", "lvl": "level", "rgap": "level", "acc": None}
+
+
+def levels_counterpart(features, mdf, deflator):
+    """The long-run (levels) items of a growth-form driver set: each driver un-differenced, once per series.
+
+    Args:
+        features: driver features "code|transform|Llag" of a growth-form model. mdf: macro history (to check that
+        a log is possible). deflator: price index mnemonic (for log_real).
+
+    Returns:
+        (items [{mnemonic, form, from}], left out [(feature, reason)]).
+    """
+    items, out, seen = [], [], set()
+    for f in features:
+        code, tr, _ = parse_feature(f)
+        form = LEVEL_FORM.get(tr, "level" if tr not in LEVEL_FORM else None)
+        if code not in mdf.columns:
+            out.append((f, "not a raw macro series (e.g. a factor)"))
+            continue
+        if form is None:
+            out.append((f, f"{tr} has no level form"))
+            continue
+        if form in ("log", "log_real") and not (mdf[code].dropna() > 0).all():
+            form = "level"                                 # a log needs positive values
+        if form == "log_real" and (not deflator or deflator not in mdf.columns):
+            form = "log"
+        if (code, form) in seen:
+            continue
+        seen.add((code, form))
+        items.append({"mnemonic": code, "form": form, "from": tr})
+    return items, out
 
 
 def base_of(feature):

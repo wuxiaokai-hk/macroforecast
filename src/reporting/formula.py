@@ -169,8 +169,9 @@ def terms_levels(model):
              "meaning": "constant"}]
     for i in range(1, model.p + 1):
         rows.append({"symbol": f"y*(t-{i})", "term": f"ys_lag{i}", "coefficient": float(p.get(f"ys_lag{i}", 0.0)),
-                     "definition": f"ln(L*(t-{i}) / {model.deflator}(t-{i}))",
-                     "meaning": f"ln the real organic target, {i} quarter{'s' if i > 1 else ''} earlier"})
+                     "definition": (f"ln(L*(t-{i}) / {model.deflator}(t-{i}))" if getattr(model, "real", True)
+                                    and tg.is_log() else f"ln L*(t-{i})" if tg.is_log() else f"L*(t-{i})"),
+                     "meaning": f"{model.target_label()}, {i} quarter{'s' if i > 1 else ''} earlier"})
     for j, (item, n) in enumerate(zip(model.long_run, model.lr_names), 1):
         for k in range(0, model.q[n] + 1):
             d = _lr_def(item, model.deflator).replace("(t)", f"(t-{k})" if k else "(t)").replace("(t-4)", f"(t-{k + 4})")
@@ -562,14 +563,17 @@ def write_calculator(path, ctx, model, T, Q, info, best_other=None):
                 c = sh.cell(orow - i, cidx[YS_COL], float(P["__ys"].iloc[pos - i]))
                 c.font, c.number_format = BLUE, "0.000000"
             sh.cell(orow, cidx[YS_COL]).comment = Comment(
-                "ln of the organic balance (one-off acquisitions and sales removed) divided by the price index.", "model")
+                (("ln of the organic balance divided by the price index" if getattr(model, "real", True) else
+                  "ln of the organic balance") if LOG else "the organic target level") +
+                " (one-off acquisitions and sales removed).", "model")
             for rr in rows_feat:
                 parts = [coef_ref["const"]] + [f"{coef_ref[f'ys_lag{i}']}*{ysc}{rr - i}" for i in range(1, model.p + 1)]
                 parts += [f"{coef_ref[f'{n}|L{k}']}*{zc[n]}{rr - k}" for n in model.lr_names
                           for k in range(0, model.q[n] + 1)]
                 sh.cell(rr, cidx[YS_COL], "=" + "+".join(parts)).number_format = "0.000000"
                 sh.cell(rr, cidx[G_COL],
-                        f"={ysc}{rr}-{ysc}{rr - 1}" + (f"+LN({Pd(rr)}/{Pd(rr - 1)})" if LOG else "")
+                        f"={ysc}{rr}-{ysc}{rr - 1}" + (f"+LN({Pd(rr)}/{Pd(rr - 1)})"
+                                                       if LOG and getattr(model, "real", True) else "")
                         ).number_format = "0.000000"
                 sh.cell(rr, cidx[QQ_COL], f_qq(gcol, rr)).number_format = PCT
                 sh.cell(rr, cidx[ANN_COL], f_ann(gcol, rr)).number_format = PCT

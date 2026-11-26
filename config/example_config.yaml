@@ -168,7 +168,8 @@ models:                             # which model families compete (all use the 
     max_p: 4                        # most lags of loan growth
     max_q: 4                        # most lags of each driver (0 = same quarter only)
     on: [core, screen_first]        # driver sets: core (literature), screen_first, en_first
-    levels: true                    # also the ARDL in levels with the Pesaran-Shin-Smith bounds test
+    levels: true                    # also the literature long-run ARDL in levels (real target), with the bounds test
+    levels_counterpart: true        # and each auto-ARDL above in levels: dlog -> ln, diff -> level, AR terms in levels
   horizon_combination:              # splice the models that forecast best at each horizon
     enabled: true
     buckets: [[1, 4], [5, 8], [9, 12]]   # quarters ahead; the best model in each bucket is chosen separately

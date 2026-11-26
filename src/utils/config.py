@@ -45,7 +45,7 @@ DEFAULTS = {
                    "channels": "table"},
     "models": {"only": [], "tested": {"enabled": True},
                "same_growth": ["disposable_income", "house_prices"],
-               "auto_ardl": {"enabled": True, "criterion": "bic", "max_p": 4, "max_q": 4,
+               "auto_ardl": {"enabled": True, "criterion": "bic", "max_p": 4, "max_q": 4, "levels_counterpart": True,
                              "on": ["core", "screen_first"], "levels": True},
                "horizon_combination": {"enabled": True, "buckets": [[1, 4], [5, 8], [9, 12]], "top_k": 3,
                                        "min_history": 3, "criterion": "growth"},

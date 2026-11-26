@@ -544,7 +544,7 @@ sign_of() for a feature name.
 
 **Calls:** `parse_feature`, `sign_of`
 
-**Called by:** `all_model_responses`, `focus_table`, `_expected_sign`, `twin`, `screen`, `run`, `prepare`, `resolve_focus`, `_prepare`, `screen`, `best_forms`, `subset_search`
+**Called by:** `all_model_responses`, `focus_table`, `_expected_sign`, `twin`, `build`, `screen`, `run`, `prepare`, `resolve_focus`, `_prepare`, `screen`, `best_forms`, `subset_search`
 
 <sub>src/features/transforms.py:82</sub>
 
@@ -605,7 +605,7 @@ Split a feature name into its parts (inverse of feature_name).
 
 **Returns:** (code, transform, lag) with lag as int.
 
-**Called by:** `describe`, `feature_series`, `feature_sign`, `_driver_rows`, `base_of`, `core_plus_addons`, `write_workbook`, `twin`, `_valid`, `screen`, `run`, `definition`, `terms`, `write_calculator`, `build`, `prepare`, `screen`, `drivers_of`, `bvarx_inputs`, `main`
+**Called by:** `describe`, `feature_series`, `feature_sign`, `_driver_rows`, `base_of`, `levels_counterpart`, `core_plus_addons`, `write_workbook`, `twin`, `_valid`, `build`, `screen`, `run`, `definition`, `terms`, `write_calculator`, `build`, `prepare`, `screen`, `drivers_of`, `bvarx_inputs`, `main`
 
 <sub>src/features/transforms.py:150</sub>
 
@@ -649,7 +649,7 @@ Compute several features side by side.
 
 **Calls:** `feature_series`
 
-**Called by:** `all_features`, `make_panel`, `_arrays`, `twin`, `_valid`, `_oos_origin`, `run`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
+**Called by:** `all_features`, `make_panel`, `_arrays`, `twin`, `_valid`, `build`, `_oos_origin`, `run`, `scenarios`, `Story.s_contrib`, `Story.s_rec_fit`, `Story.s_scen_inputs`, `build`, `SURChain.__init__`, `SURChain.forecast`, `vecm_scenarios`, `Node.bank_X`, `build_node`, `sys_cube`, `bvarx_inputs`, `scenario_paths`
 
 <sub>src/features/transforms.py:178</sub>
 
@@ -1381,7 +1381,7 @@ Plain OLS with numpy (fast; used inside the exhaustive search).
 
 **Returns:** (coefficients, standard errors, residuals). Standard errors are classical (not Newey-West).
 
-**Called by:** `exhaustive_search`, `channels_data_measures`, `core_plus_addons`, `_check`, `main`
+**Called by:** `exhaustive_search`, `channels_data_measures`, `core_plus_addons`, `_check`, `build`, `main`
 
 <sub>src/modelling/ardl.py:15</sub>
 
@@ -1399,7 +1399,7 @@ Variance inflation factors of the columns of F (multicollinearity check).
 
 **Returns:** array of k VIFs (1 when k < 2, inf if the correlation matrix is singular).
 
-**Called by:** `reliability`, `diagnostics`, `exhaustive_search`, `core_plus_addons`, `_check`, `search`, `main`
+**Called by:** `reliability`, `diagnostics`, `exhaustive_search`, `core_plus_addons`, `_check`, `build`, `search`, `main`
 
 <sub>src/modelling/ardl.py:37</sub>
 
@@ -1461,6 +1461,8 @@ Create an ARDL specification (nothing is estimated yet).
 | `family` | `''` | model family for the comparison. |
 | `note` | `''` | free text shown in the model list. |
 
+**Called by:** `AutoARDL.__init__`, `build`
+
 <sub>src/modelling/ardl.py:71</sub>
 
 ### `ARDL.panel`
@@ -1480,6 +1482,8 @@ Part of the model interface (see src/models/zoo.py): build the model's data pane
 
 **Calls:** `make_panel`
 
+**Called by:** `worked`, `write_calculator`
+
 <sub>src/modelling/ardl.py:82</sub>
 
 ### `ARDL.spec`
@@ -1492,6 +1496,8 @@ Part of the model interface (see src/models/zoo.py): the settings that define th
 
 **Returns:** dict.
 
+**Called by:** `build`
+
 <sub>src/modelling/ardl.py:93</sub>
 
 ### `ARDL.drivers`
@@ -1503,6 +1509,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): the model's drivers for tables.
 
 **Returns:** list of feature names.
+
+**Called by:** `build`
 
 <sub>src/modelling/ardl.py:104</sub>
 
@@ -1560,6 +1568,8 @@ Lagged growth is replaced by the model's own forecast after the first quarter; d
 | `H` |  | quarters ahead. |
 
 **Returns:** array of up to H forecasts of quarterly log growth.
+
+**Called by:** `worked`
 
 <sub>src/modelling/ardl.py:148</sub>
 
@@ -2068,7 +2078,7 @@ Information criterion of an OLS fit (EViews' per-observation form; only the rank
 
 **Called by:** `select_orders`
 
-<sub>src/models/autoardl.py:34</sub>
+<sub>src/models/autoardl.py:40</sub>
 
 ### `select_orders`
 
@@ -2097,7 +2107,7 @@ All candidate models are estimated on the same sample (the one the longest lags 
 
 **Called by:** `AutoARDL.fit`, `LevelsARDL.fit`
 
-<sub>src/models/autoardl.py:45</sub>
+<sub>src/models/autoardl.py:51</sub>
 
 ### `AutoARDL`
 
@@ -2120,7 +2130,7 @@ ARDL in growth form whose lags are chosen by AIC/BIC at every estimation (EViews
 
 **Called by:** `_rebuild`, `build`, `rebuild`
 
-<sub>src/models/autoardl.py:90</sub>
+<sub>src/models/autoardl.py:96</sub>
 
 ### `AutoARDL.__init__`
 
@@ -2141,7 +2151,11 @@ Create the model (nothing is estimated yet).
 | `note` | `''` | as for ARDL. |
 | `signs` | `None` | expected sign per base variable "code\|transform" (optional). |
 
-<sub>src/models/autoardl.py:94</sub>
+**Calls:** `ARDL.__init__`
+
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:100</sub>
 
 ### `AutoARDL.panel`
 
@@ -2158,7 +2172,7 @@ Part of the model interface (see src/models/zoo.py): target, dummies and every c
 
 **Calls:** `make_panel`
 
-<sub>src/models/autoardl.py:110</sub>
+<sub>src/models/autoardl.py:116</sub>
 
 ### `AutoARDL.spec`
 
@@ -2168,7 +2182,9 @@ spec()
 
 Part of the model interface (see src/models/zoo.py): settings that define the model (for the cache).
 
-<sub>src/models/autoardl.py:114</sub>
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:120</sub>
 
 ### `AutoARDL.drivers`
 
@@ -2178,7 +2194,9 @@ drivers()
 
 Part of the model interface (see src/models/zoo.py): the drivers with their chosen lags.
 
-<sub>src/models/autoardl.py:118</sub>
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:124</sub>
 
 ### `AutoARDL._X`
 
@@ -2192,7 +2210,7 @@ Constant, the chosen lags of target growth, the chosen driver lags and the dummi
 |---|---|---|
 | `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
 
-<sub>src/models/autoardl.py:122</sub>
+<sub>src/models/autoardl.py:128</sub>
 
 ### `AutoARDL.fit`
 
@@ -2213,7 +2231,7 @@ Choose the lags on start..end (unless frozen), then estimate by OLS with HAC sta
 
 **Calls:** `select_orders`
 
-<sub>src/models/autoardl.py:133</sub>
+<sub>src/models/autoardl.py:139</sub>
 
 ### `AutoARDL.forecast`
 
@@ -2231,7 +2249,7 @@ Part of the model interface (see src/models/zoo.py): iterate the equation, own f
 
 **Returns:** array of up to H forecasts of quarterly log growth.
 
-<sub>src/models/autoardl.py:153</sub>
+<sub>src/models/autoardl.py:159</sub>
 
 ### `AutoARDL.long_run`
 
@@ -2245,7 +2263,7 @@ Long-run effect of each driver: sum of its lag coefficients / (1 - sum of the gr
 
 **Called by:** `_driver_rows`, `diagnostics`
 
-<sub>src/models/autoardl.py:174</sub>
+<sub>src/models/autoardl.py:180</sub>
 
 ### `AutoARDL.lag_summary`
 
@@ -2257,12 +2275,12 @@ The chosen lags in EViews notation, e.g. ARDL(2, 1, 0, 3).
 
 **Returns:** str.
 
-<sub>src/models/autoardl.py:187</sub>
+<sub>src/models/autoardl.py:193</sub>
 
 ### `LevelsARDL`
 
 ```python
-LevelsARDL(name, long_run, deflator, max_p=4, max_q=4, ic='bic', family=FAMILY, note='')
+LevelsARDL(name, long_run, deflator, max_p=4, max_q=4, ic='bic', family=FAMILY, note='', real=True)
 ```
 
 ARDL in levels of the real organic target and the long-run variables, with lags chosen by AIC/BIC and the Pesaran-Shin-Smith bounds test. Same interface as the other models.
@@ -2277,15 +2295,16 @@ ARDL in levels of the real organic target and the long-run variables, with lags 
 | `ic` | `'bic'` | lag search. |
 | `family` | `FAMILY` | model family used in the comparison. |
 | `note` | `''` | free text shown in the model list. |
+| `real` | `True` | True: y* = ln(L/P) (the literature error-correction form); False: y* = ln L for a dlog target, L for a diff target (the levels counterpart of the growth models). |
 
 **Called by:** `build`, `rebuild`
 
-<sub>src/models/autoardl.py:196</sub>
+<sub>src/models/autoardl.py:202</sub>
 
 ### `LevelsARDL.__init__`
 
 ```python
-__init__(name, long_run, deflator, max_p=4, max_q=4, ic='bic', family=FAMILY, note='')
+__init__(name, long_run, deflator, max_p=4, max_q=4, ic='bic', family=FAMILY, note='', real=True)
 ```
 
 Create the model.
@@ -2300,8 +2319,11 @@ Create the model.
 | `ic` | `'bic'` | lag search. |
 | `family` | `FAMILY` | model family used in the comparison. |
 | `note` | `''` | free text shown in the model list. |
+| `real` | `True` | True: y* = ln(L/P) (the literature error-correction form); False: y* = ln L for a dlog target, L for a diff target (the levels counterpart of the growth models). |
 
-<sub>src/models/autoardl.py:201</sub>
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:207</sub>
 
 ### `LevelsARDL.panel`
 
@@ -2318,7 +2340,7 @@ Part of the model interface (see src/models/zoo.py): target, dummies, y* = ln(L*
 
 **Calls:** `make_panel`, `long_run_column`, `target_deflator`
 
-<sub>src/models/autoardl.py:216</sub>
+<sub>src/models/autoardl.py:225</sub>
 
 ### `LevelsARDL.spec`
 
@@ -2328,7 +2350,9 @@ spec()
 
 Part of the model interface (see src/models/zoo.py).
 
-<sub>src/models/autoardl.py:226</sub>
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:235</sub>
 
 ### `LevelsARDL.drivers`
 
@@ -2338,7 +2362,9 @@ drivers()
 
 Part of the model interface (see src/models/zoo.py): the long-run variables with their chosen lags.
 
-<sub>src/models/autoardl.py:231</sub>
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:240</sub>
 
 ### `LevelsARDL._design`
 
@@ -2354,7 +2380,7 @@ Regressors: constant, lags of y*, lags of each long-run variable, dummies.
 
 **Called by:** `LevelsARDL.fit`
 
-<sub>src/models/autoardl.py:235</sub>
+<sub>src/models/autoardl.py:244</sub>
 
 ### `LevelsARDL.fit`
 
@@ -2375,7 +2401,7 @@ Choose the lags (unless frozen), estimate by OLS (HAC), and run the bounds test.
 
 **Calls:** `LevelsARDL._design`, `bounds_test`, `select_orders`
 
-<sub>src/models/autoardl.py:247</sub>
+<sub>src/models/autoardl.py:256</sub>
 
 ### `LevelsARDL.forecast`
 
@@ -2393,7 +2419,7 @@ Part of the model interface (see src/models/zoo.py): iterate y* forward; growth 
 
 **Returns:** array of up to H forecasts of quarterly log growth of the organic balance.
 
-<sub>src/models/autoardl.py:272</sub>
+<sub>src/models/autoardl.py:281</sub>
 
 ### `LevelsARDL.long_run_coefs`
 
@@ -2407,7 +2433,21 @@ Long-run coefficients theta_j = sum_k b_jk / (1 - sum_i a_i), and the adjustment
 
 **Called by:** `LevelsARDL.detail_rows`
 
-<sub>src/models/autoardl.py:294</sub>
+<sub>src/models/autoardl.py:303</sub>
+
+### `LevelsARDL.target_label`
+
+```python
+target_label()
+```
+
+What y* is, in words.
+
+**Calls:** `is_log`
+
+**Called by:** `LevelsARDL.detail_rows`, `terms_levels`
+
+<sub>src/models/autoardl.py:314</sub>
 
 ### `LevelsARDL.lag_summary`
 
@@ -2419,7 +2459,7 @@ EViews notation of the chosen lags, e.g. ARDL(2, 0, 1, 1).
 
 **Called by:** `LevelsARDL.detail_rows`
 
-<sub>src/models/autoardl.py:305</sub>
+<sub>src/models/autoardl.py:320</sub>
 
 ### `LevelsARDL.detail_rows`
 
@@ -2434,9 +2474,9 @@ Rows for the model detail page: coefficients, long-run relation, adjustment spee
 | `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
 | `P` |  | the model's data panel (target y, drivers, D_ dummies), from model.panel(). |
 
-**Calls:** `LevelsARDL.lag_summary`, `LevelsARDL.long_run_coefs`
+**Calls:** `LevelsARDL.lag_summary`, `LevelsARDL.long_run_coefs`, `LevelsARDL.target_label`
 
-<sub>src/models/autoardl.py:309</sub>
+<sub>src/models/autoardl.py:324</sub>
 
 ### `uecm_design`
 
@@ -2459,7 +2499,7 @@ dy*_t = c + pi_y y*_{t-1} + sum_j pi_j z_{j,t-1} + sum_{i=1..p-1} phi_i dy*_{t-i
 
 **Called by:** `bounds_test`
 
-<sub>src/models/autoardl.py:349</sub>
+<sub>src/models/autoardl.py:364</sub>
 
 ### `bounds_test`
 
@@ -2484,7 +2524,29 @@ Critical values: F from PSS Table CI(iii) (statsmodels' copy, by number of regre
 
 **Called by:** `LevelsARDL.fit`
 
-<sub>src/models/autoardl.py:377</sub>
+<sub>src/models/autoardl.py:392</sub>
+
+### `levels_counterpart`
+
+```python
+levels_counterpart(features, mdf, deflator)
+```
+
+The long-run (levels) items of a growth-form driver set: each driver un-differenced, once per series.
+
+| argument | default | meaning |
+|---|---|---|
+| `features` |  | driver features "code\|transform\|Llag" of a growth-form model. |
+| `mdf` |  | macro history (to check that a log is possible). |
+| `deflator` |  | price index mnemonic (for log_real). |
+
+**Returns:** (items [{mnemonic, form, from}], left out [(feature, reason)]).
+
+**Calls:** `parse_feature`
+
+**Called by:** `build`
+
+<sub>src/models/autoardl.py:444</sub>
 
 ### `base_of`
 
@@ -2502,7 +2564,7 @@ base_of(feature)
 
 **Called by:** `build`
 
-<sub>src/models/autoardl.py:423</sub>
+<sub>src/models/autoardl.py:475</sub>
 
 
 ## src/models/combination.py
@@ -2958,6 +3020,8 @@ Create an ARIMAX.
 | `order` | `(1, 0, 1)` | (p, d, q) of the errors. |
 | `note` | `''` | free text. |
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:297</sub>
 
 ### `ARIMAX.spec`
@@ -2970,6 +3034,8 @@ Part of the model interface (see src/models/zoo.py): features and order.
 
 **Returns:** dict.
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:307</sub>
 
 ### `ARIMAX.drivers`
@@ -2981,6 +3047,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
+
+**Called by:** `build`
 
 <sub>src/models/deep.py:315</sub>
 
@@ -3108,6 +3176,8 @@ Create a Theta model.
 | `name` |  | display name. |
 | `note` | `''` | free text. |
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:417</sub>
 
 ### `Theta.spec`
@@ -3120,6 +3190,8 @@ Part of the model interface (see src/models/zoo.py): no settings.
 
 **Returns:** dict.
 
+**Called by:** `build`
+
 <sub>src/models/deep.py:427</sub>
 
 ### `Theta.drivers`
@@ -3131,6 +3203,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): "(own history only)".
 
 **Returns:** list of str.
+
+**Called by:** `build`
 
 <sub>src/models/deep.py:435</sub>
 
@@ -4207,6 +4281,8 @@ Create a machine-learning model.
 | `note` | `''` | free text. |
 | `refit_every` | `4` | quarters between re-estimations in the backtest. |
 
+**Called by:** `build`
+
 <sub>src/models/ml.py:64</sub>
 
 ### `MLModel.spec`
@@ -4219,6 +4295,8 @@ Part of the model interface (see src/models/zoo.py): kind, features and settings
 
 **Returns:** dict.
 
+**Called by:** `build`
+
 <sub>src/models/ml.py:78</sub>
 
 ### `MLModel.drivers`
@@ -4230,6 +4308,8 @@ drivers()
 Part of the model interface (see src/models/zoo.py): driver features.
 
 **Returns:** list of str.
+
+**Called by:** `build`
 
 <sub>src/models/ml.py:87</sub>
 
@@ -5555,7 +5635,7 @@ What the zoo needs from one approach's result (kept small so it can be cached at
 
 **Called by:** `run`, `select_at`
 
-<sub>src/models/zoo.py:45</sub>
+<sub>src/models/zoo.py:46</sub>
 
 ### `_valid`
 
@@ -5578,7 +5658,7 @@ Split features into usable ones and the rest: the series must exist in the macro
 
 **Called by:** `build`, `literature_models`
 
-<sub>src/models/zoo.py:64</sub>
+<sub>src/models/zoo.py:65</sub>
 
 ### `literature_models`
 
@@ -5601,7 +5681,7 @@ Literature specifications with concepts resolved to series names through the lit
 
 **Called by:** `build`, `run`, `build_node`
 
-<sub>src/models/zoo.py:84</sub>
+<sub>src/models/zoo.py:85</sub>
 
 ### `_screen_tables`
 
@@ -5623,7 +5703,7 @@ Shortlist and per-variable screen results, from screen first if it ran, otherwis
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:113</sub>
+<sub>src/models/zoo.py:114</sub>
 
 ### `wanted`
 
@@ -5648,7 +5728,7 @@ Entries match a family name, a model name, or the start of a model name (case do
 
 **Called by:** `run`, `run`, `combine`, `scenarios`, `build`
 
-<sub>src/models/zoo.py:125</sub>
+<sub>src/models/zoo.py:126</sub>
 
 ### `same_growth_models`
 
@@ -5674,7 +5754,7 @@ Each entry is a literature concept (e.g. disposable_income), a series name, or a
 
 **Called by:** `build`
 
-<sub>src/models/zoo.py:152</sub>
+<sub>src/models/zoo.py:153</sub>
 
 ### `build`
 
@@ -5691,13 +5771,13 @@ sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables
 | `sel` |  | selection results per approach. |
 | `log` | `print` | function used to print progress messages. |
 
-**Config:** `bayes_first`, `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `models.tested`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
+**Config:** `bayes_first`, `criterion`, `deflator`, `device`, `enabled`, `features.deflator`, `levels`, `levels_counterpart`, `literature`, `long_run`, `max_p`, `max_q`, `models.auto_ardl`, `models.benchmarks`, `models.channel_prune_t`, `models.deep`, `models.foundation`, `models.hybrid_max_add`, `models.hybrids`, `models.literature`, `models.machine_learning`, `models.machine_learning_settings`, `models.regime`, `models.statistical`, `models.tested`, `name`, `on`, `settings`, `short_run`, `source`, `threshold`
 
-**Calls:** `all`, `ARDL`, `AutoARDL`, `LevelsARDL`, `base_of`, `Combination`, `ARIMAX`, `DeepModel`, `Theta`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `build`, `twins`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`
+**Calls:** `feature_matrix`, `feature_sign`, `parse_feature`, `all`, `ARDL`, `ARDL.__init__`, `ARDL.drivers`, `ARDL.spec`, `ols_np`, `vif`, `AutoARDL`, `AutoARDL.__init__`, `AutoARDL.drivers`, `AutoARDL.spec`, `LevelsARDL`, `LevelsARDL.__init__`, `LevelsARDL.drivers`, `LevelsARDL.spec`, `base_of`, `levels_counterpart`, `Combination`, `ARIMAX`, `ARIMAX.__init__`, `ARIMAX.drivers`, `ARIMAX.spec`, `DeepModel`, `Theta`, `Theta.__init__`, `Theta.drivers`, `Theta.spec`, `deep_available`, `ECM`, `FoundationModel`, `available`, `load`, `load_error`, `channels_data_measures`, `core_plus_addons`, `channels`, `long_run`, `resolve`, `resolve_feature`, `status`, `MLModel`, `MLModel.__init__`, `MLModel.drivers`, `MLModel.spec`, `build`, `twins`, `_screen_tables`, `_valid`, `literature_models`, `same_growth_models`, `wanted`, `is_log`
 
 **Called by:** `run`, `models_at`
 
-<sub>src/models/zoo.py:195</sub>
+<sub>src/models/zoo.py:196</sub>
 
 
 ## src/panel/__init__.py
@@ -7855,7 +7935,7 @@ The terms of an ARDL in levels: y*(t) = c + sum a_i y*(t-i) + sum b_jk z_j(t-k).
 
 **Returns:** DataFrame: symbol, term, coefficient, definition, meaning.
 
-**Calls:** `_lr_def`
+**Calls:** `LevelsARDL.target_label`, `_lr_def`, `is_log`
 
 **Called by:** `terms`
 
@@ -7880,7 +7960,7 @@ The equation in one line plus the balance identity.
 
 **Called by:** `write`, `write_calculator`
 
-<sub>src/reporting/formula.py:183</sub>
+<sub>src/reporting/formula.py:184</sub>
 
 ### `worked`
 
@@ -7898,11 +7978,11 @@ The next Q quarters under every scenario, term by term (identical to model.forec
 
 **Returns:** DataFrame: scenario, date, each driver's value and contribution, growth (log, % q/q, % annualised), balance.
 
-**Calls:** `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
+**Calls:** `ARDL.forecast`, `ARDL.panel`, `BankFeatures.array`, `n_ylags`, `worked_levels`, `annualised`, `level_after`, `pct`
 
 **Called by:** `write`
 
-<sub>src/reporting/formula.py:221</sub>
+<sub>src/reporting/formula.py:222</sub>
 
 ### `worked_levels`
 
@@ -7924,7 +8004,7 @@ The next Q quarters of an ARDL in levels, term by term (identical to model.forec
 
 **Called by:** `worked`
 
-<sub>src/reporting/formula.py:282</sub>
+<sub>src/reporting/formula.py:283</sub>
 
 ### `_col`
 
@@ -7938,7 +8018,7 @@ Excel column letters for a 1-based index.
 |---|---|---|
 | `i` |  |  |
 
-<sub>src/reporting/formula.py:328</sub>
+<sub>src/reporting/formula.py:329</sub>
 
 ### `_excel_feature`
 
@@ -7962,7 +8042,7 @@ Excel formula for a transform at row r with lag l. X(row) / P(row): cell of the 
 
 **Called by:** `write_calculator`
 
-<sub>src/reporting/formula.py:337</sub>
+<sub>src/reporting/formula.py:338</sub>
 
 ### `write_calculator`
 
@@ -7986,11 +8066,11 @@ Blue cells are data (history and the scenario's future values); yellow cells are
 
 **Config:** `features`
 
-**Calls:** `lookback`, `parse_feature`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
+**Calls:** `lookback`, `parse_feature`, `ARDL.panel`, `_excel_feature`, `equation_text`, `n_ylags`, `is_log`
 
 **Called by:** `write`
 
-<sub>src/reporting/formula.py:380</sub>
+<sub>src/reporting/formula.py:381</sub>
 
 ### `write`
 
@@ -8019,7 +8099,7 @@ Pick the recommended formula model, write the equation, the next quarters and th
 
 **Called by:** `run`, `run`
 
-<sub>src/reporting/formula.py:659</sub>
+<sub>src/reporting/formula.py:663</sub>
 
 
 ## src/reporting/process_story.py
@@ -10239,7 +10319,7 @@ Themes not allowed as controls because they are other outcomes of the same econo
 
 **Config:** `impact`
 
-**Called by:** `build`, `double_selection`, `_outcome_codes`
+**Called by:** `build`, `double_selection`, `_outcome_codes`, `Context.__init__`
 
 <sub>src/selection/double_selection.py:189</sub>
 
@@ -13374,7 +13454,7 @@ Load and align everything a run needs: target, organic growth, scenarios, metada
 
 **Config:** `data.macro.base_scenario`, `form`, `literature`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.hist_end`, `transform`
 
-**Calls:** `attach`, `apply_signs`, `load`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `log`, `organic_growth`, `resolve`, `set_form`, `state`
+**Calls:** `attach`, `apply_signs`, `load`, `outcome_themes`, `add_constructed`, `load_bank`, `load_macro`, `load_metadata`, `log`, `organic_growth`, `resolve`, `set_form`, `state`
 
 <sub>src/utils/io.py:155</sub>
 
@@ -14273,7 +14353,7 @@ Models that cannot be unpickled on this computer (other package versions) are re
 
 **Called by:** `run`, `Member.__init__`, `make`
 
-<sub>src/utils/saved.py:272</sub>
+<sub>src/utils/saved.py:273</sub>
 
 ### `snapshot`
 
@@ -14297,7 +14377,7 @@ Copy the run's current results into saved_runs/<date_time>_<script>/ and keep th
 
 **Called by:** `run`, `run`
 
-<sub>src/utils/saved.py:308</sub>
+<sub>src/utils/saved.py:309</sub>
 
 ### `_best`
 
@@ -14315,7 +14395,7 @@ The most accurate model of a saved run (out of sample if available), for the run
 
 **Called by:** `snapshot`
 
-<sub>src/utils/saved.py:350</sub>
+<sub>src/utils/saved.py:351</sub>
 
 ### `list_snapshots`
 
@@ -14333,7 +14413,7 @@ Saved runs of one run name, newest first.
 
 **Called by:** `snapshot`
 
-<sub>src/utils/saved.py:374</sub>
+<sub>src/utils/saved.py:375</sub>
 
 
 ## src/utils/target.py
@@ -14376,7 +14456,7 @@ is_log()
 
 True for dlog targets (levels in logs, errors in percent).
 
-**Called by:** `_u`, `effect`, `_unit`, `_driver_rows`, `aggregate`, `build_models`, `equation_text`, `write`, `write_calculator`, `chart_regimes`, `build`, `annualised`, `change`, `describe`, `error`, `from_display`, `from_state`, `growth`, `growth_display`, `level_after`, `path`, `pct`, `per_year`, `state`, `target_deflator`, `units`
+**Called by:** `_u`, `effect`, `_unit`, `_driver_rows`, `LevelsARDL.target_label`, `build`, `aggregate`, `build_models`, `equation_text`, `terms_levels`, `write`, `write_calculator`, `chart_regimes`, `build`, `annualised`, `change`, `describe`, `error`, `from_display`, `from_state`, `growth`, `growth_display`, `level_after`, `path`, `pct`, `per_year`, `state`, `target_deflator`, `units`
 
 <sub>src/utils/target.py:34</sub>
 
