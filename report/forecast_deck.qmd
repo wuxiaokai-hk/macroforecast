@@ -161,6 +161,13 @@ def less(r, h=HM):
     return f"{(1 - r[f'avg_1_{h}_pct'] / AR[f'avg_1_{h}_pct']) * 100:.0f}%"
 
 
+def vs_ar(r, h=HM):
+    """'12% less error than AR(1)', '5% more error than AR(1)' or 'about the same error as AR(1)'."""
+    g = (1 - r[f"avg_1_{h}_pct"] / AR[f"avg_1_{h}_pct"]) * 100
+    return (f"{g:.0f}% less error than AR(1)" if g >= 0.5 else f"{-g:.0f}% more error than AR(1)" if g <= -0.5
+            else "about the same error as AR(1)")
+
+
 def esc(s):
     return str(s).replace("$", "\\$").replace("|", "\\|")
 
@@ -205,7 +212,7 @@ def family_bar_spec(t, title):
             "number_format": '0.00"%"', "axis_format": '0.0"%"', "cat_font_size": 8, "gap_width": 35, "y_min": 0}
 
 
-headline = (f"Recommended: {REC['model']}, {less(REC)} less error than AR(1) over 1–{HM} quarters")
+headline = (f"Recommended: {REC['model']}, {vs_ar(REC)} over 1–{HM} quarters")
 n_feat = len(read("screen_first", "A1_screen_all.csv"))
 n_rel = forms["mnemonic"].nunique() if not forms.empty else 0
 n_stat = forms[forms["stationary"]]["mnemonic"].nunique() if not forms.empty else 0
@@ -218,6 +225,100 @@ bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" f
            + ("; re-estimated at every origin" if _every == 1 else
               "; re-estimated once a year (Q%d), coefficients kept for the other quarters" % int(_s.get("reestimate_quarter", 1))
               if _every == 4 else f"; re-estimated every {_every} quarters"))
+
+# ----------------------------------------------------------------------------------------------------------------
+# Findings written from this run's results (nothing in the slide text below is fixed in advance)
+# ----------------------------------------------------------------------------------------------------------------
+HZ_TXT = ", ".join(map(str, HZ[:-1])) + f" and {HZ[-1]}" if len(HZ) > 1 else str(HZ[0])
+_dq = [str(q) for q in (cfg["sample"].get("dummy_quarters") or [])]
+COVID_TXT = (f"Quarters {_dq[0]}–{_dq[-1]} (COVID) each have their own dummy and are left out of the error" if _dq
+             else "No dummy quarters are used")
+_es = pd.Period(str(cfg["sample"]["estimation_start"]), freq="Q")
+N_Q = int((level.index >= _es).sum()) if hasattr(level, "index") else 0
+IS_LOG = CHANGE == "growth"
+try:                                             # is the balance stationary, and its change?
+    import warnings
+    from statsmodels.tsa.stattools import adfuller
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    _lv = (np.log(level) if IS_LOG else level).loc[level.index >= _es].dropna()
+    _p_lvl, _p_chg = adfuller(_lv, regression="ct", autolag="AIC")[1], adfuller(_lv.diff().dropna(), autolag="AIC")[1]
+    STAT_TXT = (f"ADF test: the {'log ' if IS_LOG else ''}level is {'not ' if _p_lvl > 0.05 else ''}stationary "
+                f"(p = {_p_lvl:.2f}); its change is {'' if _p_chg <= 0.05 else 'not clearly '}stationary (p = {_p_chg:.2f})")
+except Exception:
+    STAT_TXT = "Modelled in changes, which is how the balance is made stationary"
+_col = f"avg_1_{HM}_pct"
+_cmp = ranking[ranking["model"] != "AR(1) benchmark"]
+N_BEAT = int((_cmp[_col] < AR[_col]).sum())
+_lose = list(_cmp.loc[_cmp[_col] >= AR[_col], "model"])
+F_AR = (f"Every model beats the AR(1) benchmark ({pct(AR[_col])})" if not _lose else
+        f"{N_BEAT} of {len(_cmp)} models beat the AR(1) benchmark ({pct(AR[_col])})" +
+        (f"; not: {', '.join(_lose)}" if len(_lose) <= 3 else ""))
+F_BEST = f"Most accurate over 1–{HM} quarters: {BEST['model']} ({BEST['family'].lower()}, {pct(BEST[_col])})"
+_fam = _cmp.groupby("family")[_col].min().sort_values()
+BEST_FAM = _fam.index[0] if len(_fam) else ""
+# look-ahead optimism: drivers fixed from all the data vs re-chosen at every origin
+_gaps = []
+if HAVE_OOS:
+    _o = oos.set_index("model")
+    for m in [x for x in oos["model"] if x.endswith("(full-sample drivers)")]:
+        b = m.replace(" (full-sample drivers)", "")
+        if b in _o.index:
+            _gaps.append(_o.loc[b, _col] / _o.loc[m, _col] - 1)
+LA = float(np.mean(_gaps)) if _gaps else None
+if LA is None:
+    F_LA = "Drivers are chosen with all the data in the backtest; run the out-of-sample test to measure the optimism"
+    LA_TITLE = "Choosing drivers with all the data: the look-ahead check"
+elif LA > 0.05:
+    F_LA = f"Drivers chosen with all the data look {LA:.0%} better than when re-chosen at each origin: the usual backtest flatters them"
+    LA_TITLE = "Choosing drivers with all the data flatters the backtest"
+elif LA < -0.05:
+    F_LA = f"Re-choosing drivers at each origin did {-LA:.0%} better than fixing them from all the data"
+    LA_TITLE = "Fixing drivers from all the data does not flatter the backtest here"
+else:
+    F_LA = "Fixing drivers from all the data or re-choosing them makes little difference here"
+    LA_TITLE = "Choosing drivers with all the data makes little difference here"
+# does the gain over the benchmark grow with the horizon? (the recommended model)
+_g = {h: 1 - REC[f"avg_1_{h}_pct"] / AR[f"avg_1_{h}_pct"] for h in HZ if f"avg_1_{h}_pct" in REC and pd.notna(REC[f"avg_1_{h}_pct"])}
+if len(_g) >= 2:
+    _a, _b = _g[min(_g)], _g[max(_g)]
+    GAP_TITLE = ("The gain over the benchmark widens with the horizon" if _b > _a + 0.05 else
+                 "The gain over the benchmark narrows with the horizon" if _b < _a - 0.05 else
+                 "The gain over the benchmark is similar at every horizon")
+    if max(_a, _b) < 0:
+        GAP_TITLE = "The benchmark is hard to beat at every horizon"
+else:
+    GAP_TITLE = "Error by quarters ahead"
+# do more variables buy accuracy?
+_t = ranking.dropna(subset=["n_vars"])
+_rho = _t["n_vars"].corr(_t[_col], method="spearman") if len(_t) > 4 and _t["n_vars"].nunique() > 1 else np.nan
+VARS_TITLE = (f"More variables buy accuracy over 1–{HM} quarters" if _rho < -0.3 else
+              f"More variables cost accuracy over 1–{HM} quarters" if _rho > 0.3 else
+              f"The number of variables makes little difference to accuracy")
+PERF_TITLE = (("Out of sample" if HAVE_OOS else "In the backtest") + f", {BEST['model']} is the most accurate")
+# the recommended model's statistical checks
+_r = diag.set_index("model").loc[REC["model"]] if (not diag.empty and REC["model"] in set(diag["model"])) else None
+CHECKS = []
+if _r is not None and pd.notna(_r.get("n_obs", np.nan)):
+    for a, c, ok, t in [("Driver significance", "max p-value of drivers", lambda v: v < 0.05, "Largest p-value"),
+                        ("Multicollinearity", "max VIF", lambda v: v < 5, "Largest VIF"),
+                        ("Autocorrelation", "Ljung-Box p (4)", lambda v: v > 0.05, "Ljung-Box p, 4 lags"),
+                        ("Autocorrelation", "Ljung-Box p (8)", lambda v: v > 0.05, "Ljung-Box p, 8 lags"),
+                        ("Heteroskedasticity", "Breusch-Pagan p", lambda v: v > 0.05, "Breusch-Pagan p"),
+                        ("Normality", "Jarque-Bera p", lambda v: v > 0.05, "Jarque-Bera p"),
+                        ("Stability", "CUSUM p", lambda v: v > 0.05, "CUSUM p")]:
+        if c in _r and pd.notna(_r[c]):
+            CHECKS.append({"Check": a, "Test": t, "Result": f"{_r[c]:.3f}", "Pass": "Pass" if ok(_r[c]) else "Review"})
+    CHECKS.append({"Check": "Economic sense", "Test": "Signs as expected", "Result": str(_r["wrong-sign drivers"]),
+                   "Pass": "Pass" if _r["wrong-sign drivers"] == "none" else "Review"})
+_rev = [c["Test"] for c in CHECKS if c["Pass"] == "Review"]
+CHECK_TITLE = ("Statistical checks do not apply to this model type" if not CHECKS else
+               "The recommended model passes the statistical checks" if not _rev else
+               f"Statistical checks: {len(CHECKS) - len(_rev)} of {len(CHECKS)} pass; review {', '.join(_rev[:3])}"
+               + ("…" if len(_rev) > 3 else ""))
+_has_fm = (ranking["family"] == "AI foundation model").any()
+NEXT = "; ".join(([ "re-run on actual data"] if simulated else []) +
+                 ["review the literature table and expected signs with the business", "agree the model choice with model risk"] +
+                 ([] if _has_fm else ["add the foundation models"]) + ["monitor quarterly"])
 ```
 
 ## `{python} headline`
@@ -225,7 +326,7 @@ bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" f
 :::: {.columns}
 
 ::: {.column}
-[[tile: `{python} len(ranking)` | models in `{python} ranking["family"].nunique()` families | same tests 4, 8 and 12 quarters ahead]]
+[[tile: `{python} len(ranking)` | models in `{python} ranking["family"].nunique()` families | same tests `{python} HZ_TXT` quarters ahead]]
 
 [[tile: `{python} pct(REC[f"avg_1_{HM}_pct"])` | recommended | `{python} REC["model"]`, average over 1–`{python} HM` quarters]]
 
@@ -233,9 +334,9 @@ bt_desc = (("Every quarter" if _step == 1 else f"Every {_step} quarters") + f" f
 
 **What we found**
 
-- Theory-anchored models hold up best 8–12 quarters ahead
-- Data-chosen drivers change from origin to origin; the usual backtest flatters them
-- Every model beats the AR(1) benchmark (`{python} pct(AR[f"avg_1_{HM}_pct"])`) except the ECB BEAST specification
+- `{python} F_BEST`
+- `{python} F_LA`
+- `{python} F_AR`
 :::
 
 ::: {.column}
@@ -273,7 +374,7 @@ Uses: planning, scenario analysis, stress testing, capital and liquidity plannin
 
 [[icon: list | Few drivers | Fewer than 4 key variables for the audience]]
 
-[[icon: bullseye | Accurate out of sample | Beats the benchmark 4, 8 and 12 quarters ahead]]
+[[icon: bullseye | Accurate out of sample | Beats the benchmark `{python} HZ_TXT` quarters ahead]]
 
 [[icon: stethoscope | Statistically sound | Stable coefficients, clean residual tests]]
 
@@ -286,7 +387,7 @@ Uses: planning, scenario analysis, stress testing, capital and liquidity plannin
 
 ## Six steps take `{python} macro_cols` series to a small, tested model
 
-[[step: bullseye | 1. Target | Organic quarterly log change of the balance]]
+[[step: bullseye | 1. Target | Organic quarterly `{python} "log change" if IS_LOG else "change"` of the `{python} TARGET`]]
 
 [[step: exchange | 2. Transform | Up to 7 stationary forms, lags 0–4]]
 
@@ -309,11 +410,11 @@ Uses: planning, scenario analysis, stress testing, capital and liquidity plannin
 
 **Target variable**
 
-y~t~ = ln[(L~t~ − A~t~) / L~t−1~]
+`{python} "y~t~ = ln[(L~t~ − A~t~) / L~t−1~]" if IS_LOG else "y~t~ = (L~t~ − A~t~) − L~t−1~"`
 
 - L~t~ is the quarter-end balance; A~t~ removes acquisitions and portfolio sales
-- The balance is not stationary; its log change is
-- Each COVID quarter (2020Q1–2021Q2) has its own dummy and is left out of the error
+- `{python} STAT_TXT`
+- `{python} COVID_TXT`
 :::
 
 ::: {.column}
@@ -544,10 +645,10 @@ All five use the literature core drivers, so their errors compare directly with 
 | Chronos-2 (Amazon, 2025) | Own history, literature drivers and their scenario paths | Yes | < 1 s per forecast |
 
 ::: notes
-Fixed hyperparameters, no tuning loop; machine-learning and deep-learning models are re-estimated once a year. The deep networks are kept small (a few thousand weights) because we have about 100 quarters; each is the average of 3 random seeds. Foundation models are not trained on our data, so they measure how much bank-specific modelling adds.
+Fixed hyperparameters, no tuning loop; machine-learning and deep-learning models are re-estimated once a year. The deep networks are kept small (a few thousand weights) because we have `{python} N_Q` quarters; each is the average of 3 random seeds. Foundation models are not trained on our data, so they measure how much bank-specific modelling adds.
 :::
 
-## Every model is tested the same way, 4, 8 and 12 quarters ahead
+## Every model is tested the same way, `{python} HZ_TXT` quarters ahead
 
 :::: {.columns}
 
@@ -563,7 +664,7 @@ Fixed hyperparameters, no tuning loop; machine-learning and deep-learning models
 ★ **True out-of-sample test**
 
 - At `{python} n_origins` origins, the whole selection is re-run with data up to the origin
-- Compared at 4, 8 and 12 quarters ahead
+- Compared at `{python} HZ_TXT` quarters ahead
 - Diebold-Mariano tests against AR(1); holdout of the last `{python} cfg["oos"]["holdout_quarters"]` quarters
 :::
 
@@ -571,7 +672,7 @@ Fixed hyperparameters, no tuning loop; machine-learning and deep-learning models
 
 # Performance
 
-## Out of sample, theory-anchored models are the most accurate
+## `{python} PERF_TITLE`
 
 :::: {.columns}
 
@@ -616,14 +717,14 @@ chart("bt_bars", family_bar_spec(comp, f"Average balance error, 1–{HM} quarter
 ::: {.column}
 **Why the two rankings differ**
 
-The rolling backtest keeps the drivers chosen with all the data, so data-driven models look better than they are.
+The rolling backtest keeps the drivers chosen with all the data. `{python} F_LA`.
 
 The out-of-sample test re-chooses everything at each origin. Decisions use that test.
 :::
 
 ::::
 
-## The best model of each family at 4, 8 and 12 quarters
+## The best model of each family at `{python} HZ_TXT` quarters
 
 ```{python}
 #| output: asis
@@ -636,7 +737,7 @@ for f in FAM_ORDER:
     row = {"Family": f, "Best model": r["model"].split(": ")[-1]}
     for h in HZ:
         row[f"1–{h}q"] = pct(r[f"avg_1_{h}_pct"])
-    row[f"vs AR(1), 1–{HM}q"] = "" if f == "Benchmark" else f"{less(r)} less"
+    row[f"vs AR(1), 1–{HM}q"] = "" if f == "Benchmark" else vs_ar(r).replace(" error than AR(1)", "").replace(" error as AR(1)", "")
     if not dm.empty and f != "Benchmark":
         s = dm[(dm["model"] == r["model"]) & (dm["horizon_q"] == min(HZ))]
         row[f"Beats AR(1) at {min(HZ)}q (DM 5%)"] = ("yes" if bool(s["better_than_benchmark_at_5pct"].iloc[0]) else "no") if len(s) else ""
@@ -646,10 +747,10 @@ table(t, [1.7, 3] + [1] * len(HZ) + [1.4] + ([1.6] if t.shape[1] > len(HZ) + 3 e
 ```
 
 ::: notes
-Average balance error over 1 to h quarters, COVID windows excluded, `{python} basis`. Diebold-Mariano test with the small-sample correction; at 8 and 12 quarters there are too few independent origins for a reliable test.
+Average balance error over 1 to h quarters, COVID windows excluded, `{python} basis`. Diebold-Mariano test with the small-sample correction; at long horizons the origins overlap, so the test has less power there.
 :::
 
-## The gap over the benchmark widens with the horizon
+## `{python} GAP_TITLE`
 
 ```{python}
 #| output: asis
@@ -670,7 +771,7 @@ chart("horizon", {"type": "line", "categories": [str(h) for h in range(1, H + 1)
                   "number_format": '0.0"%"', "y_min": 0})
 ```
 
-## More variables buy accuracy at long horizons
+## `{python} VARS_TITLE`
 
 :::: {.columns}
 
@@ -702,7 +803,7 @@ When they differ, the recommendation trades a little accuracy for a model that c
 
 ::::
 
-## Choosing drivers with all the data flatters the backtest
+## `{python} LA_TITLE`
 
 :::: {.columns}
 
@@ -806,27 +907,15 @@ if r is not None and pd.notna(r.get("adj_R2", np.nan)):
 
 ::::
 
-## The model passes the statistical checks
+## `{python} CHECK_TITLE`
 
 :::: {.columns}
 
 ::: {.column}
 ```{python}
 #| output: asis
-r = diag.set_index("model").loc[REC["model"]] if REC["model"] in set(diag["model"]) else None
-if r is not None and pd.notna(r.get("n_obs", np.nan)):
-    tests = [("Driver significance", "max p-value of drivers", lambda v: v < 0.05, "Largest p-value"),
-             ("Multicollinearity", "max VIF", lambda v: v < 5, "Largest VIF"),
-             ("Autocorrelation", "Ljung-Box p (4)", lambda v: v > 0.05, "Ljung-Box p, 4 lags"),
-             ("Autocorrelation", "Ljung-Box p (8)", lambda v: v > 0.05, "Ljung-Box p, 8 lags"),
-             ("Heteroskedasticity", "Breusch-Pagan p", lambda v: v > 0.05, "Breusch-Pagan p"),
-             ("Normality", "Jarque-Bera p", lambda v: v > 0.05, "Jarque-Bera p"),
-             ("Stability", "CUSUM p", lambda v: v > 0.05, "CUSUM p")]
-    rows = [{"Check": a, "Test": t, "Result": f"{r[c]:.3f}", "Pass": "Pass" if ok(r[c]) else "Review"}
-            for a, c, ok, t in tests if c in r and pd.notna(r[c])]
-    rows.append({"Check": "Economic sense", "Test": "Signs as expected", "Result": str(r["wrong-sign drivers"]),
-                 "Pass": "Pass" if r["wrong-sign drivers"] == "none" else "Review"})
-    table(pd.DataFrame(rows), [2, 2.2, 1, 0.8])
+if CHECKS:
+    table(pd.DataFrame(CHECKS), [2, 2.2, 1, 0.8])
 ```
 :::
 
@@ -956,11 +1045,11 @@ if FORM:
 
 [[icon@red: crosshairs | Conditional accuracy | Tests use realised macro values; live error adds scenario forecast error]]
 
-[[icon@red: compress | Small sample | About 95 quarters: sign priors, grouping and re-selection limit overfitting]]
+[[icon@red: compress | Small sample | `{python} N_Q` quarters: sign priors, grouping and re-selection limit overfitting]]
 
 [[icon@red: random | Drivers move with the data | Re-selection test and stability table; theory-anchored challengers]]
 
-[[icon@red: coins | Credit aggregates as drivers | Mortgage-credit growth is close to the target: review or exclude that theme]]
+[[icon@red: coins | Credit aggregates as drivers | Credit series close to the target can mirror it: review or exclude that theme]]
 
 [[icon@red: robot | Machine learning and AI | Less transparent; trees cannot extrapolate in severe scenarios]]
 
@@ -976,7 +1065,7 @@ if FORM:
 
 [[card*@navy2: Most accurate overall | `{python} BEST["model"]`; `{python} pct(BEST[f"avg_1_{HM}_pct"])` error over 1–`{python} HM` quarters]]
 
-[[band: Next steps | re-run on actual data; review the literature table and expected signs with the business; agree the variable limit with model risk; add the foundation models; monitor quarterly]]
+[[band: Next steps | `{python} NEXT`]]
 
 ## Appendix: reproducing this deck
 

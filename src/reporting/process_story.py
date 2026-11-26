@@ -1266,12 +1266,24 @@ class Story:
         gap = {r["model"]: r[col] - dd.get(r["model"], np.nan) for _, r in self.rank.iterrows()}
         dd_models = [x for x in ("Screen first", "Elastic Net first", "Bayesian first", "Bayesian model average")
                      if x in gap]
-        self.add("8. Testing", f"Out of sample, {self.rank.iloc[0]['model']} is the most accurate",
-                 "Models whose drivers were chosen from the data lose the most once the choice can no longer see the future.",
+        # does re-choosing the drivers cost the data-chosen models more than the fixed-driver ones? (from this run)
+        g_dd = [gap[x] for x in dd_models if gap.get(x) == gap.get(x)]
+        g_fx = [v for k, v in gap.items() if v == v and k not in dd_models
+                and self.rank.set_index("model").loc[k, "family"] in ("Literature", "Benchmark", "Auto ARDL", "Hybrid")]
+        if g_dd and g_fx:
+            a, b = float(np.mean(g_dd)), float(np.mean(g_fx))
+            claim = (f"Data-chosen models lose most once the choice can no longer see the future: {a:+.2f} points on "
+                     f"average, against {b:+.2f} for fixed-driver models." if a > b + 0.05 else
+                     f"Re-choosing the drivers costs data-chosen models little here: {a:+.2f} points on average, "
+                     f"against {b:+.2f} for fixed-driver models.")
+        else:
+            claim = "Each model's backtest score against its out-of-sample score."
+        self.add("8. Testing", f"Out of sample, {self.rank.iloc[0]['model']} is the most accurate", claim,
                  what=["The two scores of each model side by side: with drivers chosen on all the data (light dot) and "
                        "re-chosen at every origin (coloured dot)."],
                  why=["The gap measures how much a model benefited from hindsight in its choice of drivers. Models with "
-                      "fixed drivers (literature, benchmarks) barely move; data-chosen models move most."],
+                      "fixed drivers (literature, benchmarks) can only move through re-estimation; data-chosen models "
+                      "also lose the hindsight in their choice."],
                  result=[f"{x}: {self.err(dd.get(x))} in the backtest, {self.err(dd.get(x) + gap[x])} out of sample." for x in dd_models]
                         + [f"Recommended model ({self.REC['model']}): {self.err(self.REC[col])} out of sample."],
                  read="Each line joins a model's two scores; the longer the line, the more the backtest flattered it.",
@@ -1386,8 +1398,14 @@ class Story:
         ax.barh(lbl, v, color=[C["green"] if x > 0 else C["red"] for x in v])
         ax.axvline(0, color=C["mid"], lw=0.8)
         ax.set_title(f"Effect on the {self.TARGET} after 8 quarters, per unit of each driver ({self.EU or self.UNITS})", loc="left")
-        self.add("9. The recommended model", "What each driver does, in plain words",
-                 "Each driver's effect has the sign theory expects and a size that can be checked.",
+        ok = D["sign_ok"].astype(str).str.lower() if "sign_ok" in D else pd.Series(dtype=str)
+        n_yes, n_no = int((ok == "yes").sum()), int((ok == "no").sum())
+        sign_claim = ("Each driver's effect has the sign theory expects and a size that can be checked." if n_yes and not n_no
+                      else f"{n_yes} of {n_yes + n_no} drivers have the sign theory expects; "
+                           f"{', '.join(self.short(t, 40) for t, o in zip(D['term'], ok) if o == 'no')} "
+                           f"{'does' if n_no == 1 else 'do'} not." if n_no
+                      else "Each driver's effect, with a size that can be checked (no expected sign is recorded for these drivers).")
+        self.add("9. The recommended model", "What each driver does, in plain words", sign_claim,
                  what=[str(r) for r in D["reading"]] if "reading" in D else [],
                  why=["These sentences are the explanation a user can give for any change in the forecast: when a "
                       "driver's scenario path changes, the forecast moves by these amounts."],
@@ -1412,8 +1430,15 @@ class Story:
             ax.plot(x, X[d].values * (100 if parse(d)[1] not in ("diff", "diff2", "diff4", "lvl", "rgap") else 1), color=c, lw=1.6)
             ax.set_title(self.short(d, 80), loc="left", fontsize=9.5)
             cor.append(pd.concat([y, X[d]], axis=1).dropna().corr().iloc[0, 1])
-        self.add("9. The recommended model", "The drivers next to the target",
-                 "The drivers' swings line up with the target's: that is the relation the model exploits.",
+        strong = [c for c in cor if c == c and abs(c) >= 0.3]
+        line_claim = ("The drivers' swings line up with the target's: that is the relation the model exploits."
+                      if cor and len(strong) == len(cor) else
+                      f"{len(strong)} of {len(cor)} drivers move clearly with the target (correlation of 0.3 or more); "
+                      "the others work through lags, momentum or only in some periods."
+                      if strong else
+                      "The drivers line up only loosely with the target (all correlations below 0.3): their effects are "
+                      "small next to the target's own swings.")
+        self.add("9. The recommended model", "The drivers next to the target", line_claim,
                  what=["Top: the target's quarterly growth. Below: each driver, in the form and with the lag the model uses."],
                  result=[f"Correlation with the target: " + ", ".join(f"{self.short(d, 80)} {c:+.2f}"
                                                                      for d, c in zip(self.rec_drivers, cor)) + "."],
@@ -1621,7 +1646,7 @@ class Story:
             T[c] = T[c].map(self.u)
         T = T.drop(columns="model").rename(columns={"date": "Year end"})
         self.add("10. The forecast", "Scenario ordering check: " + ("passed" if ok else "look closer" if ok is False else "not applicable"),
-                 "Severe below downside below baseline below upside, as the scenario names promise.",
+                 "Expected order: severe below downside below baseline below upside, as the scenario names promise.",
                  what=["The year-end levels of each scenario are compared. A sensible model ranks them in the order of "
                        "the scenario names (severe < downside < baseline < upside)."],
                  result=[("The order holds at the last year end." if ok else
@@ -1634,13 +1659,17 @@ class Story:
         rec = self.REC["model"]
         col = f"avg_1_{self.HM}_pct"
         best = self.rank.iloc[0]
-        items = [("History is short", f"{len(self.ctx.idx[self.ctx.est0:self.ctx.end + 1])} quarters of estimation data. "
-                  "Few recessions are in the sample, so effects in a severe downturn are extrapolated."),
+        nq = len(self.ctx.idx[self.ctx.est0:self.ctx.end + 1])
+        items = [("History is short" if nq < 100 else "History is long, but severe downturns are rare",
+                  f"{nq} quarters of estimation data. " +
+                  ("Few recessions are in the sample, so effects in a severe downturn are extrapolated." if nq < 100 else
+                   "Several downturns are in the sample, but each is a handful of quarters; relations may also have "
+                   "changed over so long a period (see the window check of the out-of-sample test).")),
                  ("Pandemic quarters", "Handled with dummies and excluded from scoring; a similar shock would not be "
                   "captured by the drivers."),
                  ("Scenario dependence", "The forecast is only as good as the scenario paths of the drivers."),
-                 ("Driver choice can shift", "Out of sample, the chosen drivers change between origins; the "
-                  "recommendation should be re-run when new data arrive.")]
+                 ("Driver choice can shift", "Out of sample, data-chosen drivers can change between origins (see "
+                  "the driver stability page); the recommendation should be re-run when new data arrive.")]
         if best["model"] != rec:
             items.append(("Accuracy vs transparency", f"The most accurate model overall ({best['model']}, "
                           f"{self.err(best[col])}) is not the recommended one ({self.err(self.REC[col])}); the "
@@ -1701,10 +1730,16 @@ class Story:
         rec = self.REC["model"]
         col = f"avg_1_{self.HM}_pct"
         ar = self.AR[col] if self.AR is not None else np.nan
+        d_ = self.drv[(self.drv["model"] == rec) & self.drv["term"].isin(self.rec_drivers)] if self.rec_drivers else self.drv.iloc[:0]
+        ok_ = d_["sign_ok"].astype(str).str.lower() if "sign_ok" in d_ else pd.Series(dtype=str)
+        gain = (1 - self.REC[col] / ar) * 100 if ar == ar else np.nan
         self.add("12. Conclusion", f"Recommendation: use {rec}",
-                 f"{self.err(self.REC[col])} average error over 1-{self.HM} quarters, "
-                 + (f"{(1 - self.REC[col] / ar) * 100:.0f}% less than the benchmark, " if ar == ar else "")
-                 + "with drivers that make economic sense.",
+                 f"{self.err(self.REC[col])} average error over 1-{self.HM} quarters"
+                 + ("" if gain != gain else f", {gain:.0f}% less than the benchmark" if gain >= 0.5
+                    else f", {-gain:.0f}% more than the benchmark" if gain <= -0.5 else ", about the same as the benchmark")
+                 + (", with no macro drivers (own history only)." if not self.rec_drivers else
+                    ", with every driver's sign as theory expects." if len(ok_) and (ok_ == "yes").all() else
+                    f", with {int((ok_ == 'no').sum())} driver(s) of unexpected sign." if (ok_ == "no").any() else "."),
                  what=[f"Use {rec} for the {self.TARGET} forecast under each scenario.",
                        "Drivers: " + "; ".join(self.label(d) for d in self.rec_drivers) + "." if self.rec_drivers else "",
                        "Re-run the process each quarter when new data arrive; check whether the drivers and the ranking change.",
