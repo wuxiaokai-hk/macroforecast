@@ -316,6 +316,14 @@ CHECK_TITLE = ("Statistical checks do not apply to this model type" if not CHECK
                f"Statistical checks: {len(CHECKS) - len(_rev)} of {len(CHECKS)} pass; review {', '.join(_rev[:3])}"
                + ("…" if len(_rev) > 3 else ""))
 _has_fm = (ranking["family"] == "AI foundation model").any()
+# the driver-selection approaches this run used (data-driven family)
+APPR = list(mlist.loc[mlist["family"] == "Data-driven", "model"]) if not mlist.empty else []
+APPR_SHORT = ", ".join(a.replace(" first", "") for a in APPR) or "literature drivers only"
+APPR_TITLE = ("Two ways to choose the drivers, then the same final search" if len(APPR) <= 2 else
+              f"Two of the {len(APPR)} ways to choose the drivers: screening and the elastic net")
+APPR_NOTE = (f"Approaches run: {', '.join(APPR)}. They are not independent: all start from the same candidate pool, "
+             "transformations, expected signs and sample, so agreement between them supports a driver without "
+             "confirming it independently. Each one's chosen model enters the competition.")
 NEXT = "; ".join(([ "re-run on actual data"] if simulated else []) +
                  ["review the literature table and expected signs with the business", "agree the model choice with model risk"] +
                  ([] if _has_fm else ["add the foundation models"]) + ["monitor quarterly"])
@@ -391,7 +399,7 @@ Uses: planning, scenario analysis, stress testing, capital and liquidity plannin
 
 [[step: exchange | 2. Transform | Up to 7 stationary forms, lags 0–4]]
 
-[[step: filter | 3. Select | Screen first, or Elastic Net first]]
+[[step: filter | 3. Select | `{python} f"{len(APPR)} approaches: " if len(APPR) > 1 else ""``{python} APPR_SHORT`]]
 
 [[step: layers | 4. Group | Near-duplicates count as one signal]]
 
@@ -471,7 +479,7 @@ chart("funnel", {"type": "barh", "categories": [s for s, _ in stages], "legend":
 
 ::::
 
-## Two ways to choose the drivers, then the same final search
+## `{python} APPR_TITLE`
 
 :::: {.columns}
 
@@ -494,6 +502,10 @@ chart("funnel", {"type": "barh", "categories": [s for s, _ in stages], "legend":
 :::
 
 ::::
+
+::: notes
+`{python} APPR_NOTE`
+:::
 
 ## Selection rules keep every model economic, simple and accurate
 

@@ -344,10 +344,14 @@ class Story:
     def s_overview(self):
         n_var = self.forms["mnemonic"].nunique() if not self.forms.empty else len(self.meta)
         n_feat = len(self.a1) if not self.a1.empty else None
+        appr = list(self.mlist.loc[self.mlist["family"] == "Data-driven", "model"]) if not self.mlist.empty else []
+        choose = (f"{len(appr)} data-driven approaches ({', '.join(appr)}), one candidate pool and the same rules"
+                  if len(appr) > 1 else f"{appr[0]}: candidates screened under economic rules" if appr
+                  else "Literature drivers (no data-driven selection run)")
         steps = [("Prepare the target", "Organic growth: one-off events removed"),
                  ("Collect macro data", f"{len(self.meta):,} series, expected signs"),
                  ("Build candidates", f"{n_var} variables x forms x lags = {num(n_feat) if n_feat else 'many'} candidates"),
-                 ("Choose drivers", "Two independent approaches, same final search"),
+                 ("Choose drivers", choose),
                  ("Compete", f"{len(self.comp)} models in {self.comp['family'].nunique()} families"),
                  ("Test", "Backtest and out-of-sample test, 1-12 quarters"),
                  ("Recommend", f"{self.REC['model']}"),
@@ -744,7 +748,7 @@ class Story:
         T = pd.DataFrame({"Selected": [self.short(x, 62) for x in B1["feature"]],
                           "Standardised effect": [f"{v:+.3f}" for v in B1["std_coef"]]})
         self.add("5. Choosing drivers: Elastic Net first", f"Elastic Net considers all {len(self.a1):,} candidates at once "
-                 f"and keeps {len(B1)}", "The second approach looks at all candidates together instead of one at a time.",
+                 f"and keeps {len(B1)}", "Unlike screening, this approach looks at all candidates together instead of one at a time.",
                  what=["An Elastic Net regression puts every candidate in one equation and shrinks their coefficients "
                        "toward zero; only candidates that really add information keep a non-zero coefficient.",
                        "Last quarter's growth and the dummies are not penalised: their effect is removed first, so the "
@@ -752,8 +756,9 @@ class Story:
                        "Coefficients are constrained to the expected sign, and the penalty is set so that about "
                        f"{enc.get('target_n', 10)} candidates remain."],
                  why=["Screening one at a time can keep a variable that only looks strong because it stands in for "
-                      "another. Looking at all candidates jointly is the classic answer; having two independent "
-                      "approaches also shows how robust the choice of drivers is."],
+                      "another. Looking at all candidates jointly is the classic answer. Comparing the approaches shows "
+                      "how robust the choice of drivers is; they share the candidate pool and the rules, so agreement "
+                      "supports a driver without being independent evidence."],
                  result=[f"On the full sample, {len(B1)} candidates keep a non-zero coefficient"
                          + (f" (penalty λ = {lam:.3g})." if lam is not None else ".")],
                  table=T)
@@ -923,7 +928,7 @@ class Story:
             return
         tol = (self.cfg.get("final_model") or {}).get("selection_tolerance", 0.05)
         T = pd.DataFrame(rows)
-        same = len(rows) == 2 and rows[0]["Chosen drivers"] == rows[1]["Chosen drivers"]
+        same = len(rows) > 1 and len({r["Chosen drivers"] for r in rows}) == 1
         self.add("6. The final search", "The simplest model close to the best is chosen",
                  "Among near-equals, fewer drivers win: they are easier to explain and less likely to be overfitted.",
                  what=[f"All models within {tol:.0%} of the best backtest error are considered equivalent. Among them, "
@@ -932,8 +937,10 @@ class Story:
                       "(one more thing to explain, one more input that can go wrong in a scenario)."],
                  result=[f"{r['Approach']}: {r['Chosen drivers']} (error {r['Error']}; "
                          f"{plural(int(r['Within tolerance'] or 0), 'model')} within the tolerance)." for r in rows] +
-                        (["Both approaches arrive at the same drivers, which is strong evidence for them."] if same else
-                         ["The two approaches choose different drivers: both models go on to the competition."]),
+                        ([] if len(rows) < 2 else
+                         [f"All {len(rows)} approaches arrive at the same drivers. That supports them, though the "
+                          "approaches share candidates and rules, so it is not independent confirmation."] if same else
+                         [f"The {len(rows)} approaches choose different drivers: each model goes on to the competition."]),
                  table=T)
 
     # ---------------------------------------------------------------------------------------------- part 7: competition
@@ -941,7 +948,7 @@ class Story:
         M = self.mlist.copy()
         fams = [f for f in FAM_ORDER if f in set(M["family"])] + sorted(set(M["family"]) - set(FAM_ORDER))
         DESC = {"Benchmark": "Naive rules any model must beat: last quarter's growth carried forward (AR(1)), or average growth.",
-                "Data-driven": "The two models chosen in the previous steps.",
+                "Data-driven": "The models whose drivers were chosen from the data in the previous steps (one per approach).",
                 "Literature": "Published specifications rebuilt with our series; drivers and lags fixed by the source.",
                 "Hybrid": "Theory and data combined: the literature core plus data-chosen drivers, or averages of the two.",
                 "Auto ARDL": "Lag lengths chosen automatically by information criterion (as in EViews' automatic ARDL).",
@@ -1293,7 +1300,8 @@ class Story:
         P = self.picks
         if P.empty:
             return
-        P = P[P["model"].isin(["Screen first", "Elastic Net first", "Bayesian first"])] if "model" in P else P
+        P = P[P["model"].isin(["Screen first", "Elastic Net first", "Bayesian first", "Factors first",
+                               "Stable first"])] if "model" in P else P
         fcol = "features" if "features" in P else [c for c in P.columns if "driver" in c or "feature" in c][0]
         rows = []
         for _, r in P.iterrows():
@@ -1311,10 +1319,10 @@ class Story:
         ax.barh(lbl, c2.values / n_or * 100, color=C["teal"])
         ax.set_xlim(0, 100)
         ax.tick_params(axis="y", labelsize=7.5)
-        ax.set_title(f"Share of the {n_or} origins at which each variable is chosen (either approach, %)", loc="left")
+        ax.set_title(f"Share of the {n_or} origins at which each variable is chosen (any approach, %)", loc="left")
         self.add("8. Testing", "Which variables keep being chosen, origin after origin",
                  "Drivers that come back at most origins reflect durable relations; one-off picks are noise.",
-                 what=["At each out-of-sample origin, both approaches choose their drivers afresh. Counting how often "
+                 what=["At each out-of-sample origin, every data-driven approach chooses its drivers afresh. Counting how often "
                        "each variable is chosen shows how stable the choice is."],
                  result=[f"Most frequent: " + ", ".join(f"{(self.meta.loc[v, 'description'] if v in self.meta.index else v)} "
                                                        f"({c}/{n_or})" for v, c in cnt.head(3).items()) + "."],
