@@ -204,6 +204,10 @@ def equation_text(model, T):
             return "\n".join(["y*(t) = " + join(list(zip(T["symbol"], T["coefficient"]))),
                               "g(t) = y*(t) - y*(t-1)", "L(t) = L(t-1) + g(t)",
                               "y*(t) = L*(t), L* = organic level of the target"])
+        if not getattr(model, "real", True):
+            return "\n".join(["y*(t) = " + join(list(zip(T["symbol"], T["coefficient"]))),
+                              "g(t) = y*(t) - y*(t-1)", "L(t) = L(t-1) × exp(g(t))",
+                              "y*(t) = ln L*(t), L* = organic level of the target"])
         return "\n".join(["y*(t) = " + join(list(zip(T["symbol"], T["coefficient"]))),
                           f"g(t) = y*(t) - y*(t-1) + ln({model.deflator}(t) / {model.deflator}(t-1))",
                           "L(t) = L(t-1) × exp(g(t))",
