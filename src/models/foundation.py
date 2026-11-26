@@ -33,7 +33,7 @@ def available():
         import torch  # noqa: F401
         return True, ""
     except Exception as e:
-        return False, f"{type(e).__name__}: {e}. Install with: pip install chronos-forecasting"
+        return False, f"{type(e).__name__}: {e}. Install with: pip install -U chronos-forecasting"
 
 
 def load(model_id, device="cpu"):
@@ -49,11 +49,28 @@ def load(model_id, device="cpu"):
     try:
         import torch
         from chronos import BaseChronosPipeline
-        _PIPES[model_id] = BaseChronosPipeline.from_pretrained(model_id, device_map=device, dtype=torch.float32)
-        return _PIPES[model_id]
     except Exception as e:
-        _ERRORS[model_id] = f"{type(e).__name__}: {str(e)[:300]}"
+        _ERRORS[model_id] = f"{type(e).__name__}: {str(e)[:300]}. Install with: pip install -U chronos-forecasting"
         return None
+    errs = []
+    # transformers renamed torch_dtype to dtype (4.56); older versions reject dtype and newer ones warn on torch_dtype
+    for kw in ({"dtype": torch.float32}, {"torch_dtype": torch.float32}, {}):
+        try:
+            _PIPES[model_id] = BaseChronosPipeline.from_pretrained(model_id, device_map=device, **kw)
+            return _PIPES[model_id]
+        except TypeError as e:                       # the keyword is not accepted: try the next spelling
+            errs.append(f"TypeError: {e}")
+        except Exception as e:
+            errs.append(f"{type(e).__name__}: {e}")
+            break                                    # not a keyword problem (download, version, memory): stop
+    msg = errs[-1][:300] if errs else "unknown error"
+    if "chronos-2" in str(model_id).lower() and ("Chronos2" in msg or "not supported" in msg or "Unknown" in msg):
+        msg += " (Chronos-2 needs chronos-forecasting 2.0 or later: pip install -U chronos-forecasting)"
+    elif any(w in msg for w in ("Connection", "resolve", "offline", "HTTP", "timed out", "SSL")):
+        msg += " (the model is downloaded from Hugging Face the first time: this computer needs internet access " \
+               "to huggingface.co once, or set the model id to a local folder)"
+    _ERRORS[model_id] = msg
+    return None
 
 
 def load_error(model_id):

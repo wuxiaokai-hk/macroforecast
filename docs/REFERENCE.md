@@ -2738,16 +2738,22 @@ Deep-learning and classic statistical time-series challengers.
 ### `deep_available`
 
 ```python
-deep_available()
+deep_available(kinds=('tide', 'nhits', 'tft'))
 ```
 
-Check whether darts and PyTorch are installed.
+Check that darts, PyTorch, Lightning and each requested network class can be loaded.
+
+Recent darts releases install without PyTorch: `import darts` then works but every network (TFTModel, TiDEModel, ...) is a placeholder that fails when used. So the classes themselves are checked.
+
+| argument | default | meaning |
+|---|---|---|
+| `kinds` | `('tide', 'nhits', 'tft')` | the deep models requested (tide, nhits, tft, nbeats, tsmixer). |
 
 **Returns:** (ok, reason).
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:34</sub>
+<sub>src/models/deep.py:38</sub>
 
 ### `_dummies`
 
@@ -2765,7 +2771,7 @@ Names of the COVID dummy columns in a panel.
 
 **Called by:** `ARIMAX._exog`, `DeepModel._cov_cols`, `Theta.detail_rows`, `Theta.forecast`
 
-<sub>src/models/deep.py:48</sub>
+<sub>src/models/deep.py:79</sub>
 
 ### `DeepModel`
 
@@ -2787,7 +2793,7 @@ The target and drivers are standardised with training-window statistics; several
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:60</sub>
+<sub>src/models/deep.py:91</sub>
 
 ### `DeepModel.__init__`
 
@@ -2805,7 +2811,7 @@ Create a deep-learning model.
 | `settings` | `None` | epochs, input_chunk, output_chunk, n_models, batch_size, learning_rate, refit_every, and per-model overrides such as {"tft": {"epochs": 50}}. |
 | `note` | `''` | free text. |
 
-<sub>src/models/deep.py:68</sub>
+<sub>src/models/deep.py:99</sub>
 
 ### `DeepModel.spec`
 
@@ -2817,7 +2823,7 @@ Part of the model interface (see src/models/zoo.py): kind, features and settings
 
 **Returns:** dict.
 
-<sub>src/models/deep.py:85</sub>
+<sub>src/models/deep.py:116</sub>
 
 ### `DeepModel.drivers`
 
@@ -2829,7 +2835,7 @@ Part of the model interface (see src/models/zoo.py): covariates, or "(own histor
 
 **Returns:** list of str.
 
-<sub>src/models/deep.py:94</sub>
+<sub>src/models/deep.py:125</sub>
 
 ### `DeepModel.panel`
 
@@ -2848,7 +2854,7 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 
 **Calls:** `make_panel`
 
-<sub>src/models/deep.py:102</sub>
+<sub>src/models/deep.py:133</sub>
 
 ### `DeepModel._cov_cols`
 
@@ -2868,7 +2874,7 @@ Covariate columns used: drivers plus dummies (none for N-BEATS).
 
 **Called by:** `DeepModel._first_valid`, `DeepModel.detail_rows`, `DeepModel.fit`, `DeepModel.forecast`
 
-<sub>src/models/deep.py:114</sub>
+<sub>src/models/deep.py:145</sub>
 
 ### `DeepModel._first_valid`
 
@@ -2888,7 +2894,7 @@ Position of the first quarter where the target and all covariates are known.
 
 **Called by:** `DeepModel.fit`, `DeepModel.forecast`
 
-<sub>src/models/deep.py:125</sub>
+<sub>src/models/deep.py:156</sub>
 
 ### `DeepModel._series`
 
@@ -2907,7 +2913,7 @@ Convert an array to a darts TimeSeries on an integer time index.
 
 **Called by:** `DeepModel.detail_rows`, `DeepModel.fit`, `DeepModel.forecast`
 
-<sub>src/models/deep.py:138</sub>
+<sub>src/models/deep.py:169</sub>
 
 ### `DeepModel._build`
 
@@ -2925,7 +2931,7 @@ Create one untrained darts network with the configured size.
 
 **Called by:** `DeepModel.fit`
 
-<sub>src/models/deep.py:153</sub>
+<sub>src/models/deep.py:184</sub>
 
 ### `DeepModel.fit`
 
@@ -2945,7 +2951,7 @@ Part of the model interface (see src/models/zoo.py): train n_models networks on 
 
 **Calls:** `DeepModel._build`, `DeepModel._cov_cols`, `DeepModel._first_valid`, `DeepModel._series`
 
-<sub>src/models/deep.py:186</sub>
+<sub>src/models/deep.py:217</sub>
 
 ### `DeepModel.detail_rows`
 
@@ -2964,7 +2970,7 @@ Driver table rows: for TFT, the importance its variable-selection networks give 
 
 **Calls:** `DeepModel._cov_cols`, `DeepModel._series`
 
-<sub>src/models/deep.py:222</sub>
+<sub>src/models/deep.py:253</sub>
 
 ### `DeepModel.forecast`
 
@@ -2984,7 +2990,7 @@ Part of the model interface (see src/models/zoo.py): average of the networks' fo
 
 **Calls:** `DeepModel._cov_cols`, `DeepModel._first_valid`, `DeepModel._series`
 
-<sub>src/models/deep.py:265</sub>
+<sub>src/models/deep.py:296</sub>
 
 ### `ARIMAX`
 
@@ -3003,7 +3009,7 @@ Regression on the literature drivers and dummies with ARMA errors (statsmodels S
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:293</sub>
+<sub>src/models/deep.py:324</sub>
 
 ### `ARIMAX.__init__`
 
@@ -3022,7 +3028,7 @@ Create an ARIMAX.
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:297</sub>
+<sub>src/models/deep.py:328</sub>
 
 ### `ARIMAX.spec`
 
@@ -3036,7 +3042,7 @@ Part of the model interface (see src/models/zoo.py): features and order.
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:307</sub>
+<sub>src/models/deep.py:338</sub>
 
 ### `ARIMAX.drivers`
 
@@ -3050,7 +3056,7 @@ Part of the model interface (see src/models/zoo.py): driver features.
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:315</sub>
+<sub>src/models/deep.py:346</sub>
 
 ### `ARIMAX.panel`
 
@@ -3069,7 +3075,7 @@ Part of the model interface (see src/models/zoo.py): panel with target, drivers 
 
 **Calls:** `make_panel`
 
-<sub>src/models/deep.py:323</sub>
+<sub>src/models/deep.py:354</sub>
 
 ### `ARIMAX._exog`
 
@@ -3089,7 +3095,7 @@ Exogenous regressors: drivers and dummies.
 
 **Called by:** `ARIMAX.fit`
 
-<sub>src/models/deep.py:334</sub>
+<sub>src/models/deep.py:365</sub>
 
 ### `ARIMAX.fit`
 
@@ -3109,7 +3115,7 @@ Part of the model interface (see src/models/zoo.py): maximum-likelihood estimate
 
 **Calls:** `ARIMAX._exog`
 
-<sub>src/models/deep.py:345</sub>
+<sub>src/models/deep.py:376</sub>
 
 ### `ARIMAX.detail_rows`
 
@@ -3126,7 +3132,7 @@ Coefficients of the regression part and of the ARMA errors, with maximum-likelih
 
 **Returns:** list of dict rows.
 
-<sub>src/models/deep.py:366</sub>
+<sub>src/models/deep.py:397</sub>
 
 ### `ARIMAX.forecast`
 
@@ -3144,7 +3150,7 @@ Part of the model interface (see src/models/zoo.py): run the Kalman filter with 
 
 **Returns:** array of forecasts.
 
-<sub>src/models/deep.py:388</sub>
+<sub>src/models/deep.py:419</sub>
 
 ### `Theta`
 
@@ -3161,7 +3167,7 @@ Theta method on target growth alone (COVID quarters replaced by the average).
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:413</sub>
+<sub>src/models/deep.py:444</sub>
 
 ### `Theta.__init__`
 
@@ -3178,7 +3184,7 @@ Create a Theta model.
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:417</sub>
+<sub>src/models/deep.py:448</sub>
 
 ### `Theta.spec`
 
@@ -3192,7 +3198,7 @@ Part of the model interface (see src/models/zoo.py): no settings.
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:427</sub>
+<sub>src/models/deep.py:458</sub>
 
 ### `Theta.drivers`
 
@@ -3206,7 +3212,7 @@ Part of the model interface (see src/models/zoo.py): "(own history only)".
 
 **Called by:** `build`
 
-<sub>src/models/deep.py:435</sub>
+<sub>src/models/deep.py:466</sub>
 
 ### `Theta.panel`
 
@@ -3225,7 +3231,7 @@ Part of the model interface (see src/models/zoo.py): panel with target and dummi
 
 **Calls:** `make_panel`
 
-<sub>src/models/deep.py:443</sub>
+<sub>src/models/deep.py:474</sub>
 
 ### `Theta.detail_rows`
 
@@ -3244,7 +3250,7 @@ Theta parameters estimated on the full sample: theta and the smoothing weight al
 
 **Calls:** `_dummies`
 
-<sub>src/models/deep.py:454</sub>
+<sub>src/models/deep.py:485</sub>
 
 ### `Theta.fit`
 
@@ -3262,7 +3268,7 @@ Part of the model interface (see src/models/zoo.py): remembers the start; the me
 
 **Returns:** self.
 
-<sub>src/models/deep.py:476</sub>
+<sub>src/models/deep.py:507</sub>
 
 ### `Theta.forecast`
 
@@ -3282,7 +3288,7 @@ Part of the model interface (see src/models/zoo.py): fit Theta on start..origin 
 
 **Calls:** `_dummies`
 
-<sub>src/models/deep.py:488</sub>
+<sub>src/models/deep.py:519</sub>
 
 
 ## src/models/ecm.py
@@ -3519,7 +3525,7 @@ Why a foundation model could not be loaded (empty if it loaded).
 
 **Called by:** `FoundationModel.forecast`, `build`
 
-<sub>src/models/foundation.py:59</sub>
+<sub>src/models/foundation.py:76</sub>
 
 ### `FoundationModel`
 
@@ -3539,7 +3545,7 @@ Pretrained zero-shot forecaster (Chronos-Bolt or Chronos-2); nothing is estimate
 
 **Called by:** `build`
 
-<sub>src/models/foundation.py:71</sub>
+<sub>src/models/foundation.py:88</sub>
 
 ### `FoundationModel.__init__`
 
@@ -3557,7 +3563,7 @@ Create a foundation model.
 | `device` | `'cpu'` | "cpu" or "cuda". |
 | `note` | `''` | free text. |
 
-<sub>src/models/foundation.py:75</sub>
+<sub>src/models/foundation.py:92</sub>
 
 ### `FoundationModel.spec`
 
@@ -3569,7 +3575,7 @@ Part of the model interface (see src/models/zoo.py): model id and covariates.
 
 **Returns:** dict.
 
-<sub>src/models/foundation.py:87</sub>
+<sub>src/models/foundation.py:104</sub>
 
 ### `FoundationModel.drivers`
 
@@ -3581,7 +3587,7 @@ Part of the model interface (see src/models/zoo.py): covariates, or "(own histor
 
 **Returns:** list of str.
 
-<sub>src/models/foundation.py:95</sub>
+<sub>src/models/foundation.py:112</sub>
 
 ### `FoundationModel.panel`
 
@@ -3600,7 +3606,7 @@ Part of the model interface (see src/models/zoo.py): panel with the target, cova
 
 **Calls:** `make_panel`
 
-<sub>src/models/foundation.py:103</sub>
+<sub>src/models/foundation.py:120</sub>
 
 ### `FoundationModel.fit`
 
@@ -3618,7 +3624,7 @@ Part of the model interface (see src/models/zoo.py): zero-shot: only remembers w
 
 **Returns:** self.
 
-<sub>src/models/foundation.py:114</sub>
+<sub>src/models/foundation.py:131</sub>
 
 ### `FoundationModel._context`
 
@@ -3637,7 +3643,7 @@ History passed to the model: from start (or the first complete covariate row) to
 
 **Called by:** `FoundationModel.forecast`
 
-<sub>src/models/foundation.py:126</sub>
+<sub>src/models/foundation.py:143</sub>
 
 ### `FoundationModel.forecast`
 
@@ -3657,7 +3663,7 @@ Part of the model interface (see src/models/zoo.py): median forecast from the pr
 
 **Calls:** `FoundationModel._context`, `load`, `load_error`
 
-<sub>src/models/foundation.py:146</sub>
+<sub>src/models/foundation.py:163</sub>
 
 
 ## src/models/horizon.py

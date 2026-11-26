@@ -193,7 +193,7 @@ models:                             # which model families compete (all use the 
     models: [markov, threshold, smooth_transition, tvp, break_adaptive]   # [] to switch off
     settings: {}                    # e.g. {markov: {switching_ar: true}, threshold: {trim: 0.2}}
   statistical: [arimax, theta]      # classic time-series challengers (statsmodels); [] to switch off
-  deep:                             # small neural forecasters trained on this data; need: pip install darts
+  deep:                             # small neural forecasters trained on this data; need: pip install "darts[torch]"
     enabled: auto                   # auto = run if darts is installed; false = off
     models: [tide, nhits, tft]      # also available: nbeats, tsmixer
     settings: {epochs: 80, input_chunk: 8, output_chunk: 4, n_models: 3, refit_every: 4,

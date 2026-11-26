@@ -197,6 +197,7 @@ def build(cfg, ctx, sel, log=print):
     """sel: {approach: selection_info(...)}. Returns (models, notes table, extra tables)."""
     mc = cfg["models"]
     models, notes, extra = [], [], {}
+    not_run = []                                 # requested models that could not run (missing packages, download)
 
     def add(m, how, source=""):
         if not wanted(cfg, m.name, m.family):
@@ -349,16 +350,20 @@ def build(cfg, ctx, sel, log=print):
                                                      names=[m.get("name", "") for m in fcfg.get("models", [])]):
         ok, why = foundation.available()
         if not ok:
-            msg = f"  foundation models skipped: {why}"
+            msg = f"  NOT RUN - AI foundation models: {why}"
             if en is True:
                 raise RuntimeError(msg)
             log(msg)
+            not_run += [{"model": m.get("name", ""), "family": "AI foundation model", "reason": why}
+                        for m in fcfg.get("models", [])]
         else:
             for m in fcfg.get("models", []):
                 cov = m.get("covariates")
                 cov = core if cov == "core" else (_valid(ctx, cov)[0] if cov else [])
                 if foundation.load(m["id"], fcfg.get("device", "cpu")) is None:
-                    log(f"  {m['name']} skipped: {foundation.load_error(m['id'])}")
+                    log(f"  NOT RUN - {m['name']}: {foundation.load_error(m['id'])}")
+                    not_run.append({"model": m["name"], "family": "AI foundation model",
+                                    "reason": foundation.load_error(m["id"])})
                     continue
                 add(foundation.FoundationModel(m["name"], m["id"], cov, fcfg.get("device", "cpu")),
                     "Pretrained, zero-shot (not trained on this data)" + ("; uses the literature drivers and their scenario paths"
@@ -395,11 +400,13 @@ def build(cfg, ctx, sel, log=print):
     en = dcfg.get("enabled", "auto")
     if en not in (False, "false", "off") and dcfg.get("models") and wanted(
             cfg, family="Deep learning", names=[deep.DEEP_LABELS.get(k, k) for k in dcfg["models"]]):
-        ok, why = deep.deep_available()
+        ok, why = deep.deep_available(dcfg["models"])
         if not ok:
             if en is True:
                 raise RuntimeError(f"deep models: {why}")
-            log(f"  deep-learning models skipped: {why}")
+            log(f"  NOT RUN - deep-learning models ({', '.join(deep.DEEP_LABELS.get(k, k) for k in dcfg['models'])}): {why}")
+            not_run += [{"model": deep.DEEP_LABELS.get(k, k), "family": "Deep learning", "reason": why}
+                        for k in dcfg["models"]]
         else:
             for kind in dcfg["models"]:
                 feats = [] if kind in deep.NO_COV else core
@@ -410,6 +417,8 @@ def build(cfg, ctx, sel, log=print):
                        "nbeats": "target growth alone; same forecast in every scenario"}[kind]
                 add(deep.DeepModel(deep.DEEP_LABELS[kind], kind, feats, dcfg.get("settings")),
                     f"Small network trained on this data, average of several seeds; {how}")
+    if not_run:
+        extra["models_not_run"] = pd.DataFrame(not_run)
     if table is not None:
         extra["literature_variables"] = litmod.status(table, set(ctx.hist.columns), used)
     if (mc.get("tested") or {}).get("enabled", True):     # every model with drivers gets a tested twin

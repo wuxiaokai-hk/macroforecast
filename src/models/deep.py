@@ -1,6 +1,7 @@
 """Deep-learning and classic statistical time-series challengers.
 
-Deep learning (needs `pip install darts`, which installs PyTorch; skipped with a message if missing)
+Deep learning (needs `pip install "darts[torch]"`: darts itself no longer installs PyTorch; skipped with a
+message, listed in comparison/10_models_not_run.csv, if missing)
   TiDE   (Das et al. 2023, Google)       MLP encoder-decoder; uses the drivers' future (scenario) values
   N-HiTS (Challu et al. 2023)            hierarchical interpolation; drivers enter as past covariates (their
                                          scenario path is used only beyond the first 4 quarters)
@@ -31,18 +32,48 @@ PER_MODEL = {"tft": {"n_models": 2, "epochs": 50}}   # TFT is ~8x slower per epo
 DEEP_DEFAULTS = {"epochs": 80, "input_chunk": 8, "output_chunk": 4, "n_models": 3, "batch_size": 16, "learning_rate": 3e-3}
 
 
-def deep_available():
-    """Check whether darts and PyTorch are installed.
+INSTALL = 'pip install "darts[torch]"   (darts itself no longer installs PyTorch)'
+
+
+def deep_available(kinds=("tide", "nhits", "tft")):
+    """Check that darts, PyTorch, Lightning and each requested network class can be loaded.
+
+    Recent darts releases install without PyTorch: `import darts` then works but every network (TFTModel, TiDEModel,
+    ...) is a placeholder that fails when used. So the classes themselves are checked.
+
+    Args:
+        kinds: the deep models requested (tide, nhits, tft, nbeats, tsmixer).
 
     Returns:
         (ok, reason).
     """
     try:
         import darts  # noqa: F401
-        import torch  # noqa: F401
-        return True, ""
     except Exception as e:
-        return False, f"{type(e).__name__}: {e}. Install with: pip install darts"
+        return False, f"darts is not installed ({type(e).__name__}: {e}). Install with: {INSTALL}"
+    try:
+        import torch  # noqa: F401
+    except Exception as e:
+        return False, f"PyTorch is not installed ({type(e).__name__}: {e}). Install with: {INSTALL}"
+    try:
+        import pytorch_lightning  # noqa: F401
+    except Exception:
+        try:
+            import lightning  # noqa: F401
+        except Exception as e:
+            return False, f"PyTorch Lightning is not installed ({type(e).__name__}: {e}). Install with: {INSTALL}"
+    import darts.models as dm
+    cls = {"tide": "TiDEModel", "nhits": "NHiTSModel", "tft": "TFTModel", "nbeats": "NBEATSModel",
+           "tsmixer": "TSMixerModel"}
+    bad = []
+    for k in kinds:
+        c = getattr(dm, cls.get(k, ""), None)
+        if c is None or not isinstance(c, type):          # darts' NotImportedModule placeholder is not a class
+            bad.append(cls.get(k, k))
+    if bad:
+        return False, (f"darts cannot load {', '.join(bad)} (its PyTorch part is missing or broken). "
+                       f"Install with: {INSTALL}")
+    return True, ""
 
 
 def _dummies(P):

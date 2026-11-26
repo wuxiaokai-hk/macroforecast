@@ -5,9 +5,9 @@
   "changed": "2026-11-25"
  },
  "run_pipeline.run": {
-  "hash": "9a13befa4327",
+  "hash": "67a54fbf2422",
   "added": "",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "run_oos.main": {
   "hash": "d9bee40277cd",
@@ -215,9 +215,9 @@
   "changed": ""
  },
  "src.models.deep.deep_available": {
-  "hash": "9db0836394a9",
+  "hash": "b8a1bb1f08b8",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-26"
  },
  "src.models.deep._dummies": {
   "hash": "692742a06079",
@@ -405,14 +405,14 @@
   "changed": ""
  },
  "src.models.foundation.available": {
-  "hash": "fe5dffd41beb",
+  "hash": "3b317c852324",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-26"
  },
  "src.models.foundation.load": {
-  "hash": "be547e2e124a",
+  "hash": "7948a53e4241",
   "added": "",
-  "changed": ""
+  "changed": "2026-11-26"
  },
  "src.models.foundation.load_error": {
   "hash": "136b099b6d52",
@@ -585,7 +585,7 @@
   "changed": ""
  },
  "src.models.zoo.build": {
-  "hash": "88673486765b",
+  "hash": "b371f5ab9745",
   "added": "",
   "changed": "2026-11-26"
  },
@@ -4707,31 +4707,6 @@
  "_log": [
   {
    "date": "2026-11-24",
-   "id": "src.panel.compare._one",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.load_errors",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.evaluate",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.one_bank",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.write",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
    "id": "src.panel.reuse._settings",
    "what": "changed"
   },
@@ -6203,6 +6178,31 @@
   {
    "date": "2026-11-26",
    "id": "src.utils.saved.rebuild",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "run_pipeline.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.deep.deep_available",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.foundation.available",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.foundation.load",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.zoo.build",
    "what": "changed"
   }
  ]

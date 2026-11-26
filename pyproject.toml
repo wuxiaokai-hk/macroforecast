@@ -14,7 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 app = ["streamlit>=1.23"]
 deck = ["python-pptx", "jupyter"]
-deep = ["darts>=0.30"]
+deep = ["darts[torch]>=0.30"]
 
 [project.scripts]
 macroforecast = "macroforecast.cli:main"

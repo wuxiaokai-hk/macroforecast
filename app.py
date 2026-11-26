@@ -323,6 +323,10 @@ def run_script(script, cfg_path, extra=()):
         box.update(label=f"{script} {'finished' if code == 0 else 'stopped with an error'} ({time.time() - t0:.0f} s)",
                    state="complete" if code == 0 else "error", expanded=code != 0)
     S["last_log"] = "\n".join(lines)
+    not_run = [ln.strip()[len("NOT RUN - "):] for ln in lines if ln.strip().startswith("NOT RUN - ")]
+    if not_run:                                   # ticked models that could not run: say so where it is seen
+        st.warning("Some models you ticked did **not** run:\n\n" + "\n".join(f"- {x}" for x in dict.fromkeys(not_run)) +
+                   f"\n\nInstall into the Python that runs this app (`{sys.executable}`), then run again.")
     return code
 
 
@@ -1338,9 +1342,14 @@ if mode == "New data set":
             ov["models.machine_learning"] = setup.yq(c2.multiselect("Machine learning", ML, default=ML))
             ov["models.statistical"] = setup.yq(c2.multiselect("Statistical time series", STAT, default=STAT))
             ov["models.regime.models"] = setup.yq(c3.multiselect("Regime switching", REGIME, default=REGIME))
-            deep_on = c3.checkbox("Deep learning (TiDE, N-HiTS, TFT; needs darts, adds about 6 minutes)", False, key="m_deep")
+            deep_on = c3.checkbox("Deep learning (TiDE, N-HiTS, TFT; needs pip install \"darts[torch]\", adds about 6 minutes)", False, key="m_deep")
             ov["models.deep.enabled"] = "auto" if deep_on else "false"
-            ov["models.foundation.enabled"] = "auto" if c3.checkbox("AI foundation models (Chronos; needs internet once)", False, key="m_fm") else "false"
+            ov["models.foundation.enabled"] = "auto" if c3.checkbox("AI foundation models (Chronos; needs pip install chronos-forecasting and internet once)", False, key="m_fm") else "false"
+            if deep_on or S.get("m_fm"):
+                from src.models import deep as _deep, foundation as _fdn
+                for on_, (ok_, why_) in ((deep_on, _deep.deep_available()), (S.get("m_fm"), _fdn.available())):
+                    if on_ and not ok_:
+                        c3.warning(f"Will be skipped on this computer: {why_}")
             ov["models.tested.enabled"] = "true" if c1.checkbox(
                 "Tested twins", True, key="m_tested",
                 help="Every model with drivers also runs as '(tested)': its drivers re-checked until each passes the "

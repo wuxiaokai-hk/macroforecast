@@ -277,6 +277,11 @@ def run(cfg, args):
     steps = cache.write_manifest(out, log)
     report.write_tables(os.path.join(out, "comparison"), {"8_run_steps": steps})
     saved.snapshot(cfg, "pipeline", log)
+    if "models_not_run" in extra:                # requested models that could not run: say so at the end, not only mid-log
+        nr = extra["models_not_run"]
+        log("\nREQUESTED BUT NOT RUN (see comparison/10_models_not_run.csv):")
+        for reason, g in nr.groupby("reason", sort=False):
+            log(f"  {', '.join(g['model'])}: {reason}")
     log(f"\nDone. Outputs in {out}")
 
 
