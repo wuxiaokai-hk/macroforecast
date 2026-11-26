@@ -15,7 +15,7 @@
   "changed": "2026-11-25"
  },
  "run_oos.run": {
-  "hash": "0338f745d39b",
+  "hash": "4731cd3771c3",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -1130,7 +1130,7 @@
   "changed": ""
  },
  "src.validation.oos.run_oos": {
-  "hash": "3574d26ebbca",
+  "hash": "cdb548f28a4b",
   "added": "",
   "changed": "2026-11-25"
  },
@@ -4674,57 +4674,27 @@
   "added": "2026-11-25",
   "changed": "2026-11-25"
  },
+ "src.reporting.report.chart_window_check": {
+  "hash": "967f72bf74a1",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.oos.window_alternatives": {
+  "hash": "d21fe2e0e473",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.oos.base_window_label": {
+  "hash": "e17251c4494c",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
+ "src.validation.oos.window_check": {
+  "hash": "a90ce9ba825c",
+  "added": "2026-11-25",
+  "changed": "2026-11-25"
+ },
  "_log": [
-  {
-   "date": "2026-11-24",
-   "id": "src.models.combination.Combination.__init__",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.models.combination.Combination.spec",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.models.combination.Combination.drivers",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.models.zoo.selection_info",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.models.zoo.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.pipelines.bayes_first.run",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.load",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.build",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.reporting.process_story.Story.s_bayes",
-   "what": "added"
-  },
   {
    "date": "2026-11-24",
    "id": "src.reporting.process_story.Story.s_search_pick",
@@ -6173,6 +6143,56 @@
   {
    "date": "2026-11-25",
    "id": "src.validation.vintages.frame_at",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_oos.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.report.chart_window_check",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.window_alternatives",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.base_window_label",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.run_oos",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.window_check",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.window_check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "run_oos.run",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.reporting.report.chart_window_check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-25",
+   "id": "src.validation.oos.window_check",
    "what": "changed"
   }
  ]

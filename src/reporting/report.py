@@ -146,6 +146,39 @@ def chart_family_bars(path, comp, horizons):
     plt.close(fig)
 
 
+def chart_window_check(path, D, h):
+    """Each model's out-of-sample error with the main estimation window and with the other window(s):
+    a dot pair per model, joined by a line, one panel per other window.
+
+    Args:
+        path: PNG. D: oos.window_check detail table. h: comparison horizon (average over 1..h).
+    """
+    wins = list(dict.fromkeys(D["other_window"]))
+    n = D.groupby("other_window").size().max()
+    fig, axs = plt.subplots(1, len(wins), figsize=(7.5 * len(wins), 0.34 * n + 1.9), squeeze=False)
+    a_, b_ = f"main_avg_1_{h}_pct", f"other_avg_1_{h}_pct"
+    for ax, w in zip(axs[0], wins):
+        d = D[D["other_window"] == w].sort_values(a_, ascending=False)
+        y = np.arange(len(d))
+        better = d[b_].values < d[a_].values
+        for yi, x0, x1, bt in zip(y, d[a_].values, d[b_].values, better):
+            ax.plot([x0, x1], [yi, yi], color=PAL[2] if bt else PAL[3], lw=2, alpha=0.6, zorder=1)
+        ax.scatter(d[a_], y, color=INK2, s=28, zorder=2, label=d["main_window"].iloc[0])
+        ax.scatter(d[b_], y, color=PAL[0], s=28, zorder=3, label=w)
+        ax.set_yticks(y)
+        ax.set_yticklabels(d["model"], fontsize=8.5)
+        ax.grid(axis="y", visible=False)
+        ax.set_xlabel(f"average balance error over 1–{h} quarters (MAPE %)")
+        ax.set_title(f"{d['main_window'].iloc[0]} vs {w}: {w} better for {int(better.sum())} of {len(d)}",
+                     fontsize=10.5, loc="left")
+        ax.legend(fontsize=8.5, loc="upper right")
+    fig.suptitle("Window check: does the older history help or hurt? (same drivers, same origins)",
+                 x=0.01, ha="left", fontsize=12, fontweight="bold", color=INK)
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.savefig(path, bbox_inches="tight")
+    plt.close(fig)
+
+
 def chart_scenarios(path, scen, level, models):
     """Balance paths under each scenario, one panel per model.
 

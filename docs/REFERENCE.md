@@ -162,7 +162,7 @@ Out-of-sample test with re-selection at every origin, Diebold-Mariano tests, hol
 
 **Config:** `approaches`, `cache.dir`, `cache.enabled`, `oos.holdout_quarters`, `out_dir`, `sample.report_horizons`, `save`
 
-**Calls:** `combine`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_driver_timeline`, `chart_family_bars`, `chart_holdout`, `chart_oos`, `write_tables`, `build_oos`, `score`, `why_text`, `StepCache`, `Context`, `log`, `load_models`, `save_origin_models`, `snapshot`, `add_story`, `holdout`, `run_oos`, `select_at`, `summarise`, `settings`
+**Calls:** `combine`, `wanted`, `has_formula`, `write`, `best_per_family`, `chart_driver_timeline`, `chart_family_bars`, `chart_holdout`, `chart_oos`, `chart_window_check`, `write_tables`, `build_oos`, `score`, `why_text`, `StepCache`, `Context`, `log`, `load_models`, `save_origin_models`, `snapshot`, `add_story`, `base_window_label`, `holdout`, `run_oos`, `select_at`, `summarise`, `window_check`, `settings`
 
 **Called by:** `main`
 
@@ -9151,6 +9151,24 @@ Average balance error over 1..h quarters for every model, grouped by family; one
 
 <sub>src/reporting/report.py:118</sub>
 
+### `chart_window_check`
+
+```python
+chart_window_check(path, D, h)
+```
+
+Each model's out-of-sample error with the main estimation window and with the other window(s): a dot pair per model, joined by a line, one panel per other window.
+
+| argument | default | meaning |
+|---|---|---|
+| `path` |  | PNG. |
+| `D` |  | oos.window_check detail table. |
+| `h` |  | comparison horizon (average over 1..h). |
+
+**Called by:** `run`
+
+<sub>src/reporting/report.py:149</sub>
+
 ### `chart_scenarios`
 
 ```python
@@ -9168,7 +9186,7 @@ Balance paths under each scenario, one panel per model.
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:149</sub>
+<sub>src/reporting/report.py:182</sub>
 
 ### `chart_stability`
 
@@ -9187,7 +9205,7 @@ Bar chart of Elastic Net stability-selection frequencies.
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:172</sub>
+<sub>src/reporting/report.py:205</sub>
 
 ### `summary_md`
 
@@ -9210,7 +9228,7 @@ Write the run summary (summary.md): settings, chosen drivers, comparison and dia
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:192</sub>
+<sub>src/reporting/report.py:225</sub>
 
 ### `chart_oos`
 
@@ -9231,7 +9249,7 @@ Out-of-sample error by horizon: AR(1), the best model of each family, and the lo
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:221</sub>
+<sub>src/reporting/report.py:254</sub>
 
 ### `chart_driver_timeline`
 
@@ -9248,7 +9266,7 @@ Which drivers each approach picks at each out-of-sample origin (dot chart).
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:246</sub>
+<sub>src/reporting/report.py:279</sub>
 
 ### `chart_holdout`
 
@@ -9267,7 +9285,7 @@ Holdout chart: actual balance and each model's forecast of the last 12 quarters.
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:276</sub>
+<sub>src/reporting/report.py:309</sub>
 
 ### `chart_regimes`
 
@@ -9287,7 +9305,7 @@ Regimes over history: target growth on top, then each regime-switching model's r
 
 **Called by:** `run`
 
-<sub>src/reporting/report.py:307</sub>
+<sub>src/reporting/report.py:340</sub>
 
 
 ## src/reporting/story.py
@@ -12389,7 +12407,7 @@ YAML turns the words true, yes, on (and ON, the Ontario code) into True, and fal
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:96</sub>
+<sub>src/utils/config.py:97</sub>
 
 ### `_merge`
 
@@ -12408,7 +12426,7 @@ Recursively merge a user config over the defaults (user values win).
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:130</sub>
+<sub>src/utils/config.py:131</sub>
 
 ### `_path`
 
@@ -12426,7 +12444,7 @@ Resolve a path relative to the project folder.
 
 **Called by:** `load_config`
 
-<sub>src/utils/config.py:145</sub>
+<sub>src/utils/config.py:146</sub>
 
 ### `load_config`
 
@@ -12448,7 +12466,7 @@ Read a YAML config, fill defaults, check required keys and normalise values.
 
 **Called by:** `main`, `main`, `_target_cfg`, `Member.__init__`, `main`, `make`, `main`, `build_deck`, `main`, `make`, `main`
 
-<sub>src/utils/config.py:159</sub>
+<sub>src/utils/config.py:160</sub>
 
 
 ## src/utils/docs.py
@@ -15146,7 +15164,7 @@ The backtest window used for selection at an origin. The configured window (samp
 
 **Called by:** `truncated`
 
-<sub>src/validation/oos.py:43</sub>
+<sub>src/validation/oos.py:46</sub>
 
 ### `truncated`
 
@@ -15168,7 +15186,7 @@ A copy of the context that only 'knows' data up to end_pos (and, for a rolling w
 
 **Called by:** `models_at`, `run_oos`, `select_at`
 
-<sub>src/validation/oos.py:61</sub>
+<sub>src/validation/oos.py:64</sub>
 
 ### `select_at`
 
@@ -15193,7 +15211,7 @@ Run one approach using data up to end_pos only. Cached by the truncated data + s
 
 **Called by:** `run`, `models_at`
 
-<sub>src/validation/oos.py:76</sub>
+<sub>src/validation/oos.py:79</sub>
 
 ### `models_at`
 
@@ -15216,7 +15234,7 @@ Every model, specified with data up to end_pos only (plus the look-ahead variant
 
 **Called by:** `joint_oos`, `holdout`, `run_oos`
 
-<sub>src/validation/oos.py:104</sub>
+<sub>src/validation/oos.py:107</sub>
 
 ### `forecast_errors`
 
@@ -15242,7 +15260,7 @@ Fit on est_start..origin and forecast H quarters; return level % errors (organic
 
 **Called by:** `run_oos`
 
-<sub>src/validation/oos.py:124</sub>
+<sub>src/validation/oos.py:127</sub>
 
 ### `dm_test`
 
@@ -15258,9 +15276,9 @@ Diebold-Mariano on squared level errors, HAC variance with h-1 lags, HLN correct
 | `e_bench` |  | benchmark errors. |
 | `h` |  | horizon. |
 
-**Called by:** `tied_models`, `summarise`
+**Called by:** `tied_models`, `summarise`, `window_check`
 
-<sub>src/validation/oos.py:142</sub>
+<sub>src/validation/oos.py:145</sub>
 
 ### `forecast_with`
 
@@ -15282,12 +15300,51 @@ Forecast H quarters from the origin with an already fitted model and another mac
 
 **Called by:** `run_oos`
 
-<sub>src/validation/oos.py:164</sub>
+<sub>src/validation/oos.py:167</sub>
+
+### `window_alternatives`
+
+```python
+window_alternatives(cfg, ctx)
+```
+
+The estimation windows compared with the configured one in the window check.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+| `ctx` |  | the Context: loaded data, organic growth, scenarios, metadata and the estimation window. |
+
+**Returns:** list of (label, length in quarters or None for the full sample). With an expanding window: one entry per oos.window_check.recent_quarters; with a rolling window: the full sample as well.
+
+**Config:** `oos.enabled`, `oos.recent_quarters`, `oos.window`, `oos.window_length`
+
+**Called by:** `run_oos`
+
+<sub>src/validation/oos.py:178</sub>
+
+### `base_window_label`
+
+```python
+base_window_label(cfg)
+```
+
+Name of the configured estimation window.
+
+| argument | default | meaning |
+|---|---|---|
+| `cfg` |  | the run configuration (from load_config). |
+
+**Config:** `oos.window`, `oos.window_length`
+
+**Called by:** `run`, `run_oos`, `window_check`
+
+<sub>src/validation/oos.py:194</sub>
 
 ### `run_oos`
 
 ```python
-run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintage_out=None)
+run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintage_out=None, window_out=None)
 ```
 
 Out-of-sample test: at each origin, re-run selection and re-estimate every model with data up to the origin only, then forecast 1..H quarters.
@@ -15301,16 +15358,42 @@ Out-of-sample test: at each origin, re-run selection and re-estimate every model
 | `cache` |  | StepCache. |
 | `store` | `None` | optional dict, filled with {origin: {model name: pickle bytes}} (each model as estimated at that origin) and store["__coefficients__"]: list of coefficient rows by origin. |
 | `vintage_out` | `None` | optional dict; with oos.macro_vintages it receives "errors" (the same rows forecast with the macro forecast of each origin's time) and "coverage" (vintage used and drivers not covered). |
+| `window_out` | `None` | optional dict; receives "errors": every model re-estimated at each origin on the other estimation windows of oos.window_check (same drivers, so only the length of history differs). |
 
 **Returns:** (errors by model/origin/horizon, drivers picked at each origin, horizon).
 
 **Config:** `oos.first_origin`, `oos.horizon`, `oos.step`, `oos.window`, `sample.dummy_quarters`, `sample.estimation_start`, `sample.horizon`
 
-**Calls:** `freeze`, `log`, `growth_display`, `level_after`, `_with_base`, `forecast_errors`, `forecast_with`, `models_at`, `truncated`, `coverage`, `frame_at`, `load`
+**Calls:** `freeze`, `log`, `growth_display`, `level_after`, `_with_base`, `base_window_label`, `forecast_errors`, `forecast_with`, `models_at`, `truncated`, `window_alternatives`, `coverage`, `frame_at`, `load`
 
 **Called by:** `run`, `main`
 
-<sub>src/validation/oos.py:172</sub>
+<sub>src/validation/oos.py:200</sub>
+
+### `window_check`
+
+```python
+window_check(E, W, cfg, horizons)
+```
+
+Does the older history help or hurt? Compares, model by model, the errors with the configured estimation window against the same model re-estimated on the other windows, at the same origins only.
+
+| argument | default | meaning |
+|---|---|---|
+| `E` |  | main errors (run_oos). |
+| `W` |  | window_out["errors"]. |
+| `cfg` |  | configuration. |
+| `horizons` |  | report horizons. |
+
+**Returns:** (one row per model and alternative window, one summary row per alternative window), or (None, None).
+
+**Config:** `oos.step`
+
+**Calls:** `base_window_label`, `dm_test`
+
+**Called by:** `run`
+
+<sub>src/validation/oos.py:321</sub>
 
 ### `_with_base`
 
@@ -15327,7 +15410,7 @@ A shallow copy of ctx with another base macro frame.
 
 **Called by:** `run_oos`
 
-<sub>src/validation/oos.py:271</sub>
+<sub>src/validation/oos.py:380</sub>
 
 ### `summarise`
 
@@ -15350,7 +15433,7 @@ Summarise out-of-sample errors: MAPE, RMSE, bias and Theil's U by horizon, and t
 
 **Called by:** `run`, `main`
 
-<sub>src/validation/oos.py:278</sub>
+<sub>src/validation/oos.py:387</sub>
 
 ### `holdout`
 
@@ -15373,7 +15456,7 @@ Select and estimate every model on data up to hist_end - holdout_quarters; forec
 
 **Called by:** `run`
 
-<sub>src/validation/oos.py:338</sub>
+<sub>src/validation/oos.py:447</sub>
 
 
 ## src/validation/vintages.py

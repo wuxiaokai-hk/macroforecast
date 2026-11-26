@@ -569,6 +569,29 @@ forecast). The models are estimated exactly as before; only the macro path they 
 error) and `13_vintage_coverage` (the vintage used at each origin and any driver series it did not contain). In the
 app, upload the vintages in ① and choose the options in ③.
 
+### Does the older history help or hurt? (`oos.window_check`)
+
+With a long history (say 140 quarters, back to the early 1990s), the relationships may have changed: inflation
+targeting, the near-zero-rate years, mortgage rules, consolidation, digital banking. A model fitted to all of it
+averages across those regimes. The window check answers whether that costs accuracy: at every origin, each model
+is also re-estimated on only the most recent quarters, **with the same drivers**, so the only difference is how much
+history it learns from.
+
+```yaml
+oos:
+  window_check:
+    enabled: true
+    recent_quarters: [60]         # e.g. [60, 80]; origins with fewer quarters of history are skipped
+```
+
+With `window: rolling`, the full sample is compared as well. Outputs in `oos/`: `15_window_check` (each model's error
+with each window over the same origins, the change, a Diebold-Mariano p-value on the per-origin errors and a verdict),
+`16_window_check_summary` (for how many models the recent window wins, the median change, the best model each way),
+`17_all_forecast_errors_other_windows` and `window_check.png`. How to read it: if the recent window wins for most
+models, the old data is hurting, so move `sample.estimation_start` later, add dummies for the break, or switch to a rolling
+window. If the full sample wins, the long history is helping (typically because it contains more downturns). The
+deep-learning and foundation models are left out of the check (too slow to re-train twice).
+
 Each origin's selection is cached, so the first run takes a few minutes (about 4 minutes for 12 origins on the example data) and re-runs take seconds. `step: 1` gives more origins and more powerful tests, but takes about four times longer the first time.
 
 Results on the example (simulated) data are in **Example results** below. The look-ahead check for the two data-driven approaches (average balance error, 1–12 quarters):

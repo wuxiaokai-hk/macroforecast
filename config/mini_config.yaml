@@ -93,6 +93,9 @@ oos:
   window: expanding
   window_length: 40
   holdout_quarters: 8
+  window_check:                     # does the older history help or hurt? Each model is also re-estimated
+    enabled: true                   #   at every origin on only the last N quarters (same drivers)
+    recent_quarters: [60]           #   e.g. [60, 80]; with a rolling window the full sample is compared too
 
 cache:
   enabled: false

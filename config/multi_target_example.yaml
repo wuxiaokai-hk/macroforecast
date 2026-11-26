@@ -178,6 +178,9 @@ oos:                                # out-of-sample test (python run_oos.py): re
   window: expanding                 # expanding, or rolling (fixed length below)
   window_length: 40                 # quarters, for a rolling window
   holdout_quarters: 12              # final holdout: select on data up to hist_end - 12, forecast the last 12
+  window_check:                     # does the older history help or hurt? Each model is also re-estimated
+    enabled: true                   #   at every origin on only the last N quarters (same drivers)
+    recent_quarters: [60]           #   e.g. [60, 80]; with a rolling window the full sample is compared too
 
 trace:                              # detailed log of every function call (outputs/<run>/trace/<date_time>/trace.html)
   enabled: true

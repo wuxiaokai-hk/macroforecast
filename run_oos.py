@@ -88,8 +88,8 @@ def run(cfg, args):
         log(f"  {n}: {full[n]}")
 
     store = {} if (cfg.get("save") or {}).get("origin_models", True) else None
-    vout = {}
-    E, picks, H = oos.run_oos(cfg, ctx, approaches, full, cache, store, vintage_out=vout)
+    vout, wout = {}, {}
+    E, picks, H = oos.run_oos(cfg, ctx, approaches, full, cache, store, vintage_out=vout, window_out=wout)
     if store:                                    # every model as estimated at every origin
         coefs = store.pop("__coefficients__", [])
         saved.save_origin_models(os.path.join(out, "fitted_models"), store, log)
@@ -137,6 +137,22 @@ def run(cfg, args):
             log(f"  note: {low['model'].nunique()} model(s) use series missing from the vintages "
                 f"({', '.join(sorted(set(', '.join(low['drivers_not_in_vintage']).split(', ')) - {''})[:6])}); "
                 f"those take their {vintages.settings(cfg)['missing']} path (see 13_vintage_coverage)")
+    WD, WS = oos.window_check(E, wout.get("errors"), cfg, hz)
+    if WD is not None:                            # does the older history help or hurt?
+        tables.update({"15_window_check": WD.round(4), "16_window_check_summary": WS.round(4),
+                       "17_all_forecast_errors_other_windows": wout["errors"]})
+        log(f"\nWindow check: {oos.base_window_label(cfg)} vs a shorter, more recent window "
+            f"(same drivers, same origins; average error over 1-{max(hz)} quarters):")
+        for _, r in WS.iterrows():
+            log(f"  {r['other_window']} ({r['origins_compared']} origins with enough history): better for "
+                f"{r[f'other_window_better_1_{max(hz)}']} of {r['models']} models, "
+                f"median change {r['median_change_pct']:+.1f}%, significant (10%) for {r['significant_either_way']}; "
+                f"best model {r['best_error_main_pct']:.2f}% ({r['main_window']}) vs {r['best_error_other_pct']:.2f}%")
+        top = WD.loc[WD["model"].isin(summ.nsmallest(8, f"avg_1_{max(hz)}_pct")["model"])]
+        for _, r in top.iterrows():
+            log(f"    {r['model']:<44s} {r[f'main_avg_1_{max(hz)}_pct']:6.2f}% -> {r[f'other_avg_1_{max(hz)}_pct']:6.2f}%"
+                f"  [{r['other_window']}] {r['verdict']}")
+        report.chart_window_check(os.path.join(out, "window_check.png"), WD, max(hz))
     report.write_tables(out, tables)
     if summ_fc is not None:
         report.chart_family_bars(os.path.join(out, "oos_model_comparison_forecast_macro.png"),

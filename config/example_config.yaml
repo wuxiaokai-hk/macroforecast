@@ -206,6 +206,9 @@ oos:                                # out-of-sample test (python run_oos.py): re
   window: expanding                 # expanding, or rolling (fixed length below)
   window_length: 40                 # quarters, for a rolling window
   holdout_quarters: 12              # final holdout: select on data up to hist_end - 12, forecast the last 12
+  window_check:                     # does the older history help or hurt? Each model is also re-estimated
+    enabled: true                   #   at every origin on only the last N quarters (same drivers)
+    recent_quarters: [60]           #   e.g. [60, 80]; with a rolling window the full sample is compared too
   macro_vintages:                   # optional: the macro forecasts available at past dates (src/validation/vintages.py)
     file: null                      # a folder (one file per vintage, quarter in the name: baseline_2018Q1.csv), one
                                     #   file with a 'vintage' column, or one xlsx with a sheet per vintage; each in the

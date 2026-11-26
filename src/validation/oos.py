@@ -12,7 +12,10 @@ Results:
   2. the data-driven approaches with drivers fixed from the full sample (shows the look-ahead optimism);
   3. Diebold-Mariano tests (Harvey-Leybourne-Newbold small-sample correction) against the AR(1) benchmark;
   4. which drivers each data-driven and hybrid model chose at each origin, and how stable they were;
-  5. a holdout test: everything selected and estimated on data up to hist_end - holdout_quarters.
+  5. a holdout test: everything selected and estimated on data up to hist_end - holdout_quarters;
+  6. a window check (oos.window_check): every model re-estimated at each origin on only the most recent
+     quarters (or, with a rolling window, on the full sample), with the same drivers. It shows whether the
+     older history still helps or now hurts, i.e. whether the relationships have changed.
 
 Forecasts use the realised macro values (conditional forecasts), so they measure model error, not the
 error of the macro scenario itself. With oos.macro_vintages (src/validation/vintages.py) every origin also
@@ -169,7 +172,32 @@ def forecast_with(ctx, model, origin_pos, H, mdf):
     return tg.error(np.cumsum(fc), np.cumsum(act)), fc, act
 
 
-def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintage_out=None):
+WINDOW_SKIP = ("Deep learning", "AI foundation model", "Look-ahead check")   # slow, or not a real model
+
+
+def window_alternatives(cfg, ctx):
+    """The estimation windows compared with the configured one in the window check.
+
+    Returns:
+        list of (label, length in quarters or None for the full sample). With an expanding window: one entry
+        per oos.window_check.recent_quarters; with a rolling window: the full sample as well.
+    """
+    w = cfg["oos"].get("window_check") or {}
+    if not w.get("enabled", True):
+        return []
+    out = [(f"last {int(n)} quarters", int(n)) for n in (w.get("recent_quarters") or [])]
+    if cfg["oos"]["window"] == "rolling":
+        out = [a for a in out if a[1] != int(cfg["oos"]["window_length"])] + [("full sample", None)]
+    return out
+
+
+def base_window_label(cfg):
+    """Name of the configured estimation window."""
+    o = cfg["oos"]
+    return "full sample" if o["window"] == "expanding" else f"last {int(o['window_length'])} quarters"
+
+
+def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintage_out=None, window_out=None):
     """Out-of-sample test: at each origin, re-run selection and re-estimate every model with data up to
     the origin only, then forecast 1..H quarters.
 
@@ -180,6 +208,8 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintag
             origin) and store["__coefficients__"]: list of coefficient rows by origin.
         vintage_out: optional dict; with oos.macro_vintages it receives "errors" (the same rows forecast with the
             macro forecast of each origin's time) and "coverage" (vintage used and drivers not covered).
+        window_out: optional dict; receives "errors": every model re-estimated at each origin on the other
+            estimation windows of oos.window_check (same drivers, so only the length of history differs).
 
     Returns:
         (errors by model/origin/horizon, drivers picked at each origin, horizon).
@@ -195,9 +225,11 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintag
     rows, picks, failed = [], [], {}
     from . import vintages as vt
     vints = vt.load(cfg, log) if vintage_out is not None else {}
-    vrows, vcov = [], []
+    vrows, vcov, wrows = [], [], []
+    alts = window_alternatives(cfg, ctx) if window_out is not None else []
     log(f"Out-of-sample: {len(origins)} origins {ctx.idx[origins[0]]}..{ctx.idx[origins[-1]]}, step {o['step']}, "
-        f"horizon {H}, {o['window']} window")
+        f"horizon {H}, {o['window']} window" +
+        (f"; window check: {base_window_label(cfg)} vs {', '.join(a[0] for a in alts)}" if alts else ""))
     for k, op in enumerate(origins):
         lab = ctx.idx[op]
         models, sel, est = models_at(cfg, ctx, approaches, op, cache, full_sample_drivers)
@@ -257,6 +289,22 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintag
                              "balance_at_origin": L0, "forecast_balance": tg.level_after(L0, cf[h - 1]),
                              "actual_balance_organic": tg.level_after(L0, ca[h - 1]),
                              "actual_balance_reported": float(ctx.level.get(d, np.nan)), "error_pct": v * 100})
+            if m.family in WINDOW_SKIP:
+                continue
+            for wlab, n in alts:                     # the same model and drivers, estimated on another window
+                start = ctx.est0 if n is None else op - n + 1
+                if start < ctx.est0 or pd.Period(ctx.idx[start]) == pd.Period(est_full, freq="Q"):
+                    continue                         # not enough history yet, or the same window as the main one
+                try:
+                    e3 = forecast_errors(ctx, copy.deepcopy(m), op, H, str(ctx.idx[start]), mdf=base_at)
+                except Exception as ex:
+                    failed[f"{m.name} ({wlab})"] = f"{type(ex).__name__}: {ex}"
+                    continue
+                for h, v in enumerate(e3, 1):
+                    win = ctx.idx[op + 1:op + h + 1]
+                    wrows.append({"origin": str(lab), "model": m.name, "family": m.family, "window": wlab,
+                                  "est_start": str(ctx.idx[start]), "horizon_q": h, "error": v, "error_pct": v * 100,
+                                  "covid_window": bool(a is not None and ((win >= a) & (win <= b)).any())})
         log(f"  origin {lab} ({k + 1}/{len(origins)}): " +
             "; ".join(f"{PRETTY[ap]}: {', '.join(s['features'])}" for ap, s in sel.items()))
     for m, why in failed.items():
@@ -265,7 +313,68 @@ def run_oos(cfg, ctx, approaches, full_sample_drivers, cache, store=None, vintag
         vintage_out["errors"], vintage_out["coverage"] = pd.DataFrame(vrows), pd.DataFrame(vcov)
         if vints and not vrows:
             log("  macro vintages: no origin had a vintage within oos.macro_vintages.max_age quarters")
+    if window_out is not None:
+        window_out["errors"] = pd.DataFrame(wrows)
     return pd.DataFrame(rows), pd.DataFrame(picks), H
+
+
+def window_check(E, W, cfg, horizons):
+    """Does the older history help or hurt? Compares, model by model, the errors with the configured estimation
+    window against the same model re-estimated on the other windows, at the same origins only.
+
+    Args:
+        E: main errors (run_oos). W: window_out["errors"]. cfg: configuration. horizons: report horizons.
+
+    Returns:
+        (one row per model and alternative window, one summary row per alternative window), or (None, None).
+    """
+    if W is None or not len(W):
+        return None, None
+    base = base_window_label(cfg)
+    hmax = max(horizons)
+    Ex = E[~E["covid_window"]][["origin", "model", "horizon_q", "error"]]
+    rows = []
+    for (m, fam, wl), g in W[~W["covid_window"]].groupby(["model", "family", "window"], sort=False):
+        j = g.merge(Ex[Ex["model"] == m], on=["origin", "model", "horizon_q"], suffixes=("_alt", "_base"))
+        if j.empty:
+            continue
+        r = {"model": m, "family": fam, "main_window": base, "other_window": wl,
+             "origins_compared": j["origin"].nunique()}
+        for h in horizons:
+            s = j[j["horizon_q"] <= h]
+            r[f"main_avg_1_{h}_pct"] = s["error_base"].abs().mean() * 100
+            r[f"other_avg_1_{h}_pct"] = s["error_alt"].abs().mean() * 100
+        r["change_pct"] = (r[f"other_avg_1_{hmax}_pct"] / r[f"main_avg_1_{hmax}_pct"] - 1) * 100 \
+            if r[f"main_avg_1_{hmax}_pct"] else np.nan
+        # test on each origin's root-mean-square error over 1..hmax; origins overlap for ceil(hmax/step) of them
+        po = j[j["horizon_q"] <= hmax].groupby("origin")[["error_alt", "error_base"]].apply(
+            lambda x: np.sqrt((x ** 2).mean()))
+        lag = max(1, int(np.ceil(hmax / max(int(cfg["oos"]["step"]), 1))))
+        s_, p_, _ = dm_test(po["error_alt"], po["error_base"], lag)
+        r["DM_stat"], r["p_value"] = s_, p_
+        winner = wl if r["change_pct"] < 0 else base
+        if not np.isnan(p_) and p_ < 0.10:
+            r["verdict"] = f"{winner} better (significant)"
+        elif abs(r["change_pct"]) < 5:
+            r["verdict"] = "about the same"
+        else:
+            r["verdict"] = f"{winner} better (not significant)"
+        rows.append(r)
+    D = pd.DataFrame(rows)
+    if D.empty:
+        return None, None
+    summ = []
+    for wl, d in D.groupby("other_window", sort=False):
+        summ.append({"main_window": base, "other_window": wl, "models": len(d),
+                     "origins_compared": int(d["origins_compared"].max()),
+                     f"other_window_better_1_{hmax}": int((d["change_pct"] < 0).sum()),
+                     "significant_either_way": int((d["p_value"] < 0.10).sum()),
+                     "median_change_pct": float(d["change_pct"].median()),
+                     "best_model_main": d.loc[d[f"main_avg_1_{hmax}_pct"].idxmin(), "model"],
+                     "best_error_main_pct": float(d[f"main_avg_1_{hmax}_pct"].min()),
+                     "best_model_other": d.loc[d[f"other_avg_1_{hmax}_pct"].idxmin(), "model"],
+                     "best_error_other_pct": float(d[f"other_avg_1_{hmax}_pct"].min())})
+    return D.sort_values(["other_window", "change_pct"]), pd.DataFrame(summ)
 
 
 def _with_base(ctx, base):
