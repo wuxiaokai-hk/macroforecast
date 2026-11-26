@@ -758,7 +758,12 @@ auto-ARDL, regime switching, ARIMAX, machine learning, combinations, ...) is sco
 `score = 0.5 × accuracy + 0.25 × interpretation + 0.25 × sensitivity` (`recommend.weights`). To be recommended, a
 model must be within `recommend.max_error_ratio` (1.5) × the best error **and** respond to at least
 `recommend.min_coverage` (a quarter) of the focus drivers: a model that cannot answer what-if questions about the
-economy is not a satellite model. Files: `1_scorecard.csv` (every component, eligibility and why not),
+economy is not a satellite model. It must also be **dynamically stable** (`recommend.require_stable`, on by default):
+a levels model whose lagged-level coefficients sum to 1 or more has no error correction (a gap from the long-run
+relation never closes, the long-run coefficients are meaningless, and the forecast drifts or explodes beyond the
+backtest horizon), so it is not eligible however small its error; the same holds for an error-correction model whose
+adjustment coefficient is not negative. `comparison/4_diagnostics.csv` shows, for every model with own lags, the sum of
+those coefficients, the largest root and "dynamically stable" yes/no. Files: `1_scorecard.csv` (every component, eligibility and why not),
 `recommended.json`, `summary.md`, `scorecard.png`. The app (③ Settings) has sliders for the weights; ⑤ Results shows
 the scorecard; the process story has a scorecard page before the recommended model.
 

@@ -75,7 +75,7 @@ DEFAULTS = {
                "control_t": 1.0, "horizons": [1, 4, 8, 12],
                "lookalike_corr": 0.75, "draws": 300, "seed": 42, "attribution": True, "attribution_models": "explanatory+best", "what_if": [], "episodes": []},
     "recommend": {"weights": {"accuracy": 0.5, "interpretation": 0.25, "sensitivity": 0.25}, "max_error_ratio": 1.5,
-                  "min_coverage": 0.25, "max_drivers": 5, "transparency": {}},
+                  "min_coverage": 0.25, "max_drivers": 5, "transparency": {}, "require_stable": True},
     "oos": {"first_origin": None, "step": 4, "horizon": None, "window": "expanding", "window_length": 40,
             "holdout_quarters": 8, "macro_vintages": {"file": None},
             "window_check": {"enabled": True, "recent_quarters": [60]}},

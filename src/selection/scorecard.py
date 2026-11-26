@@ -22,6 +22,10 @@ Sensitivity (0-1)    does the model respond to the economy the way it should? Th
                      A model without macro drivers (AR(1), mean growth) scores 0: it cannot answer "what if".
                      Gate: a model must respond to at least recommend.min_coverage of the focus drivers (default a
                      quarter, i.e. one of four) to be recommended; 0 switches the gate off.
+Stability gate (recommend.require_stable, default true): a model whose own-lag dynamics are not stable is not
+                     eligible: a levels model whose lagged-level coefficients sum to 1 or more (no error correction:
+                     it drifts or explodes over long horizons), an error-correction model whose adjustment coefficient
+                     is not negative, or growth dynamics with a root of 1 or more (src/models/stability.py).
 
 Models without a fitted object (horizon combinations) are scored on what is available. Look-ahead checks are never
 eligible. Writes outputs/<run>/recommendation/: 1_scorecard.csv, recommended.json, summary.md, scorecard.png.
@@ -32,12 +36,14 @@ import os
 import numpy as np
 import pandas as pd
 
+from ..models import stability
+
 TRANSPARENCY = {"Benchmark": 1.0, "Literature": 1.0, "Data-driven": 1.0, "Explanatory": 1.0, "Auto ARDL": 1.0,
                 "Hybrid": 0.9, "Same growth as a driver": 0.9, "Statistical time series": 0.7,
                 "Regime switching": 0.6, "Horizon combination": 0.5, "Machine learning": 0.2, "Deep learning": 0.1,
                 "AI foundation model": 0.1}
 DEFAULTS = {"weights": {"accuracy": 0.5, "interpretation": 0.25, "sensitivity": 0.25}, "max_error_ratio": 1.5,
-            "min_coverage": 0.25, "max_drivers": 5, "transparency": {}}
+            "min_coverage": 0.25, "max_drivers": 5, "transparency": {}, "require_stable": True}
 
 
 def settings(cfg):
@@ -181,6 +187,10 @@ def score(cfg, models, ranking, run_dir, basis, log=print):
         if mc > 0 and focus_n and not (np.isfinite(cov) and cov >= mc - 1e-9):
             why_not.append(f"responds to {0 if not np.isfinite(cov) else cov:.0%} of the focus drivers "
                            f"(needs {mc:.0%}): cannot answer what-if questions about them")
+        if st.get("require_stable", True) and m is not None:      # explosive / unit-root / no error correction
+            stb = stability.check(m)
+            if stb and not stb["stable"]:
+                why_not.append(stb["reason"])
         eligible = not why_not
         responds = not (mc > 0 and focus_n and not (np.isfinite(cov) and cov >= mc - 1e-9))
         rows.append({"model": nm, "family": fam, "error_pct": float(r[col]), "error_vs_best": ratio,

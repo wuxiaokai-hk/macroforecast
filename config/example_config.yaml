@@ -356,6 +356,7 @@ recommend:
   weights: {accuracy: 0.5, interpretation: 0.25, sensitivity: 0.25}
   max_error_ratio: 1.5              # eligible only within 1.5x the most accurate model's error
   min_coverage: 0.25                # and responding to at least a quarter of the focus drivers (0 = no such rule)
+  require_stable: true              # and dynamically stable: no levels model with lagged-level coefficients summing to >= 1
   max_drivers: 5                    # more drivers than this lowers the interpretation score
 
 # Look of the process story (tools/process_story.py): classic, corporate, midnight, minimal, forest, boardroom,

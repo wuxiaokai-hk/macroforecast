@@ -125,9 +125,9 @@
   "changed": ""
  },
  "src.modelling.evaluate.diagnostics": {
-  "hash": "f58c2038d94e",
+  "hash": "7ae13f867a83",
   "added": "",
-  "changed": "2026-10-31"
+  "changed": "2026-11-26"
  },
  "src.modelling.evaluate.driver_table": {
   "hash": "6d6f26bc7139",
@@ -2085,9 +2085,9 @@
   "changed": "2026-11-03"
  },
  "src.reporting.formula.equation_text": {
-  "hash": "88a0fb409a8e",
+  "hash": "539cc4412d66",
   "added": "2026-10-29",
-  "changed": "2026-11-03"
+  "changed": "2026-11-26"
  },
  "src.reporting.formula.worked": {
   "hash": "ef67bf8def0e",
@@ -3285,9 +3285,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story": {
-  "hash": "02acb360c4b3",
+  "hash": "8ce9c2592d14",
   "added": "2026-11-18",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.__init__": {
   "hash": "c145cee124cb",
@@ -3325,9 +3325,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.load": {
-  "hash": "8352107120db",
+  "hash": "85b2c1cafbe8",
   "added": "2026-11-18",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story._n_vars": {
   "hash": "17e5a66aab1b",
@@ -3355,9 +3355,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_overview": {
-  "hash": "c5dd65373051",
+  "hash": "c5abd9a317c2",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_target": {
   "hash": "29678034e4fe",
@@ -3430,9 +3430,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_en": {
-  "hash": "5218e27f95cb",
+  "hash": "f130023fa277",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_stability": {
   "hash": "7aa551e34b36",
@@ -3450,14 +3450,14 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_search_pick": {
-  "hash": "77fbb720f4e9",
+  "hash": "254043e9f4db",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_families": {
-  "hash": "5fa5f74d1947",
+  "hash": "61685070dfa9",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_backtest_design": {
   "hash": "a1558ad404a6",
@@ -3490,14 +3490,14 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_oos_gap": {
-  "hash": "b433f785f3f5",
+  "hash": "3a7ff961c563",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_driver_stability": {
-  "hash": "dc48be557e0e",
+  "hash": "0f1a19e92351",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_holdout": {
   "hash": "6bbcd140bbf9",
@@ -3505,9 +3505,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_rec_model": {
-  "hash": "1d951fae7f08",
+  "hash": "a0fe485700dc",
   "added": "2026-11-18",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story._term": {
   "hash": "fc8295fb6590",
@@ -3515,14 +3515,14 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_rec_effects": {
-  "hash": "75d1d6413150",
+  "hash": "6de49fdf5ca7",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_rec_fit": {
-  "hash": "4debc7e9ded2",
+  "hash": "68226fe99c4b",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_coef_paths": {
   "hash": "a2bb774d7294",
@@ -3530,9 +3530,9 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_diagnostics": {
-  "hash": "01d9dbb0eb97",
+  "hash": "7dbd84634d8a",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_scen_inputs": {
   "hash": "e838df84f634",
@@ -3550,19 +3550,19 @@
   "changed": "2026-11-18"
  },
  "src.reporting.process_story.Story.s_scen_check": {
-  "hash": "4fc48c7bd4ef",
+  "hash": "b99cdb5656d0",
   "added": "2026-11-18",
-  "changed": "2026-11-18"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_limits": {
-  "hash": "59c15a2ec9ea",
+  "hash": "1f0335f5a809",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_recommend": {
-  "hash": "8cb6f73ab321",
+  "hash": "03b260a1541a",
   "added": "2026-11-18",
-  "changed": "2026-11-24"
+  "changed": "2026-11-26"
  },
  "src.reporting.process_story.Story.s_glossary": {
   "hash": "2fe35735ca10",
@@ -4440,9 +4440,9 @@
   "changed": "2026-11-25"
  },
  "src.selection.scorecard.score": {
-  "hash": "ab795750610f",
+  "hash": "f32239a7671e",
   "added": "2026-11-25",
-  "changed": "2026-11-25"
+  "changed": "2026-11-26"
  },
  "src.selection.scorecard.why_text": {
   "hash": "50aa2d993aa6",
@@ -4704,107 +4704,17 @@
   "added": "2026-11-26",
   "changed": "2026-11-26"
  },
+ "src.models.stability._coefs": {
+  "hash": "28335b83d875",
+  "added": "2026-11-26",
+  "changed": "2026-11-26"
+ },
+ "src.models.stability.check": {
+  "hash": "ccaf55503323",
+  "added": "2026-11-26",
+  "changed": "2026-11-26"
+ },
  "_log": [
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.reuse._settings",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._re_evaluate",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._summary",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "tools.panel_compare.main",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._re_evaluate",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._eval_lines",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._summary",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.compare.evaluate",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.estimate.driscoll_kraay",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.estimate.sqrt_w",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.estimate.PanelModel",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.estimate.PanelModel._pooled",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run.run_oos",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._workers",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._oos_origin",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run.run",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._re_evaluate",
-   "what": "changed"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._sample_lines",
-   "what": "added"
-  },
-  {
-   "date": "2026-11-24",
-   "id": "src.panel.run._summary",
-   "what": "changed"
-  },
   {
    "date": "2026-11-24",
    "id": "src.panel.sample.describe",
@@ -6203,6 +6113,106 @@
   {
    "date": "2026-11-26",
    "id": "src.models.zoo.build",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.modelling.evaluate.diagnostics",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.stability._coefs",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.models.stability.check",
+   "what": "added"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.formula.equation_text",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.load",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_overview",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_en",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_search_pick",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_families",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_oos_gap",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_driver_stability",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_rec_model",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_rec_effects",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_rec_fit",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_diagnostics",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_scen_check",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_limits",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.reporting.process_story.Story.s_recommend",
+   "what": "changed"
+  },
+  {
+   "date": "2026-11-26",
+   "id": "src.selection.scorecard.score",
    "what": "changed"
   }
  ]

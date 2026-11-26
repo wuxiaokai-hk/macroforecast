@@ -1500,6 +1500,12 @@ class Story:
             if v == v and v is not None:
                 rows.append({"Check": name, "p-value": f"{v:.3f}", "Result": "pass" if v >= 0.05 else "flag",
                              "Meaning when it passes": meaning})
+        v = r.get("largest AR root")
+        if v == v and v is not None:                 # own-lag dynamics (src/models/stability.py)
+            rows.append({"Check": "Dynamic stability (largest AR root)", "p-value": f"{v:.3f}",
+                         "Result": "pass" if v < 1 else "flag",
+                         "Meaning when it passes": "the model returns to its path after a shock instead of drifting "
+                                                   "or exploding (for a levels model: it error-corrects)"})
         T = pd.DataFrame(rows)
         npass = int((T["Result"] == "pass").sum()) if len(T) else 0
         flag = list(T.loc[T["Result"] == "flag", "Check"]) if len(T) else []

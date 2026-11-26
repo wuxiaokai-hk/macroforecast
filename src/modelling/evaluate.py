@@ -5,6 +5,7 @@ from statsmodels.stats.diagnostic import acorr_ljungbox, breaks_cusumolsresid, h
 from statsmodels.stats.stattools import durbin_watson, jarque_bera
 
 from ..features.transforms import TR_DESC, RATE_TRS, describe, is_rate_tr, parse_feature, tr_desc
+from ..models import stability
 from ..utils import target as tg
 from .ardl import ARDL, vif
 from .search import backtest_origins, covid_mask, refit_flags
@@ -162,6 +163,13 @@ def diagnostics(ctx, model, P):
                        f"(t {r.tvalues.get('ect_lag1', np.nan):.2f}); Engle-Granger ADF p = {model.eg_p:.3f}")
     if hasattr(model, "lag_summary"):
         out["lags"] = model.lag_summary()
+    st_ = stability.check(model)                 # own-lag dynamics: explosive / unit root / no error correction
+    if st_:
+        out["sum of own-lag coefficients"] = round(st_["ar_sum"], 4) if st_["ar_sum"] == st_["ar_sum"] else np.nan
+        out["largest AR root"] = round(st_["max_root"], 4) if st_["max_root"] == st_["max_root"] else np.nan
+        out["dynamically stable"] = "yes" if st_["stable"] else "no"
+        if not st_["stable"]:
+            out["note"] = ("UNSTABLE: " + st_["reason"] + (f"; {out['note']}" if out.get("note") else ""))
     b = getattr(model, "bounds", None)
     if b:
         out.update({"bounds F": round(b["F"], 3), "bounds F 5% I(0)": round(b["F_I0_5"], 2),

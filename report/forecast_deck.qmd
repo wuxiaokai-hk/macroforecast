@@ -305,7 +305,8 @@ if _r is not None and pd.notna(_r.get("n_obs", np.nan)):
                         ("Autocorrelation", "Ljung-Box p (8)", lambda v: v > 0.05, "Ljung-Box p, 8 lags"),
                         ("Heteroskedasticity", "Breusch-Pagan p", lambda v: v > 0.05, "Breusch-Pagan p"),
                         ("Normality", "Jarque-Bera p", lambda v: v > 0.05, "Jarque-Bera p"),
-                        ("Stability", "CUSUM p", lambda v: v > 0.05, "CUSUM p")]:
+                        ("Stability", "CUSUM p", lambda v: v > 0.05, "CUSUM p"),
+                        ("Dynamic stability", "largest AR root", lambda v: v < 1, "Largest AR root (below 1)")]:
         if c in _r and pd.notna(_r[c]):
             CHECKS.append({"Check": a, "Test": t, "Result": f"{_r[c]:.3f}", "Pass": "Pass" if ok(_r[c]) else "Review"})
     CHECKS.append({"Check": "Economic sense", "Test": "Signs as expected", "Result": str(_r["wrong-sign drivers"]),
